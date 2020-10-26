@@ -1,0 +1,43 @@
+{
+  "name": "tape6",
+  "version": "1.0.0",
+  "description": "TAP for the modern JavaScript (ES6).",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "bin": {
+    "tape6": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "github": "http://github.com/uhop/tape6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uhop/tape6.git"
+  },
+  "keywords": [
+    "tap",
+    "test",
+    "harness",
+    "assert",
+    "browser"
+  ],
+  "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (http://lazutkin.com/)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/uhop/tape6/issues"
+  },
+  "homepage": "https://github.com/uhop/tape6#readme",
+  "files": [
+    "index.js",
+    "src",
+    "bin"
+  ],
+  "dependencies": {
+    "heya-unify": "^0.2.7"
+  }
+}
