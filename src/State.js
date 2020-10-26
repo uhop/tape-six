@@ -3,8 +3,9 @@ import {getTimer} from './timer.js';
 // const getLocation = /\(([^)]+)\)$/;
 
 class State {
-  constructor(callback, todo) {
+  constructor(callback, skip, todo) {
     this.callback = callback;
+    this.skip = skip;
     this.todo = todo;
     this.plan = -1;
     this.asserts = this.skipped = this.failed = 0;
@@ -25,8 +26,8 @@ class State {
     switch (event.type) {
       case 'assert':
         ++this.asserts;
-        event.skip && ++this.skipped;
-        event.fail && !this.todo && !event.todo && !event.skip && ++this.failed;
+        (this.skip || event.skip) && ++this.skipped;
+        event.fail && !this.todo && !event.todo && !this.skip && !event.skip && ++this.failed;
         event.id = this.asserts;
         event.diffTime = event.time - this.time;
         break;
