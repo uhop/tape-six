@@ -1,9 +1,6 @@
 import unify from 'heya-unify';
 import preprocess from 'heya-unify/utils/preprocess.js';
 
-const stateKey = Symbol.for('state'),
-  testKey = Symbol.for('test');
-
 const throwHelper = fn => {
   try {
     fn();
@@ -15,37 +12,37 @@ const throwHelper = fn => {
 
 class Tester {
   constructor(state, testNumber) {
-    this[stateKey] = state;
-    this[testKey] = testNumber;
+    this.state = state;
+    this.testNumber = testNumber;
   }
 
   plan(n) {
-    this[stateKey].setPlan(n);
+    this.state.setPlan(n);
   }
 
   comment(msg) {
-    this[stateKey].emit({type: 'comment', name: msg || 'comment', test: this[testKey], marker: new Error(), time: this[stateKey].timer.now()});
+    this.state.emit({type: 'comment', name: msg || 'comment', test: this.testNumber, marker: new Error(), time: this.state.timer.now()});
   }
 
   // asserts
 
   pass(msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'pass',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'pass',
       data: {expected: true, actual: true}
     });
   }
 
   fail(msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'fail',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'fail',
       fail: true,
       data: {expected: true, actual: false}
@@ -53,11 +50,11 @@ class Tester {
   }
 
   skip(msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'skip',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'skip',
       skip: true,
       data: {expected: true, actual: true}
@@ -65,11 +62,11 @@ class Tester {
   }
 
   ok(value, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should be truthy',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'ok',
       fail: !value,
       data: {
@@ -80,11 +77,11 @@ class Tester {
   }
 
   notOk(value, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should be falsy',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'notOk',
       fail: !!value,
       data: {
@@ -95,11 +92,11 @@ class Tester {
   }
 
   error(error, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || String(error),
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'error',
       fail: !!error,
       data: {
@@ -110,11 +107,11 @@ class Tester {
   }
 
   strictEqual(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should be strictly equal',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'equal',
       fail: typeof a == 'object' ? a !== b : !unify(a, b),
       data: {
@@ -125,11 +122,11 @@ class Tester {
   }
 
   notStrictEqual(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should not be strictly equal',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'notEqual',
       fail: typeof a == 'object' ? a === b : unify(a, b),
       data: {
@@ -140,11 +137,11 @@ class Tester {
   }
 
   looseEqual(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should be loosely equal',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'looseEqual',
       fail: a != b,
       data: {
@@ -155,11 +152,11 @@ class Tester {
   }
 
   notLooseEqual(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should not be loosely equal',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'notLooseEqual',
       fail: a == b,
       data: {
@@ -170,11 +167,11 @@ class Tester {
   }
 
   deepEqual(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should be deeply equivalent',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'deepEqual',
       fail: !unify(a, b),
       data: {
@@ -185,11 +182,11 @@ class Tester {
   }
 
   notDeepEqual(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should not be deeply equivalent',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'notDeepEqual',
       fail: unify(a, b),
       data: {
@@ -202,11 +199,11 @@ class Tester {
   throws(fn, msg) {
     if (typeof fn != 'function') throw new TypeError('the first argument should be a function');
     const result = throwHelper(fn);
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should throw',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'throws',
       fail: !result,
       data: {
@@ -219,11 +216,11 @@ class Tester {
   doesNotThrow(fn, msg) {
     if (typeof fn != 'function') throw new TypeError('the first argument should be a function');
     const result = throwHelper(fn);
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should not throw',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'doesNotThrow',
       fail: !!result,
       data: {
@@ -237,11 +234,11 @@ class Tester {
     if (typeof string != 'string') throw new TypeError('the first argument should be a string');
     if (!regexp || typeof regexp != 'object' || typeof regexp.test != 'function')
       throw new TypeError('the second argument should be a regular expression object');
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should match regular expression',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'match',
       fail: !regexp.test(string),
       data: {
@@ -255,11 +252,11 @@ class Tester {
     if (typeof string != 'string') throw new TypeError('the first argument should be a string');
     if (!regexp || typeof regexp != 'object' || typeof regexp.test != 'function')
       throw new TypeError('the second argument should be a regular expression object');
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should not match regular expression',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'doesNotMatch',
       fail: !!regexp.test(string),
       data: {
@@ -270,11 +267,11 @@ class Tester {
   }
 
   matchObject(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should match object',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'matchObject',
       fail: !unify(a, preprocess(b, true)),
       data: {
@@ -285,11 +282,11 @@ class Tester {
   }
 
   doesNotMatchObject(a, b, msg) {
-    this[stateKey].emit({
+    this.state.emit({
       name: msg || 'should not match object',
-      test: this[testKey],
+      test: this.testNumber,
       marker: new Error(),
-      time: this[stateKey].timer.now(),
+      time: this.state.timer.now(),
       operator: 'doesNotMatchObject',
       fail: !!unify(a, preprocess(b, true)),
       data: {
@@ -307,11 +304,11 @@ class Tester {
         error => error
       )
       .then(result => {
-        this[stateKey].emit({
+        this.state.emit({
           name: msg || 'should be rejected',
-          test: this[testKey],
+          test: this.testNumber,
           marker: new Error(),
-          time: this[stateKey].timer.now(),
+          time: this.state.timer.now(),
           operator: 'rejects',
           fail: !result,
           data: {
@@ -330,11 +327,11 @@ class Tester {
         error => error
       )
       .then(result => {
-        this[stateKey].emit({
+        this.state.emit({
           name: msg || 'should not be rejected',
-          test: this[testKey],
+          test: this.testNumber,
           marker: new Error(),
-          time: this[stateKey].timer.now(),
+          time: this.state.timer.now(),
           operator: 'resolves',
           fail: !!result,
           data: {
@@ -366,5 +363,7 @@ setAliases('rejects', 'doesNotResolve');
 setAliases('resolves', 'doesNotReject');
 
 // TODO: add missing aliases and compound methods
+
+// test() (an embedded test runner) is added in ./test.js to avoid circular dependencies
 
 export default Tester;
