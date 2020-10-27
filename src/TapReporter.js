@@ -3,10 +3,12 @@ import yamlFormatter from './yamlFormatter.js';
 const formatterOptions = {offset: 2};
 
 class TapReporter {
-  constructor({write = console.log, useJson = false} = {}) {
+  constructor({write = console.log, useJson = false, renumberAsserts = false} = {}) {
     this.write = write;
     this.useJson = useJson;
     this.depth = 0;
+    this.assertCounter = 0;
+    this.renumberAsserts = renumberAsserts;
   }
   report(event) {
     let text;
@@ -39,7 +41,7 @@ class TapReporter {
         this.write(text);
         break;
       case 'assert':
-        text = (event.fail ? 'not ok' : 'ok') + ' ' + event.id;
+        text = (event.fail ? 'not ok' : 'ok') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
         if (event.skip) {
           text += ' # SKIP';
         } else if (event.todo) {
