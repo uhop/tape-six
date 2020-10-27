@@ -1,4 +1,4 @@
-import test from '../index.js';
+import test from '../../index.js';
 
 test('Simple smoke test', async t => {
   t.pass();
@@ -7,4 +7,6 @@ test('Simple smoke test', async t => {
     t.pass('embedded pass');
     t.fail('embedded fail');
   });
+  t.pass('pass after');
+  t.fail('fail after');
 });
