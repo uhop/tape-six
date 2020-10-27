@@ -49,18 +49,6 @@ class Tester {
     });
   }
 
-  skip(msg) {
-    this.state.emit({
-      name: msg || 'skip',
-      test: this.testNumber,
-      marker: new Error(),
-      time: this.state.timer.now(),
-      operator: 'skip',
-      skip: true,
-      data: {expected: true, actual: true}
-    });
-  }
-
   ok(value, msg) {
     this.state.emit({
       name: msg || 'should be truthy',
