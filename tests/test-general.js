@@ -1,4 +1,4 @@
-import test from '../src/test.js';
+import test from '../index.js';
 
 test('Simple smoke test', async t => {
   t.pass();
