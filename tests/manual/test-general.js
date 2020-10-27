@@ -1,9 +1,8 @@
-import test from '../index.js';
+import test from '../../index.js';
 
 test('Simple smoke test', async t => {
   t.pass();
   t.fail();
-  t.skip();
   t.ok(1 < 2);
   t.ok(1 > 2);
   t.notOk(1 < 2);
