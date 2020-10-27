@@ -7,6 +7,7 @@ class State {
     this.callback = callback || parent.callback;
     this.skip = skip || parent.skip;
     this.todo = todo || parent.todo;
+    this.offset = parent.asserts || 0;
     this.timer = parent.timer || getTimer();
     this.asserts = this.skipped = this.failed = 0;
     this.startTime = this.time = this.timer.now();
@@ -29,7 +30,7 @@ class State {
         ++this.asserts;
         event.skip && ++this.skipped;
         event.fail && !event.todo && !event.skip && ++this.failed;
-        event.id = this.asserts;
+        event.id = this.asserts + this.offset;
         event.diffTime = event.time - this.time;
         break;
       case 'end':
