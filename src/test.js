@@ -50,12 +50,6 @@ export const test = async (name, options, testFn) => {
     if (typeof window == 'object' && window.performance && typeof window.performance.now == 'function') {
       setTimer(window.performance);
     } else {
-      // setTimer(
-      //   await import('perf_hooks').then(
-      //     module => module.performance,
-      //     () => Date
-      //   )
-      // );
       try {
         const {performance} = require('perf_hooks');
         setTimer(performance);
@@ -66,15 +60,13 @@ export const test = async (name, options, testFn) => {
     timerIsSet = true;
   }
 
-  const deferred = new Deferred;
+  const deferred = new Deferred();
   tests.push({options, deferred});
   return deferred.promise;
 };
 
 export const getTests = () => tests;
-export const clearTests = () => {
-  tests = [];
-};
+export const clearTests = () => (tests = []);
 
 export const getReporter = () => reporter;
 export const setReporter = newReporter => (reporter = newReporter);
@@ -110,12 +102,11 @@ export const runTests = async (rootState, tests) => {
 // test() (an embedded test runner) is added here to ./Tester.js to avoid circular dependencies
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  await runTests(this.state, [{options}])
+  await runTests(this.state, [{options}]);
 };
 
 export default test;
 
-// TODO: add retain mode to collect multiple tests
 // TODO: add option "timeout" for a test
 // TODO: add option "skip" for a test
 // TODO: add option "todo" for a test
