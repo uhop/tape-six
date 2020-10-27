@@ -1,18 +1,14 @@
 import State from './State.js';
 import Tester from './Tester.js';
-import TapReporter from './TapReporter.js';
-import {getTimer, setTimer} from './timer.js';
+import Deferred from './Deferred.js';
+import {setTimer} from './timer.js';
 
-let tests = 0;
-let timerIsSet = false;
+let tests = [],
+  timerIsSet = false,
+  reporter = null,
+  testCounter = 0;
 
-const buildCallback = callback => {
-  if (callback) return callback;
-  const reporter = new TapReporter({useJson: true});
-  return reporter.report.bind(reporter);
-};
-
-const test = async (name, options, testFn) => {
+const processArgs = (name, options, testFn) => {
   // normalize arguments
   if (typeof name == 'function') {
     testFn = name;
@@ -43,40 +39,83 @@ const test = async (name, options, testFn) => {
     options.name = '(anonymous)';
   }
 
+  return options;
+};
+
+export const test = async (name, options, testFn) => {
+  options = processArgs(name, options, testFn);
+
   if (!timerIsSet) {
     // set HR timer
-    if (typeof window != 'undefined' && window.performance && typeof window.performance.now == 'function') {
+    if (typeof window == 'object' && window.performance && typeof window.performance.now == 'function') {
       setTimer(window.performance);
     } else {
-      setTimer(await import('perf_hooks').then(module => module.performance, () => Date));
+      // setTimer(
+      //   await import('perf_hooks').then(
+      //     module => module.performance,
+      //     () => Date
+      //   )
+      // );
+      try {
+        const {performance} = require('perf_hooks');
+        setTimer(performance);
+      } catch (error) {
+        setTimer(Date);
+      }
     }
     timerIsSet = true;
   }
-  const timer = getTimer();
 
-  // run tests
-  const testId = ++tests,
-    state = new State(buildCallback(options.callback)),
-    tester = new Tester(state, tests);
-  try {
-    state.emit({type: 'test', name: options.name, test: testId, time: state.time});
-    await options.testFn(tester);
-  } catch (error) {
-    state.emit({
-      name: 'unexpected exception: ' + String(error),
-      test: testId,
-      marker: new Error(),
-      time: timer.now(),
-      operator: 'error',
-      fail: true,
-      data: {
-        actual: error
-      }
-    });
-    throw error;
-  } finally {
-    state.emit({type: 'end', name: options.name, test: testId, time: timer.now(), fail: state.failed > 0, data: state});
+  const deferred = new Deferred;
+  tests.push({options, deferred});
+  return deferred.promise;
+};
+
+export const getTests = () => tests;
+export const clearTests = () => {
+  tests = [];
+};
+
+export const getReporter = () => reporter;
+export const setReporter = newReporter => (reporter = newReporter);
+
+export const runTests = async (rootState, tests) => {
+  for (let i = 0; i < tests.length; ++i) {
+    const {options, deferred} = tests[i],
+      testNumber = ++testCounter,
+      state = new State(rootState, options),
+      tester = new Tester(state, testNumber);
+    try {
+      state.emit({type: 'test', name: options.name, test: testNumber, time: state.time});
+      await options.testFn(tester);
+    } catch (error) {
+      state.emit({
+        name: 'UNEXPECTED EXCEPTION: ' + String(error),
+        test: testNumber,
+        marker: new Error(),
+        time: timer.now(),
+        operator: 'error',
+        fail: true,
+        data: {
+          actual: error
+        }
+      });
+    }
+    state.emit({type: 'end', name: options.name, test: testNumber, time: state.timer.now(), fail: state.failed > 0, data: state});
+    state.updateParent();
+    deferred && deferred.resolve(state);
   }
 };
 
+// test() (an embedded test runner) is added here to ./Tester.js to avoid circular dependencies
+Tester.prototype.test = async function test(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  await runTests(this.state, [{options}])
+};
+
 export default test;
+
+// TODO: add retain mode to collect multiple tests
+// TODO: add option "timeout" for a test
+// TODO: add option "skip" for a test
+// TODO: add option "todo" for a test
