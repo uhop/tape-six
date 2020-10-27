@@ -13,12 +13,15 @@ defer(async () => {
 
   const rootState = new State(null, {callback: reporter});
 
-
   rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
   const tests = getTests();
   await runTests(rootState, tests);
   clearTests();
   rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
+
+  if (typeof process == 'object' && typeof process.exit == 'function') {
+    process.exit(rootState.failed > 0 ? 1 : 0);
+  }
 });
 
 export default test;
