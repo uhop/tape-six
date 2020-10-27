@@ -21,14 +21,14 @@ class State {
 
   emit(event) {
     const originalEvent = event;
-    event = {...event};
+    event = {...event, skip: event.skip || this.skip, todo: event.todo || this.todo};
     !event.type && (event.type = 'assert');
 
     switch (event.type) {
       case 'assert':
         ++this.asserts;
-        (this.skip || event.skip) && ++this.skipped;
-        event.fail && !this.todo && !event.todo && !this.skip && !event.skip && ++this.failed;
+        event.skip && ++this.skipped;
+        event.fail && !event.todo && !event.skip && ++this.failed;
         event.id = this.asserts;
         event.diffTime = event.time - this.time;
         break;
