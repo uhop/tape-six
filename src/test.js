@@ -78,8 +78,12 @@ export const runTests = async (rootState, tests) => {
       state = new State(rootState, options),
       tester = new Tester(state, testNumber);
     try {
-      state.emit({type: 'test', name: options.name, test: testNumber, time: state.time});
-      options.testFn && await options.testFn(tester);
+      state.emit({type: 'test', name: options.name, test: testNumber, time: state.timer.now()});
+      if (options.skip) {
+        state.emit({type: 'comment', name: 'SKIP test: ' + options.name, test: testNumber, time: state.timer.now()});
+      } else {
+        options.testFn && await options.testFn(tester);
+      }
     } catch (error) {
       state.emit({
         name: 'UNEXPECTED EXCEPTION: ' + String(error),
