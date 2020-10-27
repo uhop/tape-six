@@ -13,7 +13,7 @@ class TapReporter {
     switch (event.type) {
       case 'test':
         !this.depth && this.write('TAP version 13');
-        this.write('# ' + event.name);
+        event.name && this.write('# start: ' + event.name);
         ++this.depth;
         break;
       case 'comment':
@@ -21,6 +21,7 @@ class TapReporter {
         break;
       case 'end':
         --this.depth;
+        event.name && this.write('# finish: ' + event.name + ' # time=' + event.diffTime.toFixed(3) + 'ms');
         if (this.depth) break;
         const state = event.data,
           success = state.asserts - state.failed - state.skipped;
