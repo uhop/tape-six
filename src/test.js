@@ -79,13 +79,13 @@ export const runTests = async (rootState, tests) => {
       tester = new Tester(state, testNumber);
     try {
       state.emit({type: 'test', name: options.name, test: testNumber, time: state.time});
-      await options.testFn(tester);
+      options.testFn && await options.testFn(tester);
     } catch (error) {
       state.emit({
         name: 'UNEXPECTED EXCEPTION: ' + String(error),
         test: testNumber,
         marker: new Error(),
-        time: timer.now(),
+        time: state.timer.now(),
         operator: 'error',
         fail: true,
         data: {
@@ -99,14 +99,33 @@ export const runTests = async (rootState, tests) => {
   }
 };
 
+test.skip = async function skip(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  return test({...options, skip: true});
+};
+
+test.todo = async function todo(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  return test({...options, todo: true});
+};
+
 // test() (an embedded test runner) is added here to ./Tester.js to avoid circular dependencies
+
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
   await runTests(this.state, [{options}]);
 };
 
+Tester.prototype.skip = async function skip(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  this.comment('SKIP test: ' + options.name);
+};
+
+Tester.prototype.todo = async function todo(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  await runTests(this.state, [{options: {...options, todo: true}}]);
+};
+
 export default test;
 
 // TODO: add option "timeout" for a test
-// TODO: add option "skip" for a test
-// TODO: add option "todo" for a test
