@@ -1,21 +1,22 @@
 import {getTimer} from './timer.js';
 
-// const getLocation = /\(([^)]+)\)$/;
-
 class State {
-  constructor(callback, skip, todo) {
-    this.callback = callback;
-    this.skip = skip;
-    this.todo = todo;
-    this.plan = -1;
+  constructor(parent, {callback, skip, todo}) {
+    this.parent = parent;
+    parent = parent || {};
+    this.callback = callback || parent.callback;
+    this.skip = skip || parent.skip;
+    this.todo = todo || parent.todo;
+    this.timer = parent.timer || getTimer();
     this.asserts = this.skipped = this.failed = 0;
-    this.timer = getTimer();
     this.startTime = this.time = this.timer.now();
   }
 
-  setPlan(n) {
-    this.plan = n;
-    this.emit({type: 'plan'});
+  updateParent() {
+    if (!this.parent) return;
+    this.parent.asserts += this.asserts;
+    this.parent.skipped += this.skipped;
+    this.parent.failed += this.failed;
   }
 
   emit(event) {
@@ -39,26 +40,17 @@ class State {
     if (event.type === 'assert' && event.operator === 'error' && event.data && event.data.actual && typeof event.data.actual.stack == 'string') {
       const lines = event.data.actual.stack.split('\n');
       event.at = lines[Math.min(2, lines.length) - 1].trim().replace(/^at\s+/i, '');
-      // const location = getLocation.exec(event.at);
-      // location && (event.at = location[1]);
     }
 
     if (!event.at && event.marker && typeof event.marker.stack == 'string') {
       const lines = event.marker.stack.split('\n');
       event.at = lines[Math.min(3, lines.length) - 1].trim().replace(/^at\s+/i, '');
-      // const location = getLocation.exec(event.at);
-      // location && (event.at = location[1]);
     }
 
     this.callback(event);
 
     if (event.type === 'assert') {
       this.time = this.timer.now();
-    }
-
-    if (this.plan >= 0 && this.asserts > this.plan) {
-      this.emit({fail: true, name: 'plan != count', marker: originalEvent.marker, time: originalEvent.time, data: {expected: this.plan, actual: this.asserts}});
-      this.plan = -1;
     }
   }
 }
