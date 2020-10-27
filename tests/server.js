@@ -29,9 +29,10 @@ const mimeTable = {
     xml: 'application/xml'
   },
   defaultMime = 'application/octet-stream',
-  rootFolder = path.join(process.cwd(), '..');
+  rootFolder = path.join(process.cwd(), '..'),
+  traceCalls = process.argv.includes('--trace');
 
-const sendFile = (res, fileName, ext) => {
+const sendFile = (res, fileName, ext, justHeaders) => {
   if (!ext) {
     ext = path.extname(fileName).toLowerCase();
   }
@@ -40,33 +41,45 @@ const sendFile = (res, fileName, ext) => {
     mime = defaultMime;
   }
   res.writeHead(200, {'Content-Type': mime});
-  fs.createReadStream(fileName).pipe(res);
+  if (justHeaders) {
+    res.end();
+  } else {
+    fs.createReadStream(fileName).pipe(res);
+  }
 };
 
-const bailOut = res => res.writeHead(404).end();
+const bailOut = (res, code = 404) => {
+  res.writeHead(code).end();
+  traceCalls && console.log('-', code);
+}
 
 const server = http.createServer(async (req, res) => {
+  traceCalls && console.log(req.method, req.url);
+
+  const method = req.method.toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') return bailOut(res, 405);
+
   const {pathname} = new URL(req.url, 'http://' + req.headers.host),
     fileName = path.join(rootFolder, pathname);
 
-  if (fileName.includes('..')) return bailOut(res);
+  if (fileName.includes('..')) return bailOut(res, 403);
 
   const ext = path.extname(fileName).toLowerCase(),
     stat = await fsp.stat(fileName).catch(() => null);
-  if (stat && stat.isFile()) return sendFile(res, fileName, ext);
+  if (stat && stat.isFile()) return sendFile(res, fileName, ext, method === 'HEAD');
 
   if (ext) return bailOut(res);
 
   if (stat && stat.isDirectory()) {
     const altFile = path.join(fileName, '/index.html'),
       stat = await fsp.stat(altFile).catch(() => null);
-    if (stat && stat.isFile()) return sendFile(res, altFile, '.html');
+    if (stat && stat.isFile()) return sendFile(res, altFile, '.html', method === 'HEAD');
   }
 
   if (fileName.length && fileName[fileName.length - 1] != path.sep) {
     const altFile = fileName + '.html',
       stat = await fsp.stat(altFile).catch(() => null);
-    if (stat && stat.isFile()) return sendFile(res, altFile, '.html');
+    if (stat && stat.isFile()) return sendFile(res, altFile, '.html', method === 'HEAD');
   }
 
   bailOut(res);
