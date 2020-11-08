@@ -29,7 +29,7 @@ const mimeTable = {
     xml: 'application/xml'
   },
   defaultMime = 'application/octet-stream',
-  rootFolder = path.join(process.cwd(), '..'),
+  rootFolder = path.join(path.dirname(import.meta.url.substr(7)), '..'),
   traceCalls = process.argv.includes('--trace');
 
 const sendFile = (res, fileName, ext, justHeaders) => {
@@ -120,5 +120,5 @@ server.on('error', error => {
 server.on('listening', () => {
   //const addr = server.address();
   const bind = portToString(port);
-  console.log('Listening on ' + (host || 'all network interfaces') + ' ' + bind);
+  console.log('Listening on ' + (host || 'all network interfaces') + ' ' + bind + ', serving static files from ' + rootFolder);
 });
