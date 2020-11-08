@@ -1,5 +1,4 @@
-import unify from 'heya-unify';
-import preprocess from 'heya-unify/utils/preprocess.js';
+import {equal, match, any} from './deep6/index.js';
 
 const throwHelper = fn => {
   try {
@@ -101,7 +100,7 @@ class Tester {
       marker: new Error(),
       time: this.state.timer.now(),
       operator: 'equal',
-      fail: typeof a == 'object' ? a !== b : !unify(a, b),
+      fail: typeof a == 'object' ? a !== b : !equal(a, b),
       data: {
         expected: b,
         actual: a
@@ -116,7 +115,7 @@ class Tester {
       marker: new Error(),
       time: this.state.timer.now(),
       operator: 'notEqual',
-      fail: typeof a == 'object' ? a === b : unify(a, b),
+      fail: typeof a == 'object' ? a === b : equal(a, b),
       data: {
         expected: b,
         actual: a
@@ -161,7 +160,7 @@ class Tester {
       marker: new Error(),
       time: this.state.timer.now(),
       operator: 'deepEqual',
-      fail: !unify(a, b),
+      fail: !equal(a, b),
       data: {
         expected: b,
         actual: a
@@ -176,7 +175,37 @@ class Tester {
       marker: new Error(),
       time: this.state.timer.now(),
       operator: 'notDeepEqual',
-      fail: unify(a, b),
+      fail: equal(a, b),
+      data: {
+        expected: b,
+        actual: a
+      }
+    });
+  }
+
+  deepLooseEqual(a, b, msg) {
+    this.state.emit({
+      name: msg || 'should be loosely equal',
+      test: this.testNumber,
+      marker: new Error(),
+      time: this.state.timer.now(),
+      operator: 'deepLooseEqual',
+      fail: !equal(a, b, {circular: true, loose: true}),
+      data: {
+        expected: b,
+        actual: a
+      }
+    });
+  }
+
+  notDeepLooseEqual(a, b, msg) {
+    this.state.emit({
+      name: msg || 'should not be loosely equal',
+      test: this.testNumber,
+      marker: new Error(),
+      time: this.state.timer.now(),
+      operator: 'notDeepLooseEqual',
+      fail: equal(a, b, {circular: true, loose: true}),
       data: {
         expected: b,
         actual: a
@@ -218,7 +247,7 @@ class Tester {
     });
   }
 
-  match(string, regexp, msg) {
+  matchString(string, regexp, msg) {
     if (typeof string != 'string') throw new TypeError('the first argument should be a string');
     if (!regexp || typeof regexp != 'object' || typeof regexp.test != 'function')
       throw new TypeError('the second argument should be a regular expression object');
@@ -227,7 +256,7 @@ class Tester {
       test: this.testNumber,
       marker: new Error(),
       time: this.state.timer.now(),
-      operator: 'match',
+      operator: 'matchString',
       fail: !regexp.test(string),
       data: {
         expected: regexp,
@@ -236,7 +265,7 @@ class Tester {
     });
   }
 
-  doesNotMatch(string, regexp, msg) {
+  doesNotMatchString(string, regexp, msg) {
     if (typeof string != 'string') throw new TypeError('the first argument should be a string');
     if (!regexp || typeof regexp != 'object' || typeof regexp.test != 'function')
       throw new TypeError('the second argument should be a regular expression object');
@@ -246,7 +275,7 @@ class Tester {
       marker: new Error(),
       time: this.state.timer.now(),
       operator: 'doesNotMatch',
-      fail: !!regexp.test(string),
+      fail: regexp.test(string),
       data: {
         expected: regexp,
         actual: string
@@ -254,14 +283,14 @@ class Tester {
     });
   }
 
-  matchObject(a, b, msg) {
+  match(a, b, msg) {
     this.state.emit({
       name: msg || 'should match object',
       test: this.testNumber,
       marker: new Error(),
       time: this.state.timer.now(),
-      operator: 'matchObject',
-      fail: !unify(a, preprocess(b, true)),
+      operator: 'match',
+      fail: !match(a, b),
       data: {
         expected: b,
         actual: a
@@ -269,14 +298,14 @@ class Tester {
     });
   }
 
-  doesNotMatchObject(a, b, msg) {
+  doesNotMatch(a, b, msg) {
     this.state.emit({
       name: msg || 'should not match object',
       test: this.testNumber,
       marker: new Error(),
       time: this.state.timer.now(),
       operator: 'doesNotMatchObject',
-      fail: !!unify(a, preprocess(b, true)),
+      fail: match(a, b),
       data: {
         expected: b,
         actual: a
@@ -334,7 +363,7 @@ class Tester {
   // deepLooseEqual()
   // notDeepLooseEqual()
 }
-Tester.prototype.unify = unify;
+Tester.prototype.any = Tester.prototype._ = any;
 
 const setAliases = (source, aliases) => aliases.split(', ').forEach(alias => (Tester.prototype[alias] = Tester.prototype[source]));
 
