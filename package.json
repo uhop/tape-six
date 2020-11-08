@@ -12,7 +12,10 @@
     "tape6": "bin/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node tests/server.js --trace",
+    "copyDeep6": "node scripts/copyFolder.js --src ./vendors/deep6/src --dst ./src/deep6 --clear",
+    "build": "npm run copyDeep6",
+    "prepublishOnly": "npm run build"
   },
   "github": "http://github.com/uhop/tape6",
   "repository": {
@@ -34,10 +37,8 @@
   "homepage": "https://github.com/uhop/tape6#readme",
   "files": [
     "index.js",
+    "bin",
     "src",
-    "bin"
-  ],
-  "dependencies": {
-    "heya-unify": "^0.2.7"
-  }
+    "cjs"
+  ]
 }
