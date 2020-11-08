@@ -1,6 +1,3 @@
-node_modules/*
-*.sublime-*
-report/*
-coverage/*
-.AppleDouble
-.DS_Store
+/node_modules
+/cjs
+/src/deep6
