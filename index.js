@@ -21,6 +21,8 @@ defer(async () => {
 
   if (typeof process == 'object' && typeof process.exit == 'function') {
     process.exit(rootState.failed > 0 ? 1 : 0);
+  } else if (typeof __reportTape6Results == 'function') {
+    __reportTape6Results(rootState.failed > 0 ? 'failure' : 'success');
   }
 });
 

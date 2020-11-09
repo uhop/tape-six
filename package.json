@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "node tests/server.js --trace",
+    "test-chrome": "node tests/puppeteer-chrome.js",
     "copyDeep6": "node scripts/copyFolder.js --src ./vendors/deep6/src --dst ./src/deep6 --clear",
     "build": "npm run copyDeep6",
     "prepublishOnly": "npm run build"
@@ -40,5 +41,8 @@
     "bin",
     "src",
     "cjs"
-  ]
+  ],
+  "devDependencies": {
+    "puppeteer": "^5.4.1"
+  }
 }
