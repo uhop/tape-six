@@ -27,10 +27,10 @@ const logger = (text, style) => {
 class TapReporter {
   constructor({write = logger, useJson = false, renumberAsserts = false} = {}) {
     this.write = write;
+    this.renumberAsserts = renumberAsserts;
     this.useJson = useJson;
     this.depth = 0;
     this.assertCounter = 0;
-    this.renumberAsserts = renumberAsserts;
   }
   report(event) {
     let text;
