@@ -1,5 +1,23 @@
 import {stringRep, normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './box.js';
 
+// colors
+
+const to6 = x => Math.min(5, Math.round((Math.max(0, Math.min(255, x)) / 255) * 6));
+const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
+
+const red = text => join('\x1B[31m', text, '\x1B[39m'),
+  green = text => join('\x1B[92m', text, '\x1B[39m'),
+  blue = text => join('\x1B[94m', text, '\x1B[39m'),
+  blackBg = text => join('\x1B[40m', text, '\x1B[49m'),
+  lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
+  brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
+  brightYellow = text => join('\x1B[1;93m', text, '\x1B[22;39m'),
+  warning = text => join('\x1B[41;1;37m', text, '\x1B[22;39;49m'),
+  italic = text => join('\x1B[3m', text, '\x1B[23m'),
+  successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
+  failureStyle = `\x1B[48;5;${buildColor(64, 0, 0)};1;97m`,
+  reset = '\x1B[0m';
+
 // utilities
 
 const join = (...args) => args.reduce((acc, val) => acc + (val || ''), '');
@@ -19,36 +37,37 @@ const formatNumber = (n, precision = 0) => {
 
 const formatTime = ms => formatNumber(ms, 3) + 'ms';
 
-// colors
-
-const to6 = x => Math.min(5, Math.round((Math.max(0, Math.min(255, x)) / 255) * 6));
-const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
-
-const red = text => join('\x1B[31m', text, '\x1B[39m'),
-  green = text => join('\x1B[92m', text, '\x1B[39m'),
-  blue = text => join('\x1B[94m', text, '\x1B[39m'),
-  blackBg = text => join('\x1B[40m', text, '\x1B[49m'),
-  lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
-  brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
-  brightYellow = text => join('\x1B[1;93m', text, '\x1B[22;39m'),
-  warning = text => join('\x1B[41;1;37m', text, '\x1B[22;39;49m'),
-  italic = text => join('\x1B[3m', text, '\x1B[23m'),
-  successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
-  failureStyle = `\x1B[48;5;${buildColor(64, 0, 0)};1;97m`,
-  reset = '\x1B[0m';
+const formatValue = (value, skipJson) => {
+  if (
+    !skipJson &&
+    !(value instanceof Error || value instanceof RegExp || value instanceof Set || value instanceof Map || value instanceof Promise || typeof value == 'symbol')
+  ) {
+    try {
+      return JSON.stringify(value);
+    } catch (error) {
+      // squelch
+    }
+  }
+  try {
+    return String(value);
+  } catch (error) {
+    // squelch
+  }
+  return red(italic('*cannot be shown*'));
+};
 
 // main
 
 class TTYReporter {
-  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, short = false, summary = true, hideTime = false} = {}) {
+  constructor({output = process.stdout, renumberAsserts = false, failureOnly = true, summaryBanner = true, hideTime = false, showData = true} = {}) {
     if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
 
     this.output = output;
     this.renumberAsserts = renumberAsserts;
     this.failureOnly = failureOnly;
-    this.short = short;
-    this.summary = summary;
+    this.summaryBanner = summaryBanner;
     this.hideTime = hideTime;
+    this.showData = showData;
     this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = 0;
 
     this.out('');
@@ -79,6 +98,7 @@ class TTYReporter {
           // this.output.clearLine(0);
           text = (event.fail ? '✗' : '✓') + ' ' + (event.name || 'anonymous test');
           text = (event.fail ? red : green)(text);
+          text += this.makeState(event.data);
           !this.hideTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
           this.out(text);
           break;
@@ -86,6 +106,27 @@ class TTYReporter {
         // summary
         const state = event.data,
           success = state.asserts - state.failed - state.skipped;
+
+        if (!this.summaryBanner) {
+          this.out(
+            blackBg(
+              '  ' +
+                (event.fail ? '⛔' : '♥️') +
+                '  ' +
+                brightWhite('total: ' + formatNumber(state.asserts)) +
+                ', ' +
+                blue('skipped: ' + formatNumber(state.skipped)) +
+                ', ' +
+                green('passed: ' + formatNumber(success)) +
+                ', ' +
+                red('failed: ' + formatNumber(state.failed)) +
+                ', ' +
+                lowWhite('time: ' + formatTime(event.diffTime)) +
+                '  '
+            )
+          );
+          return;
+        }
 
         const paintStyle = event.fail ? failureStyle : successStyle;
         let box1 = ['Summary: ' + (event.fail ? 'fail' : 'pass')];
@@ -125,7 +166,10 @@ class TTYReporter {
         this.out(warning(text));
         return;
       case 'assert':
+        const isFailed = event.fail && !event.todo;
+        isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
         text = (event.fail ? '✗' : '✓') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
+        if (!isFailed && this.failureOnly) break;
         if (event.skip) {
           text += ' SKIP';
         } else if (event.todo) {
@@ -133,62 +177,46 @@ class TTYReporter {
         }
         event.name && (text += ' ' + event.name);
         if (!event.skip) {
-          const isFailed = event.fail && !event.todo;
-          isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
           text = (isFailed ? red : green)(text);
         }
         !this.hideTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
         event.fail && event.at && (text += lowWhite(' - ' + event.at));
         this.out(text);
 
-        // if (event.fail) {
-        //   this.write('  ---', 'yaml');
-        //   if (this.useJson) {
-        //     this.write('  operator: ' + event.operator, 'yaml');
-        //     if (event.data && typeof event.data == 'object') {
-        //       if (event.data.hasOwnProperty('expected')) {
-        //         try {
-        //           this.write('  expected: ' + JSON.stringify(event.data.expected), 'yaml');
-        //         } catch (error) {
-        //           // squelch
-        //         }
-        //       }
-        //       if (event.data.hasOwnProperty('actual')) {
-        //         try {
-        //           this.write('  actual:   ' + JSON.stringify(event.data.actual), 'yaml');
-        //         } catch (error) {
-        //           // squelch
-        //         }
-        //       }
-        //     }
-        //     event.at && this.write('  at: ' + event.at, 'yaml');
-        //   } else {
-        //     yamlFormatter({operator: event.operator}, formatterOptions).forEach(line => this.write(line, 'yaml'));
-        //     if (event.data) {
-        //       yamlFormatter(
-        //         {
-        //           expected: event.data.expected,
-        //           actual: event.data.actual
-        //         },
-        //         formatterOptions
-        //       ).forEach(line => this.write(line, 'yaml'));
-        //     }
-        //     yamlFormatter({at: event.at}, formatterOptions).forEach(line => this.write(line, 'yaml'));
-        //   }
-        //   const error = event.data && event.data.actual instanceof Error ? event.data.actual : event.marker,
-        //     stack = error && error.stack;
-        //   if (typeof stack == 'string') {
-        //     this.write('  stack: |-', 'yaml');
-        //     stack.split('\n').forEach(line => this.write('    ' + line, 'yaml'));
-        //   }
-        //   this.write('  ...', 'yaml');
-        // }
+        if (!event.fail || !this.showData) break;
+
+        this.out(lowWhite('  operator: ') + event.operator);
+        if (event.data && typeof event.data == 'object') {
+          if (event.data.hasOwnProperty('expected')) {
+            this.out(lowWhite('  expected: ') + formatValue(event.data.expected));
+          }
+          if (event.data.hasOwnProperty('actual')) {
+            this.out(lowWhite('  actual:   ') + formatValue(event.data.actual));
+          }
+        }
+        const error = event.data && event.data.actual instanceof Error ? event.data.actual : event.marker,
+          stack = error && error.stack;
+        if (typeof stack == 'string') {
+          this.out(lowWhite('  stack: |-'));
+          stack.split('\n').forEach(line => this.out(lowWhite('    ' + line)));
+        }
         break;
     }
-    this.score();
+    this.showScore();
   }
-  score() {
+  showScore() {
     this.out(successStyle + '  ' + this.successfulAsserts + '  ' + failureStyle + '  ' + this.failedAsserts + '  ' + reset);
+  }
+  makeState(state) {
+    const success = state.asserts - state.skipped - state.failed;
+    if (!success && !state.failed && !state.skipped) return '';
+    return (
+      ' ' +
+      (success ? successStyle + ' ' + formatNumber(success) + ' ' : blackBg(' ' + formatNumber(success) + ' ')) +
+      (state.failed ? failureStyle + ' ' + formatNumber(state.failed) + ' ' : blackBg(' ' + formatNumber(state.failed) + ' ')) +
+      (state.skipped ? blackBg(blue(' ' + formatNumber(state.failed) + ' ')) : '') +
+      reset
+    );
   }
 }
 
