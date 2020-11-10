@@ -4,7 +4,7 @@ const formatterOptions = {offset: 2};
 
 const styles = {
   info: 'color: blue; font-style: italic;',
-  success: 'color: blue;',
+  success: 'color: green;',
   failure: 'color: red;',
   summary: 'font-weight: bold;',
   'summary-info': 'font-weight: bold; color: blue; font-style: italic;',
