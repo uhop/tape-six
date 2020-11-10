@@ -41,6 +41,7 @@ const red = text => join('\x1B[31m', text, '\x1B[39m'),
   blackBg = text => join('\x1B[40m', text, '\x1B[49m'),
   lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
   brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
+  brightYellow = text => join('\x1B[1;93m', text, '\x1B[22;39m'),
   warning = text => join('\x1B[41;1;37m', text, '\x1B[22;39;49m'),
   italic = text => join('\x1B[3m', text, '\x1B[23m'),
   reset = '\x1B[0m';
@@ -221,15 +222,6 @@ class TTYReporter {
         event.fail && event.at && (text += lowWhite(' - ' + event.at));
         this.out(text);
 
-        // text = (event.fail ? 'not ok' : 'ok') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
-        // if (event.skip) {
-        //   text += ' # SKIP';
-        // } else if (event.todo) {
-        //   text += ' # TODO';
-        // }
-        // event.name && (text += ' ' + event.name);
-        // text += ' # time=' + event.diffTime.toFixed(3) + 'ms';
-        // this.write(text, event.fail ? 'failure' : 'success');
         // if (event.fail) {
         //   this.write('  ---', 'yaml');
         //   if (this.useJson) {
