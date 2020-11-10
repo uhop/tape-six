@@ -1,4 +1,5 @@
 import {stringRep, normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './box.js';
+import {formatNumber, formatTime, formatValue} from './formatters.js';
 
 // colors
 
@@ -22,44 +23,10 @@ const red = text => join('\x1B[31m', text, '\x1B[39m'),
 
 const join = (...args) => args.reduce((acc, val) => acc + (val || ''), '');
 
-const formatNumber = (n, precision = 0) => {
-  const s = Number(Math.abs(n)).toFixed(precision),
-    [i, f] = precision ? s.split('.') : [s];
-  if (i.length <= 3) return n < 0 ? '-' + s : s;
-  const parts = [];
-  let start = i.length % 3;
-  start && parts.push(i.substr(0, start));
-  for (; start < i.length; start += 3) parts.push(i.substr(start, 3));
-  let result = parts.join(',');
-  f && !/^0*$/.test(f) && (result += '.' + f.replace(/0+$/, ''));
-  return n < 0 ? '-' + result : result;
-};
-
-const formatTime = ms => formatNumber(ms, 3) + 'ms';
-
-const formatValue = (value, skipJson) => {
-  if (
-    !skipJson &&
-    !(value instanceof Error || value instanceof RegExp || value instanceof Set || value instanceof Map || value instanceof Promise || typeof value == 'symbol')
-  ) {
-    try {
-      return JSON.stringify(value);
-    } catch (error) {
-      // squelch
-    }
-  }
-  try {
-    return String(value);
-  } catch (error) {
-    // squelch
-  }
-  return red(italic('*cannot be shown*'));
-};
-
 // main
 
 class TTYReporter {
-  constructor({output = process.stdout, renumberAsserts = false, failureOnly = true, summaryBanner = true, hideTime = false, showData = true} = {}) {
+  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, summaryBanner = true, hideTime = false, showData = true} = {}) {
     if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
 
     this.output = output;
