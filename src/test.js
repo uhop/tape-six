@@ -53,13 +53,15 @@ export const test = async (name, options, testFn) => {
     // set HR timer
     if (typeof window == 'object' && window.performance && typeof window.performance.now == 'function') {
       setTimer(window.performance);
-    } else {
+    } else if (typeof process == 'object' && typeof process.exit == 'function') {
       try {
-        const {performance} = require('perf_hooks');
+        const {performance} = await import('perf_hooks');
         setTimer(performance);
       } catch (error) {
         setTimer(Date);
       }
+    } else {
+      setTimer(Date);
     }
     timerIsSet = true;
   }
