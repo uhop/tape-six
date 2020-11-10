@@ -12,9 +12,32 @@ defer(async () => {
   if (!reporter) {
     if (isNode && process.stdout.isTTY) {
       const TTYReporter = (await import('./src/TTYReporter.js')).default;
-      const ttyReporter = new TTYReporter({useJson: true});
-      reporter = ttyReporter.report.bind(ttyReporter);
-    } else {
+      if (!process.env.TAPE6_TAP) {
+        const options = {};
+        if (process.env.TAPE6_FLAGS) {
+          const flags = process.env.TAPE6_FLAGS;
+          for (let i = 0; i < flags.length; ++i) {
+            switch (flags[i].toLowerCase()) {
+              case 'f':
+                options.failureOnly = flags[i] === 'F';
+                break;
+              case 't':
+                options.showTime = flags[i] === 'T';
+                break;
+              case 'b':
+                options.showBanner = flags[i] === 'B';
+                break;
+              case 'd':
+                options.showData = flags[i] === 'D';
+                break;
+            }
+          }
+        }
+        const ttyReporter = new TTYReporter(options);
+        reporter = ttyReporter.report.bind(ttyReporter);
+      }
+    }
+    if (!reporter) {
       const tapReporter = new TapReporter({useJson: true});
       reporter = tapReporter.report.bind(tapReporter);
     }
