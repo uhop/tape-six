@@ -6,7 +6,11 @@ import {setTimer} from './timer.js';
 let tests = [],
   timerIsSet = false,
   reporter = null,
-  testCounter = 0;
+  testCounter = 0,
+  isConfigured = false;
+
+export const getConfiguredFlag = () => isConfigured;
+export const setConfiguredFlag = value => (isConfigured = !!value);
 
 const processArgs = (name, options, testFn) => {
   // normalize arguments
