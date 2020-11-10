@@ -26,14 +26,14 @@ const join = (...args) => args.reduce((acc, val) => acc + (val || ''), '');
 // main
 
 class TTYReporter {
-  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, summaryBanner = true, hideTime = false, showData = true} = {}) {
+  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, showBanner = true, showTime = true, showData = true} = {}) {
     if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
 
     this.output = output;
     this.renumberAsserts = renumberAsserts;
     this.failureOnly = failureOnly;
-    this.summaryBanner = summaryBanner;
-    this.hideTime = hideTime;
+    this.showBanner = showBanner;
+    this.showTime = showTime;
     this.showData = showData;
     this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = 0;
 
@@ -66,7 +66,7 @@ class TTYReporter {
           text = (event.fail ? '✗' : '✓') + ' ' + (event.name || 'anonymous test');
           text = (event.fail ? red : green)(text);
           text += this.makeState(event.data);
-          !this.hideTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
+          this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
           this.out(text);
           break;
         }
@@ -74,7 +74,7 @@ class TTYReporter {
         const state = event.data,
           success = state.asserts - state.failed - state.skipped;
 
-        if (!this.summaryBanner) {
+        if (!this.showBanner) {
           this.out(
             blackBg(
               '  ' +
@@ -146,7 +146,7 @@ class TTYReporter {
         if (!event.skip) {
           text = (isFailed ? red : green)(text);
         }
-        !this.hideTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
+        this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
         event.fail && event.at && (text += lowWhite(' - ' + event.at));
         this.out(text);
 
