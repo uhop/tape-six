@@ -16,19 +16,100 @@ const stringRep = (n, str = ' ') => {
 
 const join = (...args) => args.reduce((acc, val) => acc + (val || ''), '');
 
+const findEscSequence = /\x1B(?:\[[\x30-\x3F]*[\x20-\x2F]*[\x40-\x7E]|[\x20-\x2F]*[\x30-\x7E])/g;
+const getLength = str => String(str).replace(findEscSequence, '').length;
+
+const formatNumber = (n, precision = 0) => {
+  const s = Number(Math.abs(n)).toFixed(precision),
+    [i, f] = precision ? s.split('.') : [s];
+  if (i.lenght <= 3) return n < 0 ? '-' + s : s;
+  const parts = [];
+  let start = i.length % 3;
+  start && parts.push(i.substr(0, start));
+  for (; start < i.length; start += 3) parts.push(i.substr(start, 3));
+  let result = parts.join(',');
+  f && !/^0*$/.test(f) && (result += '.' + f.replace(/0+$/, ''));
+  return n < 0 ? '-' + result : result;
+};
+
+const formatTime = ms => formatNumber(ms, 3) + 'ms';
+
 // colors
-const red = text => join('\u001B[31m', text, '\u001B[0m'),
-  green = text => join('\u001B[92m', text, '\u001B[0m'),
-  blue = text => join('\u001B[94m', text, '\u001B[0m'),
-  lowWhite = text => join('\u001B[2;37m', text, '\u001B[0m'),
-  brightWhite = text => join('\u001B[1;97m', text, '\u001B[0m'),
-  warning = text => join('\u001B[41;1;37m', text, '\u001B[0m'),
-  italic = text => join('\u001B[3m', text, '\u001B[0m');
+const red = text => join('\x1B[31m', text, '\x1B[39m'),
+  green = text => join('\x1B[92m', text, '\x1B[39m'),
+  blue = text => join('\x1B[94m', text, '\x1B[39m'),
+  blackBg = text => join('\x1B[40m', text, '\x1B[49m'),
+  lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
+  brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
+  warning = text => join('\x1B[41;1;37m', text, '\x1B[22;39;49m'),
+  italic = text => join('\x1B[3m', text, '\x1B[23m'),
+  reset = '\x1B[0m';
 
 const to6 = x => Math.min(5, Math.round((Math.max(0, Math.min(255, x)) / 255) * 6));
 const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
 
-const formatTime = ms => ms.toFixed(3) + 'ms';
+// boxes
+
+const normalizeBox = (strings, symbol = ' ', align = 'right') => {
+  const maxLength = strings.reduce((acc, s) => Math.max(acc, getLength(s)), 0);
+  return strings.map(s => {
+    const padding = stringRep(maxLength - getLength(s), symbol);
+    switch (align) {
+      case 'left':
+        return padding + s;
+      case 'center':
+        const half = padding.length >> 1;
+        return padding.substr(0, half) + s + padding.substr(half);
+    }
+    return s + padding;
+  });
+};
+
+const padBoxRight = (strings, n, symbol = ' ') => {
+  const padding = stringRep(n, symbol);
+  return strings.map(s => s + padding);
+};
+const padBoxLeft = (strings, n, symbol = ' ') => {
+  const padding = stringRep(n, symbol);
+  return strings.map(s => padding + s);
+};
+const padBoxTop = (strings, n, symbol = ' ') => {
+  const string = stringRep(getLength(strings[0]), symbol),
+    result = [];
+  for (; n > 0; --n) result.push(string);
+  strings.forEach(s => result.push(s));
+  return result;
+};
+const padBoxBottom = (strings, n, symbol = ' ') => {
+  const string = stringRep(getLength(strings[strings.length - 1]), symbol),
+    result = [...strings];
+  for (; n > 0; --n) result.push(string);
+  return result;
+};
+
+const drawBox = strings => {
+  const maxLength = strings.reduce((acc, s) => Math.max(acc, getLength(s)), 0),
+    line = stringRep(maxLength, '\u2500'),
+    result = ['\u256D' + line + '\u256E'];
+  strings.forEach(s => result.push('\u2502' + s + '\u2502'));
+  result.push('\u2570' + line + '\u256F');
+  return result;
+};
+
+const stackVertically = (a, b) => [...a, ...b];
+const stackHorizontally = (a, b, symbol = ' ') => {
+  const n = Math.min(a.length, b.length),
+    result = [];
+  for (let i = 0; i < n; ++i) result.push(a[i] + b[i]);
+  if (a.length < b.length) {
+    const maxLength = a.reduce((acc, s) => Math.max(acc, getLength(s)), 0),
+      string = stringRep(maxLength, symbol);
+    for (let i = n; i < b.length; ++i) result.push(string + b[i]);
+  } else {
+    for (let i = n; i < a.length; ++i) result.push(a[i]);
+  }
+  return result;
+};
 
 // main
 
@@ -77,22 +158,48 @@ class TTYReporter {
         const state = event.data,
           success = state.asserts - state.failed - state.skipped;
 
-        const paintColor = `\u001B[48;5;${event.fail ? buildColor(64, 0, 0) : buildColor(0, 32, 0)};1;97m`;
-        this.out(join('\n  ', paintColor, stringRep(25), '\u001B[0m   ', brightWhite('tests:   ' + state.asserts)));
-        this.out(join('  ', paintColor, '   \u256D', stringRep(17, '\u2500'), '\u256E   ', '\u001B[0m   ', 'skipped: ' + state.skipped));
-        this.out(join('  ', paintColor, '   \u2502  Summary: ', event.fail ? 'fail' : 'pass', '  \u2502   ', '\u001B[0m   ', green('passed:  ' + success)));
-        this.out(join('  ', paintColor, '   \u2570', stringRep(17, '\u2500'), '\u256F   ', '\u001B[0m   ', red('failed:  ' + state.failed)));
-        this.out(join('  ', paintColor, stringRep(25), '\u001B[0m   ', lowWhite('time:    ' + formatTime(event.diffTime)), '\n'));
+        const paintColor = `\x1B[48;5;${event.fail ? buildColor(64, 0, 0) : buildColor(0, 32, 0)};1;97m`;
+        let box1 = ['Summary: ' + (event.fail ? 'fail' : 'pass')];
+        box1 = padBoxLeft(box1, 2);
+        box1 = padBoxRight(box1, 2);
+        box1 = drawBox(box1);
+        box1 = padBoxLeft(box1, 3);
+        box1 = padBoxRight(box1, 3);
+        box1 = normalizeBox(
+          [...box1, '', 'Passed: ' + (event.fail ? formatNumber((success / state.asserts) * 100, 1) + '%' : '100%')],
+          ' ',
+          'center'
+        );
+        box1 = padBoxTop(box1, 1);
+        box1 = padBoxBottom(box1, 1);
+        box1 = box1.map(s => join(paintColor, s, reset));
+        box1 = padBoxLeft(box1, 2);
 
-        // const state = event.data,
-        //   success = state.asserts - state.failed - state.skipped;
-        // this.write('1..' + state.asserts, 'summary');
-        // this.write('# tests ' + state.asserts, 'summary');
-        // state.skipped && this.write('# skip  ' + state.skipped, 'summary-info');
-        // success && this.write('# pass  ' + success, 'summary-success');
-        // state.failed && this.write('# fail  ' + state.failed, 'summary-failure');
-        // this.write('# ' + (event.fail ? 'not ok' : 'ok'), event.fail ? 'summary-result-failure' : 'summary-result-success');
-        // this.write('# time=' + event.diffTime.toFixed(3) + 'ms', 'summary-info');
+        let box2 = normalizeBox(
+          [formatNumber(state.asserts), formatNumber(state.skipped), formatNumber(success), formatNumber(state.failed), formatTime(event.diffTime)],
+          ' ',
+          'left'
+        );
+        box2 = padBoxLeft(box2, 1);
+        box2 = stackHorizontally(normalizeBox(['tests:', 'skipped:', 'passed:', 'failed:', 'time:']), box2);
+
+        box2[0] = brightWhite(box2[0]);
+        box2[1] = blue(box2[1]);
+        box2[2] = green(box2[2]);
+        box2[3] = red(box2[3]);
+        box2[4] = lowWhite(box2[4]);
+
+        box2 = padBoxLeft(box2, 3);
+        box2 = padBoxRight(box2, 3);
+        box2 = padBoxTop(box2, 1);
+        box2 = padBoxBottom(box2, 1);
+        box2 = box2.map(s => blackBg(s));
+        box2 = padBoxLeft(box2, 2);
+
+        const box = stackHorizontally(box1, box2);
+        this.out('');
+        box.forEach(s => this.out(s));
+        this.out('');
         break;
       case 'bail-out':
         text = 'Bail out!';
