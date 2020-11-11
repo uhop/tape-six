@@ -2,6 +2,8 @@ import State, {StopTest} from './State.js';
 import Tester from './Tester.js';
 import Deferred from './utils/Deferred.js';
 import {setTimer} from './timer.js';
+import timeout from './utils/timeout.js';
+import {formatTime} from './utils/formatters.js';
 
 let tests = [],
   timerIsSet = false,
@@ -90,8 +92,24 @@ export const runTests = async (rootState, tests) => {
         state.emit({type: 'test', name: options.name, test: testNumber, time: state.timer.now()});
         if (options.skip) {
           state.emit({type: 'comment', name: 'SKIP test: ' + options.name, test: testNumber, time: state.timer.now()});
-        } else {
-          options.testFn && (await options.testFn(tester));
+        } else if (options.testFn) {
+          if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
+            const result = options.testFn(tester);
+            if (result && typeof result == 'object' && typeof result.then == 'function') {
+              const timedOut = await Promise.race([result.then(() => false), timeout(options.timeout).then(() => true)]);
+              if (timedOut) {
+                state.emit({
+                  type: 'comment',
+                  name: 'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
+                  test: testNumber,
+                  time: state.timer.now()
+                });
+                await result;
+              }
+            }
+          } else {
+            await options.testFn(tester);
+          }
         }
       } catch (error) {
         if (!(error instanceof StopTest)) {
@@ -151,5 +169,3 @@ Tester.prototype.todo = async function todo(name, options, testFn) {
 };
 
 export default test;
-
-// TODO: add option "timeout" for a test
