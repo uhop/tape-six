@@ -13,6 +13,7 @@ const red = text => join('\x1B[31m', text, '\x1B[39m'),
   lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
   brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
   brightYellow = text => join('\x1B[1;93m', text, '\x1B[22;39m'),
+  brightRed = text => join('\x1B[91m', text, '\x1B[39m'),
   warning = text => join('\x1B[41;1;37m', text, '\x1B[22;39;49m'),
   italic = text => join('\x1B[3m', text, '\x1B[23m'),
   successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
@@ -26,7 +27,7 @@ const join = (...args) => args.reduce((acc, val) => acc + (val || ''), '');
 // main
 
 class TTYReporter {
-  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, showBanner = true, showTime = true, showData = true} = {}) {
+  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, showBanner = true, showTime = true, showData = false} = {}) {
     if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
 
     this.output = output;
@@ -35,7 +36,12 @@ class TTYReporter {
     this.showBanner = showBanner;
     this.showTime = showTime;
     this.showData = showData;
-    this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = 0;
+
+    this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = this.todoAsserts = 0;
+    this.testCounter = -1;
+
+    this.lines = 0;
+    this.testStack = [];
 
     this.out('');
   }
@@ -45,6 +51,7 @@ class TTYReporter {
     } else {
       this.output.write(stringRep(this.depth - 1, '  ') + text + '\n');
     }
+    ++this.lines;
     return this;
   }
   report(event) {
@@ -53,18 +60,17 @@ class TTYReporter {
     let text;
     switch (event.type) {
       case 'test':
-        this.depth && this.out('- ' + (event.name || 'anonymous test'));
+        this.depth && !this.failureOnly && this.out('\u25CB ' + (event.name || 'anonymous test'));
         ++this.depth;
-        break;
-      case 'comment':
-        !this.short && this.out(blue(italic(event.name || 'empty comment')));
+        ++this.testCounter;
+        this.testStack.push({name: event.name, lines: this.lines, fail: false});
         break;
       case 'end':
+        this.testStack.pop();
         if (--this.depth) {
-          // this.output.moveCursor(0, -1);
-          // this.output.clearLine(0);
+          if (this.failureOnly) break;
           text = (event.fail ? '✗' : '✓') + ' ' + (event.name || 'anonymous test');
-          text = (event.fail ? red : green)(text);
+          text = (event.fail ? brightRed : green)(text);
           text += this.makeState(event.data);
           this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
           this.out(text);
@@ -79,14 +85,18 @@ class TTYReporter {
             blackBg(
               '  ' +
                 (event.fail ? '⛔' : '♥️') +
-                '  ' +
-                brightWhite('total: ' + formatNumber(state.asserts)) +
+                '   ' +
+                brightWhite('tests: ' + formatNumber(this.testCounter)) +
                 ', ' +
-                blue('skipped: ' + formatNumber(state.skipped)) +
+                brightYellow('asserts: ' + formatNumber(state.asserts)) +
                 ', ' +
                 green('passed: ' + formatNumber(success)) +
                 ', ' +
                 red('failed: ' + formatNumber(state.failed)) +
+                ', ' +
+                blue('skipped: ' + formatNumber(state.skipped)) +
+                ', ' +
+                ('todo: ' + formatNumber(this.todoAsserts)) +
                 ', ' +
                 lowWhite('time: ' + formatTime(event.diffTime)) +
                 '  '
@@ -101,23 +111,33 @@ class TTYReporter {
         box1 = drawBox(box1);
         box1 = padBox(box1, 0, 3);
         box1 = normalizeBox([...box1, '', 'Passed: ' + (event.fail ? formatNumber((success / state.asserts) * 100, 1) + '%' : '100%')], ' ', 'center');
-        box1 = padBox(box1, 1, 0);
+        box1 = padBox(box1, 2, 0);
         box1 = box1.map(s => join(paintStyle, s, reset));
         box1 = padBoxLeft(box1, 2);
 
         let box2 = normalizeBox(
-          [formatNumber(state.asserts), formatNumber(state.skipped), formatNumber(success), formatNumber(state.failed), formatTime(event.diffTime)],
+          [
+            formatNumber(this.testCounter),
+            formatNumber(state.asserts),
+            formatNumber(success),
+            formatNumber(state.failed),
+            formatNumber(state.skipped),
+            formatNumber(this.todoAsserts),
+            formatTime(event.diffTime)
+          ],
           ' ',
           'left'
         );
         box2 = padBoxLeft(box2, 1);
-        box2 = stackHorizontally(normalizeBox(['tests:', 'skipped:', 'passed:', 'failed:', 'time:']), box2);
+        box2 = stackHorizontally(normalizeBox(['tests:', 'asserts:', '  passed:', '  failed:', '  skipped:', '  todo:', 'time:']), box2);
 
         box2[0] = brightWhite(box2[0]);
-        box2[1] = blue(box2[1]);
+        box2[1] = brightYellow(box2[1]);
         box2[2] = green(box2[2]);
         box2[3] = red(box2[3]);
-        box2[4] = lowWhite(box2[4]);
+        box2[4] = blue(box2[4]);
+        // box2[5] = blue(box2[5]);
+        box2[6] = lowWhite(box2[6]);
 
         box2 = padBox(box2, 1, 3);
         box2 = box2.map(s => blackBg(s));
@@ -127,14 +147,19 @@ class TTYReporter {
         box.forEach(s => this.out(s));
         this.out('');
         return;
+      case 'comment':
+        !this.failureOnly && this.out(blue(italic(event.name || 'empty comment')));
+        break;
       case 'bail-out':
         text = 'Bail out!';
         event.name && (text += ' ' + event.name);
         this.out(warning(text));
         return;
       case 'assert':
-        const isFailed = event.fail && !event.todo;
+        const lastTest = this.testStack[this.testStack.length - 1],
+          isFailed = event.fail && !event.todo;
         isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
+        event.todo && ++this.todoAsserts;
         text = (event.fail ? '✗' : '✓') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
         if (!isFailed && this.failureOnly) break;
         if (event.skip) {
@@ -148,6 +173,12 @@ class TTYReporter {
         }
         this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
         event.fail && event.at && (text += lowWhite(' - ' + event.at));
+        if (this.failureOnly && !lastTest.fail) {
+          lastTest.fail = true;
+          --this.depth;
+          this.out(brightRed('✗ ' + (lastTest.name || 'anonymous test')));
+          ++this.depth;
+        }
         this.out(text);
 
         if (!event.fail || !this.showData) break;
