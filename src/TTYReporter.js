@@ -9,6 +9,7 @@ const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
 const red = text => join('\x1B[31m', text, '\x1B[39m'),
   green = text => join('\x1B[92m', text, '\x1B[39m'),
   blue = text => join('\x1B[94m', text, '\x1B[39m'),
+  yellow = text => join('\x1B[93m', text, '\x1B[39m'),
   blackBg = text => join('\x1B[40m', text, '\x1B[49m'),
   lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
   brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
@@ -69,7 +70,7 @@ class TTYReporter {
         this.testStack.pop();
         if (--this.depth) {
           if (this.failureOnly) break;
-          text = (event.fail ? '✗' : '✓') + ' ' + (event.name || 'anonymous test');
+          text = (event.fail ? '✗' : '✓') + ' ' + (event.name || italic('anonymous test'));
           text = (event.fail ? brightRed : green)(text);
           text += this.makeState(event.data);
           this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
@@ -148,7 +149,7 @@ class TTYReporter {
         this.out('');
         return;
       case 'comment':
-        !this.failureOnly && this.out(blue(italic(event.name || 'empty comment')));
+        !this.failureOnly && this.out(yellow(italic(event.name || 'empty comment')));
         break;
       case 'bail-out':
         text = 'Bail out!';
@@ -157,7 +158,7 @@ class TTYReporter {
         return;
       case 'assert':
         const lastTest = this.testStack[this.testStack.length - 1],
-          isFailed = event.fail && !event.todo;
+          isFailed = event.fail && !event.skip && !event.todo;
         isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
         event.todo && ++this.todoAsserts;
         text = (event.fail ? '✗' : '✓') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
@@ -168,7 +169,9 @@ class TTYReporter {
           text += ' TODO';
         }
         event.name && (text += ' ' + event.name);
-        if (!event.skip) {
+        if (event.skip) {
+          text = blue(text);
+        } else {
           text = (isFailed ? red : green)(text);
         }
         this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
@@ -181,7 +184,7 @@ class TTYReporter {
         }
         this.out(text);
 
-        if (!event.fail || !this.showData) break;
+        if (!event.fail || event.skip || !this.showData) break;
 
         this.out(lowWhite('  operator: ') + event.operator);
         if (event.data && typeof event.data == 'object') {
@@ -212,7 +215,7 @@ class TTYReporter {
       ' ' +
       (success ? successStyle + ' ' + formatNumber(success) + ' ' : blackBg(' ' + formatNumber(success) + ' ')) +
       (state.failed ? failureStyle + ' ' + formatNumber(state.failed) + ' ' : blackBg(' ' + formatNumber(state.failed) + ' ')) +
-      (state.skipped ? blackBg(blue(' ' + formatNumber(state.failed) + ' ')) : '') +
+      (state.skipped ? blackBg(blue(' ' + formatNumber(state.skipped) + ' ')) : '') +
       reset
     );
   }
