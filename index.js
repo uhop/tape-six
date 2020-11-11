@@ -9,7 +9,7 @@ defer(async () => {
   if (getConfiguredFlag()) return; // bail out => somebody else is running the show
 
   const isNode = typeof process == 'object' && typeof process.exit == 'function',
-    isBrowser = typeof window == 'object' && window.location,
+    isBrowser = typeof window == 'object' && !!window.location,
     options = {};
 
   let flags = '';
@@ -22,7 +22,7 @@ defer(async () => {
         .substr(1)
         .split('&')
         .map(pair => pair.split(/=/))
-        .reduce((acc, pair) => ((acc[pair[0]] = pair[1]), acc));
+        .reduce((acc, pair) => ((acc[pair[0]] = pair[1]), acc), {});
       flags = dict.flags || '';
     }
   }
