@@ -1,4 +1,4 @@
-import yamlFormatter from './yamlFormatter.js';
+import yamlFormatter from './utils/yamlFormatter.js';
 
 const formatterOptions = {offset: 2};
 

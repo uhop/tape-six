@@ -1,6 +1,6 @@
 import State, {StopTest} from './State.js';
 import Tester from './Tester.js';
-import Deferred from './Deferred.js';
+import Deferred from './utils/Deferred.js';
 import {setTimer} from './timer.js';
 
 let tests = [],

@@ -1,5 +1,5 @@
 import {test, getTests, clearTests, getReporter, setReporter, runTests, getConfiguredFlag} from './src/test.js';
-import defer from './src/defer.js';
+import defer from './src/utils/defer.js';
 import State from './src/State.js';
 import TapReporter from './src/TapReporter.js';
 

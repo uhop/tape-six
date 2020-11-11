@@ -1,5 +1,5 @@
-import {stringRep, normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './box.js';
-import {formatNumber, formatTime, formatValue} from './formatters.js';
+import {stringRep, normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './utils/box.js';
+import {formatNumber, formatTime, formatValue} from './utils/formatters.js';
 
 // colors
 
