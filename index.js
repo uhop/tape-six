@@ -3,36 +3,41 @@ import defer from './src/defer.js';
 import State from './src/State.js';
 import TapReporter from './src/TapReporter.js';
 
+const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce'};
+
 defer(async () => {
   if (getConfiguredFlag()) return; // bail out => somebody else is running the show
 
-  const isNode = typeof process == 'object' && typeof process.exit == 'function';
+  const isNode = typeof process == 'object' && typeof process.exit == 'function',
+    isBrowser = typeof window == 'object' && window.location,
+    options = {};
+
+  let flags = '';
+
+  if (isNode) {
+    flags = process.env.TAPE6_FLAGS || '';
+  } else if (isBrowser) {
+    if (window.location.search) {
+      const dict = window.location.search
+        .substr(1)
+        .split('&')
+        .map(pair => pair.split(/=/))
+        .reduce((acc, pair) => ((acc[pair[0]] = pair[1]), acc));
+      flags = dict.flags || '';
+    }
+  }
+
+  for (let i = 0; i < flags.length; ++i) {
+    const option = flags[i].toLowerCase(),
+      name = optionNames[option];
+    if (typeof name == 'string') options[name] = option !== flags[i];
+  }
 
   let reporter = getReporter();
   if (!reporter) {
     if (isNode && process.stdout.isTTY) {
       const TTYReporter = (await import('./src/TTYReporter.js')).default;
       if (!process.env.TAPE6_TAP) {
-        const options = {};
-        if (process.env.TAPE6_FLAGS) {
-          const flags = process.env.TAPE6_FLAGS;
-          for (let i = 0; i < flags.length; ++i) {
-            switch (flags[i].toLowerCase()) {
-              case 'f':
-                options.failureOnly = flags[i] === 'F';
-                break;
-              case 't':
-                options.showTime = flags[i] === 'T';
-                break;
-              case 'b':
-                options.showBanner = flags[i] === 'B';
-                break;
-              case 'd':
-                options.showData = flags[i] === 'D';
-                break;
-            }
-          }
-        }
         const ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
       }
@@ -44,7 +49,7 @@ defer(async () => {
     setReporter(reporter);
   }
 
-  const rootState = new State(null, {callback: reporter});
+  const rootState = new State(null, {callback: reporter, failOnce: options.failOnce});
 
   rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
   for (;;) {
