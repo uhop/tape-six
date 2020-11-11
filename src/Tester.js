@@ -42,6 +42,17 @@ class Tester {
     });
   }
 
+  bailOut(msg) {
+    this.state.emit({
+      type: 'bail-out',
+      name: msg || 'bail out',
+      test: this.testNumber,
+      marker: new Error(),
+      time: this.state.timer.now(),
+      operator: 'bailOut'
+    });
+  }
+
   // asserts
 
   pass(msg) {

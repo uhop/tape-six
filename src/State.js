@@ -54,12 +54,17 @@ class State {
 
     this.callback(event);
 
-    if (event.type === 'assert') {
-      if (isFailed && this.failOnce && !this.skip) {
+    switch (event.type) {
+      case 'assert':
+        if (isFailed && this.failOnce && !this.skip) {
+          for (let state = this; state; state = state.parent) state.skip = true;
+          throw new StopTest('failOnce is activated');
+        }
+        this.time = this.timer.now();
+        break;
+      case 'bail-out':
         for (let state = this; state; state = state.parent) state.skip = true;
-        throw new StopTest('failOnce is activated');
-      }
-      this.time = this.timer.now();
+        throw new StopTest('bailOut is activated');
     }
   }
 }

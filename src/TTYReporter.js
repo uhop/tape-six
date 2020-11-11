@@ -77,85 +77,98 @@ class TTYReporter {
           this.out(text);
           break;
         }
+
         // summary
-        const state = event.data,
-          success = state.asserts - state.failed - state.skipped;
+        {
+          const state = event.data,
+            success = state.asserts - state.failed - state.skipped;
 
-        if (!this.showBanner) {
-          this.out(
-            blackBg(
-              '  ' +
-                (event.fail ? '⛔' : '♥️') +
-                '   ' +
-                brightWhite('tests: ' + formatNumber(this.testCounter)) +
-                ', ' +
-                brightYellow('asserts: ' + formatNumber(state.asserts)) +
-                ', ' +
-                green('passed: ' + formatNumber(success)) +
-                ', ' +
-                red('failed: ' + formatNumber(state.failed)) +
-                ', ' +
-                blue('skipped: ' + formatNumber(state.skipped)) +
-                ', ' +
-                ('todo: ' + formatNumber(this.todoAsserts)) +
-                ', ' +
-                lowWhite('time: ' + formatTime(event.diffTime)) +
-                '  '
-            )
+          if (!this.showBanner) {
+            this.out(
+              blackBg(
+                '  ' +
+                  (event.fail ? '⛔' : '♥️') +
+                  '   ' +
+                  brightWhite('tests: ' + formatNumber(this.testCounter)) +
+                  ', ' +
+                  brightYellow('asserts: ' + formatNumber(state.asserts)) +
+                  ', ' +
+                  green('passed: ' + formatNumber(success)) +
+                  ', ' +
+                  red('failed: ' + formatNumber(state.failed)) +
+                  ', ' +
+                  blue('skipped: ' + formatNumber(state.skipped)) +
+                  ', ' +
+                  ('todo: ' + formatNumber(this.todoAsserts)) +
+                  ', ' +
+                  lowWhite('time: ' + formatTime(event.diffTime)) +
+                  '  '
+              )
+            );
+            return;
+          }
+
+          const paintStyle = event.fail ? failureStyle : successStyle;
+          let box1 = ['Summary: ' + (event.fail ? 'fail' : 'pass')];
+          box1 = padBox(box1, 0, 2);
+          box1 = drawBox(box1);
+          box1 = padBox(box1, 0, 3);
+          box1 = normalizeBox([...box1, '', 'Passed: ' + (event.fail ? formatNumber((success / state.asserts) * 100, 1) + '%' : '100%')], ' ', 'center');
+          box1 = padBox(box1, 2, 0);
+          box1 = box1.map(s => join(paintStyle, s, reset));
+          box1 = padBoxLeft(box1, 2);
+
+          let box2 = normalizeBox(
+            [
+              formatNumber(this.testCounter),
+              formatNumber(state.asserts),
+              formatNumber(success),
+              formatNumber(state.failed),
+              formatNumber(state.skipped),
+              formatNumber(this.todoAsserts),
+              formatTime(event.diffTime)
+            ],
+            ' ',
+            'left'
           );
-          return;
+          box2 = padBoxLeft(box2, 1);
+          box2 = stackHorizontally(normalizeBox(['tests:', 'asserts:', '  passed:', '  failed:', '  skipped:', '  todo:', 'time:']), box2);
+
+          box2[0] = brightWhite(box2[0]);
+          box2[1] = brightYellow(box2[1]);
+          box2[2] = green(box2[2]);
+          box2[3] = red(box2[3]);
+          box2[4] = blue(box2[4]);
+          // box2[5] = blue(box2[5]);
+          box2[6] = lowWhite(box2[6]);
+
+          box2 = padBox(box2, 1, 3);
+          box2 = box2.map(s => blackBg(s));
+
+          const box = stackHorizontally(box1, box2);
+          this.out('');
+          box.forEach(s => this.out(s));
+          this.out('');
         }
-
-        const paintStyle = event.fail ? failureStyle : successStyle;
-        let box1 = ['Summary: ' + (event.fail ? 'fail' : 'pass')];
-        box1 = padBox(box1, 0, 2);
-        box1 = drawBox(box1);
-        box1 = padBox(box1, 0, 3);
-        box1 = normalizeBox([...box1, '', 'Passed: ' + (event.fail ? formatNumber((success / state.asserts) * 100, 1) + '%' : '100%')], ' ', 'center');
-        box1 = padBox(box1, 2, 0);
-        box1 = box1.map(s => join(paintStyle, s, reset));
-        box1 = padBoxLeft(box1, 2);
-
-        let box2 = normalizeBox(
-          [
-            formatNumber(this.testCounter),
-            formatNumber(state.asserts),
-            formatNumber(success),
-            formatNumber(state.failed),
-            formatNumber(state.skipped),
-            formatNumber(this.todoAsserts),
-            formatTime(event.diffTime)
-          ],
-          ' ',
-          'left'
-        );
-        box2 = padBoxLeft(box2, 1);
-        box2 = stackHorizontally(normalizeBox(['tests:', 'asserts:', '  passed:', '  failed:', '  skipped:', '  todo:', 'time:']), box2);
-
-        box2[0] = brightWhite(box2[0]);
-        box2[1] = brightYellow(box2[1]);
-        box2[2] = green(box2[2]);
-        box2[3] = red(box2[3]);
-        box2[4] = blue(box2[4]);
-        // box2[5] = blue(box2[5]);
-        box2[6] = lowWhite(box2[6]);
-
-        box2 = padBox(box2, 1, 3);
-        box2 = box2.map(s => blackBg(s));
-
-        const box = stackHorizontally(box1, box2);
-        this.out('');
-        box.forEach(s => this.out(s));
-        this.out('');
         return;
       case 'comment':
         !this.failureOnly && this.out(yellow(italic(event.name || 'empty comment')));
         break;
       case 'bail-out':
-        text = 'Bail out!';
-        event.name && (text += ' ' + event.name);
-        this.out(warning(text));
-        return;
+        {
+          text = 'Bail out!';
+          event.name && (text += ' ' + event.name);
+          let box = [text];
+          box = padBox(box, 0, 1);
+          box = drawBox(box);
+          box = padBox(box, 0, 1);
+
+          const currentDepth = this.depth;
+          this.depth = 0;
+          box.forEach(s => this.out(warning(s)));
+          this.depth = currentDepth;
+        }
+        break;
       case 'assert':
         const lastTest = this.testStack[this.testStack.length - 1],
           isFailed = event.fail && !event.skip && !event.todo;
