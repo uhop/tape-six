@@ -1,4 +1,4 @@
-import State from './State.js';
+import State, {StopTest} from './State.js';
 import Tester from './Tester.js';
 import Deferred from './Deferred.js';
 import {setTimer} from './timer.js';
@@ -83,28 +83,34 @@ export const runTests = async (rootState, tests) => {
       testNumber = ++testCounter,
       state = new State(rootState, options),
       tester = new Tester(state, testNumber);
-    try {
-      state.emit({type: 'test', name: options.name, test: testNumber, time: state.timer.now()});
-      if (options.skip) {
-        state.emit({type: 'comment', name: 'SKIP test: ' + options.name, test: testNumber, time: state.timer.now()});
-      } else {
-        options.testFn && await options.testFn(tester);
-      }
-    } catch (error) {
-      state.emit({
-        name: 'UNEXPECTED EXCEPTION: ' + String(error),
-        test: testNumber,
-        marker: new Error(),
-        time: state.timer.now(),
-        operator: 'error',
-        fail: true,
-        data: {
-          actual: error
+    if (state.skip) {
+      tester.comment('SKIP test: ' + options.name);
+    } else {
+      try {
+        state.emit({type: 'test', name: options.name, test: testNumber, time: state.timer.now()});
+        if (options.skip) {
+          state.emit({type: 'comment', name: 'SKIP test: ' + options.name, test: testNumber, time: state.timer.now()});
+        } else {
+          options.testFn && (await options.testFn(tester));
         }
-      });
+      } catch (error) {
+        if (!(error instanceof StopTest)) {
+          state.emit({
+            name: 'UNEXPECTED EXCEPTION: ' + String(error),
+            test: testNumber,
+            marker: new Error(),
+            time: state.timer.now(),
+            operator: 'error',
+            fail: true,
+            data: {
+              actual: error
+            }
+          });
+        }
+      }
+      state.emit({type: 'end', name: options.name, test: testNumber, time: state.timer.now(), fail: state.failed > 0, data: state});
+      state.updateParent();
     }
-    state.emit({type: 'end', name: options.name, test: testNumber, time: state.timer.now(), fail: state.failed > 0, data: state});
-    state.updateParent();
     deferred && deferred.resolve(state);
   }
 };
@@ -123,7 +129,11 @@ test.todo = async function todo(name, options, testFn) {
 
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  await runTests(this.state, [{options}]);
+  if (this.state.skip) {
+    this.comment('SKIP test: ' + options.name);
+  } else {
+    await runTests(this.state, [{options}]);
+  }
 };
 
 Tester.prototype.skip = async function skip(name, options, testFn) {
@@ -133,7 +143,11 @@ Tester.prototype.skip = async function skip(name, options, testFn) {
 
 Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  await runTests(this.state, [{options: {...options, todo: true}}]);
+  if (this.state.skip) {
+    this.comment('SKIP test: ' + options.name);
+  } else {
+    await runTests(this.state, [{options: {...options, todo: true}}]);
+  }
 };
 
 export default test;
