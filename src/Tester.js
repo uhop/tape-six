@@ -389,9 +389,7 @@ class Tester {
       });
   }
 
-  // missing:
-  // deepLooseEqual()
-  // notDeepLooseEqual()
+  // missing: T (eval)
 }
 Tester.prototype.any = Tester.prototype._ = any;
 
@@ -408,8 +406,6 @@ setAliases('deepEqual', 'same, deepEquals, isEquivalent');
 setAliases('notDeepEqual', 'notSame, notDeepEquals, notEquivalent, notDeeply, isNotDeepEqual, isNotDeepEqual, isNotEquivalent, isInequivalent');
 setAliases('rejects', 'doesNotResolve');
 setAliases('resolves', 'doesNotReject');
-
-// TODO: add missing aliases and compound methods
 
 // test() (an embedded test runner) is added in ./test.js to avoid circular dependencies
 
