@@ -12,10 +12,8 @@ const mimeTable = {
     csv: 'text/csv',
     eot: 'application/vnd.ms-fontobject',
     gif: 'image/gif',
-    htm: 'text/html',
     html: 'text/html',
     ico: 'image/vnd.microsoft.icon',
-    jpeg: 'image/jpeg',
     jpg: 'image/jpeg',
     js: 'text/javascript',
     json: 'application/json',
@@ -30,9 +28,67 @@ const mimeTable = {
     xml: 'application/xml'
   },
   defaultMime = 'application/octet-stream',
-  rootFolder = path.join(path.dirname(import.meta.url.substr(7)), '..'),
+  rootFolder = process.cwd(), // path.join(path.dirname(import.meta.url.substr(7)), '..'),
   traceCalls = process.argv.includes('--trace');
+
 mimeTable.mjs = mimeTable.cjs = mimeTable.js;
+mimeTable.htm = mimeTable.html;
+mimeTable.jpeg = mimeTable.jpg;
+
+// listing
+
+const notSep = '[^\\' + path.sep + ']*';
+
+const sanitizeRe = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const prepRe = (string, separator, substitute) => string.split(separator).map(sanitizeRe).join(substitute);
+const mergeWildcards = folders => folders.reduce((acc, part) => ((part || (acc.length && acc[acc.length - 1])) && acc.push(part), acc), []);
+
+const listFiles = async (folders, baseRe, parents) => {
+  const dir = path.join(rootFolder, parents.join(path.sep)),
+    files = await fsp.readdir(dir, {withFileTypes: true});
+
+  let result = [];
+
+  if (!folders.length) {
+    for (const file of files) {
+      if (file.isFile() && baseRe.test(file.name)) result.push(path.join(dir, file.name));
+    }
+    return result;
+  }
+
+  const theRest = folders.slice(1);
+
+  if (folders[0]) {
+    for (const file of files) {
+      if (file.isDirectory() && folders[0].test(file.name)) {
+        result = result.concat(await listFiles(theRest, baseRe, parents.concat(file.name)));
+      }
+    }
+    return result;
+  }
+
+  result = result.concat(await listFiles(theRest, baseRe, parents));
+  for (const file of files) {
+    if (file.isDirectory()) {
+      result = result.concat(await listFiles(folders, baseRe, parents.concat(file.name)));
+    }
+  }
+  return result;
+};
+
+const getListing = async wildcard => {
+  const parsed = path.parse(wildcard),
+    baseRe = new RegExp('^' + prepRe(parsed.name, '*', notSep) + prepRe(parsed.ext, '*', notSep) + '$'),
+    folders = mergeWildcards(
+      parsed.dir
+        .split(path.sep)
+        .filter(part => part)
+        .map(part => (part === '**' ? null : new RegExp('^' + prepRe(part, '*', notSep) + '$')))
+    );
+  return listFiles(folders, baseRe, []);
+};
+
+// sending helpers
 
 const sendFile = (res, fileName, ext, justHeaders) => {
   if (!ext) {
@@ -50,10 +106,21 @@ const sendFile = (res, fileName, ext, justHeaders) => {
   }
 };
 
+const sendJson = (res, json, justHeaders) => {
+  res.writeHead(200, {'Content-Type': 'application/json'});
+  if (justHeaders) {
+    res.end();
+  } else {
+    res.end(JSON.stringify(json));
+  }
+};
+
 const bailOut = (res, code = 404) => {
   res.writeHead(code).end();
   traceCalls && console.log('-', code);
-}
+};
+
+// server
 
 const server = http.createServer(async (req, res) => {
   traceCalls && console.log(req.method, req.url);
@@ -61,9 +128,13 @@ const server = http.createServer(async (req, res) => {
   const method = req.method.toUpperCase();
   if (method !== 'GET' && method !== 'HEAD') return bailOut(res, 405);
 
-  const {pathname} = new URL(req.url, 'http://' + req.headers.host),
-    fileName = path.join(rootFolder, pathname);
+  const url = new URL(req.url, 'http://' + req.headers.host);
+  if (url.pathname === '/--ls') {
+    // process listing
+    return sendJson(res, await getListing(url.searchParams.get('q')), method === 'HEAD');
+  }
 
+  const fileName = path.join(rootFolder, url.pathname);
   if (fileName.includes('..')) return bailOut(res, 403);
 
   const ext = path.extname(fileName).toLowerCase(),
@@ -73,9 +144,12 @@ const server = http.createServer(async (req, res) => {
   if (ext) return bailOut(res);
 
   if (stat && stat.isDirectory()) {
-    const altFile = path.join(fileName, '/index.html'),
-      stat = await fsp.stat(altFile).catch(() => null);
-    if (stat && stat.isFile()) return sendFile(res, altFile, '.html', method === 'HEAD');
+    if (fileName.length && fileName[fileName.length - 1] == path.sep) {
+      const altFile = path.join(fileName, 'index.html'),
+        stat = await fsp.stat(altFile).catch(() => null);
+      if (stat && stat.isFile()) return sendFile(res, altFile, '.html', method === 'HEAD');
+    }
+    return bailOut(res);
   }
 
   if (fileName.length && fileName[fileName.length - 1] != path.sep) {
@@ -86,10 +160,13 @@ const server = http.createServer(async (req, res) => {
 
   bailOut(res);
 });
+
 server.on('clientError', (err, socket) => {
   if (err.code === 'ECONNRESET' || !socket.writable) return;
   socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 });
+
+// general setup
 
 const normalizePort = val => {
   const port = parseInt(val);
