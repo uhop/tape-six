@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tape6 test runner</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./tape6-hflip.css" />
+    <script type="module" src="./tape6-hflip.js"></script>
+    <link rel="stylesheet" href="./tape6-donut.css" />
+    <script type="module" src="./tape6-donut.js"></script>
+    <link rel="stylesheet" href="./tape6-spinner.css" />
+    <script type="module" src="./tape6-spinner.js"></script>
+    <script type="module" src="./runner.js"></script>
+  </head>
+  <body class="tape6">
+    <h1>Tape6 test runner</h1>
+    <p>Below is the score card:</p>
+    <div class="score-card">
+      <tape6-hflip class="score">
+        <div class="shim">0</div>
+        <div class="front success">0</div>
+        <div class="back success"></div>
+      </tape6-hflip>
+      <div class="colon">:</div>
+      <tape6-hflip class="score">
+        <div class="shim">0</div>
+        <div class="front failure">0</div>
+        <div class="back failure"></div>
+      </tape6-hflip>
+      <tape6-donut width="200" height="200"></tape6-donut>
+      <table class="total">
+        <tbody>
+          <tr><td><div class="swatch">&nbsp;</div></td><td>Tests:</td><td>17</td></tr>
+          <tr><td><div class="swatch">&nbsp;</div></td><td>Asserts:</td><td>17</td></tr>
+          <tr><td><div class="swatch success">&nbsp;</div></td><td>Pass:</td><td>17</td></tr>
+          <tr><td><div class="swatch failure">&nbsp;</div></td><td>Fail:</td><td>17</td></tr>
+          <tr><td><div class="swatch skipped">&nbsp;</div></td><td>Skip:</td><td>17</td></tr>
+          <tr><td><div class="swatch todo">&nbsp;</div></td><td>TODO:</td><td>17</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Done. <tape6-spinner depth="10"></tape6-spinner></p>
+  </body>
+</html>

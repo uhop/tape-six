@@ -1,0 +1,34 @@
+tape6-hflip {
+  display: block;
+  perspective: 1000px;
+  position: relative;
+}
+
+tape6-hflip > .flipper {
+  transition: 0.2s;
+  transform-style: preserve-3d;
+  transform-origin: 100% 50%;
+  position: relative;
+}
+
+tape6-hflip.flip > .flipper {
+  transform: rotateX(-180deg);
+}
+
+tape6-hflip .front,
+tape6-hflip .back {
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+tape6-hflip .front {
+  z-index: 2;
+  /* for firefox 31 */
+  transform: rotateX(0deg);
+}
+
+tape6-hflip .back {
+  transform: rotateX(180deg);
+}

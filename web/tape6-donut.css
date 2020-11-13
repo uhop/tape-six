@@ -1,0 +1,21 @@
+tape6-donut {
+  display: block;
+  line-height: 0 !important;
+}
+
+tape6-donut path {
+  transform-origin: 0 0;
+  transform: matrix(1, 0, 0, 1, 0, 0);
+  opacity: 1;
+  transition: transform 0.2s linear, opacity 0.2s linear;
+
+  stroke-width: 1px; /*3px;*/
+  stroke: #888;
+}
+
+tape6-donut path:hover {
+  /*transform: translate(-250px, -250px) scale(1.05) translate(237px, 237px);*/
+  transform: matrix(1.05, 0, 0, 1.05, -5, -5);
+  opacity: 0.8;
+  z-index: 10;
+}

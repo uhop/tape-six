@@ -39,6 +39,7 @@
   "files": [
     "index.js",
     "bin",
+    "web",
     "src",
     "cjs"
   ],
