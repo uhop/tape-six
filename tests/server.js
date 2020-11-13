@@ -8,6 +8,7 @@ const fsp = fs.promises;
 
 // MIME source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 const mimeTable = {
+    css: 'text/css',
     csv: 'text/csv',
     eot: 'application/vnd.ms-fontobject',
     gif: 'image/gif',
@@ -31,6 +32,7 @@ const mimeTable = {
   defaultMime = 'application/octet-stream',
   rootFolder = path.join(path.dirname(import.meta.url.substr(7)), '..'),
   traceCalls = process.argv.includes('--trace');
+mimeTable.mjs = mimeTable.cjs = mimeTable.js;
 
 const sendFile = (res, fileName, ext, justHeaders) => {
   if (!ext) {
