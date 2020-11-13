@@ -28,12 +28,23 @@ const mimeTable = {
     xml: 'application/xml'
   },
   defaultMime = 'application/octet-stream',
-  rootFolder = process.cwd(), // path.join(path.dirname(import.meta.url.substr(7)), '..'),
-  traceCalls = process.argv.includes('--trace');
+  rootFolder = process.env.SERVER_ROOT || process.cwd(),
+  traceCalls = process.argv.includes('--trace'),
+  isTTY = process.stdout.isTTY,
+  hasColors = isTTY && process.stdout.hasColors();
 
-mimeTable.mjs = mimeTable.cjs = mimeTable.js;
-mimeTable.htm = mimeTable.html;
-mimeTable.jpeg = mimeTable.jpg;
+// common aliases
+const mimeAliases = {mjs: 'js', cjs: 'js', htm: 'html', jpeg: 'jpg'};
+Object.keys(mimeAliases).forEach(name => (mimeTable[name] = mimeTable[mimeAliases[name]]));
+
+// colors to use
+const join = (...args) => args.map(value => value || '').join(''),
+  paint = hasColors ? (prefix, suffix = '\x1B[39m') => text => join(prefix, text, suffix) : () => text => text,
+  grey = paint('\x1B[2;37m', '\x1B[22;39m'),
+  red = paint('\x1B[41;97m', '\x1B[49;39m'),
+  green = paint('\x1B[32m'),
+  yellow = paint('\x1B[93m'),
+  blue = paint('\x1B[44;97m', '\x1B[49;39m');
 
 // listing
 
@@ -90,7 +101,7 @@ const getListing = async wildcard => {
 
 // sending helpers
 
-const sendFile = (res, fileName, ext, justHeaders) => {
+const sendFile = (req, res, fileName, ext, justHeaders) => {
   if (!ext) {
     ext = path.extname(fileName).toLowerCase();
   }
@@ -104,61 +115,70 @@ const sendFile = (res, fileName, ext, justHeaders) => {
   } else {
     fs.createReadStream(fileName).pipe(res);
   }
+  traceCalls && console.log(green('200') + ' ' + grey(req.method) + ' ' + grey(req.url));
 };
 
-const sendJson = (res, json, justHeaders) => {
+const sendJson = (req, res, json, justHeaders) => {
   res.writeHead(200, {'Content-Type': 'application/json'});
   if (justHeaders) {
     res.end();
   } else {
     res.end(JSON.stringify(json));
   }
+  traceCalls && console.log(green('200') + ' ' + grey(req.method) + ' ' + grey(req.url));
 };
 
-const bailOut = (res, code = 404) => {
+const sendRedirect = (req, res, to, code = 301) => {
+  res.writeHead(code, {Location: to});
+  res.end();
+  traceCalls && console.log(blue(code) + ' ' + grey(req.method) + ' ' + grey(req.url));
+};
+
+const bailOut = (req, res, code = 404) => {
   res.writeHead(code).end();
-  traceCalls && console.log('-', code);
+  traceCalls && console.log(red(code) + ' ' + grey(req.method) + ' ' + grey(req.url));
 };
 
 // server
 
 const server = http.createServer(async (req, res) => {
-  traceCalls && console.log(req.method, req.url);
-
   const method = req.method.toUpperCase();
-  if (method !== 'GET' && method !== 'HEAD') return bailOut(res, 405);
+  if (method !== 'GET' && method !== 'HEAD') return bailOut(req, res, 405);
 
   const url = new URL(req.url, 'http://' + req.headers.host);
   if (url.pathname === '/--ls') {
     // process listing
-    return sendJson(res, await getListing(url.searchParams.get('q')), method === 'HEAD');
+    return sendJson(req, res, await getListing(url.searchParams.get('q')), method === 'HEAD');
   }
 
   const fileName = path.join(rootFolder, url.pathname);
-  if (fileName.includes('..')) return bailOut(res, 403);
+  if (fileName.includes('..')) return bailOut(req, res, 403);
 
   const ext = path.extname(fileName).toLowerCase(),
     stat = await fsp.stat(fileName).catch(() => null);
-  if (stat && stat.isFile()) return sendFile(res, fileName, ext, method === 'HEAD');
+  if (stat && stat.isFile()) return sendFile(req, res, fileName, ext, method === 'HEAD');
 
-  if (ext) return bailOut(res);
+  if (ext) return bailOut(req, res);
 
   if (stat && stat.isDirectory()) {
     if (fileName.length && fileName[fileName.length - 1] == path.sep) {
       const altFile = path.join(fileName, 'index.html'),
         stat = await fsp.stat(altFile).catch(() => null);
-      if (stat && stat.isFile()) return sendFile(res, altFile, '.html', method === 'HEAD');
+      if (stat && stat.isFile()) return sendFile(req, res, altFile, '.html', method === 'HEAD');
+    } else {
+      url.pathname += path.sep;
+      return sendRedirect(req, res, url.href);
     }
-    return bailOut(res);
+    return bailOut(req, res);
   }
 
   if (fileName.length && fileName[fileName.length - 1] != path.sep) {
     const altFile = fileName + '.html',
       stat = await fsp.stat(altFile).catch(() => null);
-    if (stat && stat.isFile()) return sendFile(res, altFile, '.html', method === 'HEAD');
+    if (stat && stat.isFile()) return sendFile(req, res, altFile, '.html', method === 'HEAD');
   }
 
-  bailOut(res);
+  bailOut(req, res);
 });
 
 server.on('clientError', (err, socket) => {
@@ -187,10 +207,10 @@ server.on('error', error => {
   const bind = portToString(port);
   switch (error.code) {
     case 'EACCES':
-      console.error('Error: ' + bind + ' requires elevated privileges');
+      console.log(red('Error: ') + yellow(bind) + red(' requires elevated privileges') + '\n');
       process.exit(1);
     case 'EADDRINUSE':
-      console.error('Error: ' + bind + ' is already in use');
+      console.log(red('Error: ') + yellow(bind) + red(' is already in use') + '\n');
       process.exit(1);
   }
   throw error;
@@ -199,5 +219,13 @@ server.on('error', error => {
 server.on('listening', () => {
   //const addr = server.address();
   const bind = portToString(port);
-  console.log('Listening on ' + (host || 'all network interfaces') + ' ' + bind + ', serving static files from ' + rootFolder);
+  console.log(
+    grey('Listening on ') +
+      yellow(host || 'all network interfaces') +
+      grey(' at ') +
+      yellow(bind) +
+      grey(', serving static files from ') +
+      yellow(rootFolder) +
+      '\n'
+  );
 });
