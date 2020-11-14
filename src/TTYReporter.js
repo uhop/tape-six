@@ -3,27 +3,13 @@ import {formatNumber, formatTime, formatValue} from './utils/formatters.js';
 
 // colors
 
+const join = (...args) => args.filter(value => value).join('');
 const to6 = x => Math.min(5, Math.round((Math.max(0, Math.min(255, x)) / 255) * 6));
 const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
 
-const red = text => join('\x1B[31m', text, '\x1B[39m'),
-  green = text => join('\x1B[92m', text, '\x1B[39m'),
-  blue = text => join('\x1B[94m', text, '\x1B[39m'),
-  yellow = text => join('\x1B[93m', text, '\x1B[39m'),
-  blackBg = text => join('\x1B[40m', text, '\x1B[49m'),
-  lowWhite = text => join('\x1B[2;37m', text, '\x1B[22;39m'),
-  brightWhite = text => join('\x1B[1;97m', text, '\x1B[22;39m'),
-  brightYellow = text => join('\x1B[1;93m', text, '\x1B[22;39m'),
-  brightRed = text => join('\x1B[91m', text, '\x1B[39m'),
-  warning = text => join('\x1B[41;1;37m', text, '\x1B[22;39;49m'),
-  italic = text => join('\x1B[3m', text, '\x1B[23m'),
-  successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
+const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
   failureStyle = `\x1B[48;5;${buildColor(64, 0, 0)};1;97m`,
   reset = '\x1B[0m';
-
-// utilities
-
-const join = (...args) => args.reduce((acc, val) => acc + (val || ''), '');
 
 // main
 
@@ -32,6 +18,7 @@ class TTYReporter {
     if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
 
     this.output = output;
+    this.hasColors = this.output.hasColors(256);
     this.renumberAsserts = renumberAsserts;
     this.failureOnly = failureOnly;
     this.showBanner = showBanner;
@@ -44,7 +31,25 @@ class TTYReporter {
     this.lines = 0;
     this.testStack = [];
 
+    // colors
+    this.red = this.paint('\x1B[31m');
+    this.green = this.paint('\x1B[92m');
+    this.blue = this.paint('\x1B[94m');
+    this.yellow = this.paint('\x1B[93m');
+    this.blackBg = this.paint('\x1B[40m', '\x1B[49m');
+    this.lowWhite = this.paint('\x1B[2;37m', '\x1B[22;39m');
+    this.brightWhite = this.paint('\x1B[1;97m', '\x1B[22;39m');
+    this.brightYellow = this.paint('\x1B[1;93m', '\x1B[22;39m');
+    this.brightRed = this.paint('\x1B[91m');
+    this.italic = this.paint('\x1B[3m', '\x1B[23m');
+    this.warning = this.paint('\x1B[41;1;37m', '\x1B[22;39;49m');
+    this.success = this.paint(successStyle, reset);
+    this.failure = this.paint(failureStyle, reset);
+
     this.out('');
+  }
+  paint(prefix, suffix = '\x1B[39m') {
+    return this.hasColors ? text => join(prefix, text, suffix) : text => text;
   }
   out(text) {
     if (this.depth < 2) {
@@ -70,10 +75,10 @@ class TTYReporter {
         this.testStack.pop();
         if (--this.depth) {
           if (this.failureOnly) break;
-          text = (event.fail ? '✗' : '✓') + ' ' + (event.name || italic('anonymous test'));
-          text = (event.fail ? brightRed : green)(text);
+          text = (event.fail ? '✗' : '✓') + ' ' + (event.name || this.italic('anonymous test'));
+          text = event.fail ? this.brightRed(text) : this.green(text);
           text += this.makeState(event.data);
-          this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
+          this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
           this.out(text);
           break;
         }
@@ -85,37 +90,37 @@ class TTYReporter {
 
           if (!this.showBanner) {
             this.out(
-              blackBg(
+              this.blackBg(
                 '  ' +
                   (event.fail ? '⛔' : '♥️') +
                   '   ' +
-                  brightWhite('tests: ' + formatNumber(this.testCounter)) +
+                  this.brightWhite('tests: ' + formatNumber(this.testCounter)) +
                   ', ' +
-                  brightYellow('asserts: ' + formatNumber(state.asserts)) +
+                  ('asserts: ' + formatNumber(state.asserts)) +
                   ', ' +
-                  green('passed: ' + formatNumber(success)) +
+                  this.green('passed: ' + formatNumber(success)) +
                   ', ' +
-                  red('failed: ' + formatNumber(state.failed)) +
+                  this.red('failed: ' + formatNumber(state.failed)) +
                   ', ' +
-                  blue('skipped: ' + formatNumber(state.skipped)) +
+                  this.blue('skipped: ' + formatNumber(state.skipped)) +
                   ', ' +
-                  ('todo: ' + formatNumber(this.todoAsserts)) +
+                  this.brightYellow('todo: ' + formatNumber(this.todoAsserts)) +
                   ', ' +
-                  lowWhite('time: ' + formatTime(event.diffTime)) +
+                  this.lowWhite('time: ' + formatTime(event.diffTime)) +
                   '  '
               )
             );
             return;
           }
 
-          const paintStyle = event.fail ? failureStyle : successStyle;
-          let box1 = ['Summary: ' + (event.fail ? 'fail' : 'pass')];
+          const paintMethod = event.fail ? 'failure' : 'success';
+          let box1 = [event.fail ? 'Need work' : 'All good!'];
           box1 = padBox(box1, 0, 2);
           box1 = drawBox(box1);
           box1 = padBox(box1, 0, 3);
           box1 = normalizeBox([...box1, '', 'Passed: ' + (event.fail ? formatNumber((success / state.asserts) * 100, 1) + '%' : '100%')], ' ', 'center');
           box1 = padBox(box1, 2, 0);
-          box1 = box1.map(s => join(paintStyle, s, reset));
+          box1 = box1.map(s => this[paintMethod](s));
           box1 = padBoxLeft(box1, 2);
 
           let box2 = normalizeBox(
@@ -134,16 +139,16 @@ class TTYReporter {
           box2 = padBoxLeft(box2, 1);
           box2 = stackHorizontally(normalizeBox(['tests:', 'asserts:', '  passed:', '  failed:', '  skipped:', '  todo:', 'time:']), box2);
 
-          box2[0] = brightWhite(box2[0]);
-          box2[1] = brightYellow(box2[1]);
-          box2[2] = green(box2[2]);
-          box2[3] = red(box2[3]);
-          box2[4] = blue(box2[4]);
-          // box2[5] = blue(box2[5]);
-          box2[6] = lowWhite(box2[6]);
+          box2[0] = this.brightWhite(box2[0]);
+          // box2[1] = this.brightYellow(box2[1]);
+          box2[2] = this.green(box2[2]);
+          box2[3] = this.red(box2[3]);
+          box2[4] = this.blue(box2[4]);
+          box2[5] = this.brightYellow(box2[5]);
+          box2[6] = this.lowWhite(box2[6]);
 
           box2 = padBox(box2, 1, 3);
-          box2 = box2.map(s => blackBg(s));
+          box2 = box2.map(s => this.blackBg(s));
 
           const box = stackHorizontally(box1, box2);
           this.out('');
@@ -152,7 +157,7 @@ class TTYReporter {
         }
         return;
       case 'comment':
-        !this.failureOnly && this.out(yellow(italic(event.name || 'empty comment')));
+        !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
         break;
       case 'bail-out':
         {
@@ -165,7 +170,7 @@ class TTYReporter {
 
           const currentDepth = this.depth;
           this.depth = 0;
-          box.forEach(s => this.out(warning(s)));
+          box.forEach(s => this.out(this.warning(s)));
           this.depth = currentDepth;
         }
         break;
@@ -183,53 +188,52 @@ class TTYReporter {
         }
         event.name && (text += ' ' + event.name);
         if (event.skip) {
-          text = blue(text);
+          text = this.blue(text);
         } else {
-          text = (isFailed ? red : green)(text);
+          text = isFailed ? this.red(text) : this.green(text);
         }
-        this.showTime && (text += lowWhite(' - ' + formatTime(event.diffTime)));
-        event.fail && event.at && (text += lowWhite(' - ' + event.at));
+        this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
+        event.fail && event.at && (text += this.lowWhite(' - ' + event.at));
         if (this.failureOnly && !lastTest.fail) {
           lastTest.fail = true;
           --this.depth;
-          this.out(brightRed('✗ ' + (lastTest.name || 'anonymous test')));
+          this.out(this.brightRed('✗ ' + (lastTest.name || 'anonymous test')));
           ++this.depth;
         }
         this.out(text);
 
         if (!event.fail || event.skip || !this.showData) break;
 
-        this.out(lowWhite('  operator: ') + event.operator);
+        this.out(this.lowWhite('  operator: ') + event.operator);
         if (event.data && typeof event.data == 'object') {
           if (event.data.hasOwnProperty('expected')) {
-            this.out(lowWhite('  expected: ') + formatValue(event.data.expected));
+            this.out(this.lowWhite('  expected: ') + formatValue(event.data.expected));
           }
           if (event.data.hasOwnProperty('actual')) {
-            this.out(lowWhite('  actual:   ') + formatValue(event.data.actual));
+            this.out(this.lowWhite('  actual:   ') + formatValue(event.data.actual));
           }
         }
         const error = event.data && event.data.actual instanceof Error ? event.data.actual : event.marker,
           stack = error && error.stack;
         if (typeof stack == 'string') {
-          this.out(lowWhite('  stack: |-'));
-          stack.split('\n').forEach(line => this.out(lowWhite('    ' + line)));
+          this.out(this.lowWhite('  stack: |-'));
+          stack.split('\n').forEach(line => this.out(this.lowWhite('    ' + line)));
         }
         break;
     }
     this.showScore();
   }
   showScore() {
-    this.out(successStyle + '  ' + this.successfulAsserts + '  ' + failureStyle + '  ' + this.failedAsserts + '  ' + reset);
+    this.out(this.success('  ' + this.successfulAsserts + '  ') + this.failure('  ' + this.failedAsserts + '  '));
   }
   makeState(state) {
     const success = state.asserts - state.skipped - state.failed;
     if (!success && !state.failed && !state.skipped) return '';
     return (
       ' ' +
-      (success ? successStyle + ' ' + formatNumber(success) + ' ' : blackBg(' ' + formatNumber(success) + ' ')) +
-      (state.failed ? failureStyle + ' ' + formatNumber(state.failed) + ' ' : blackBg(' ' + formatNumber(state.failed) + ' ')) +
-      (state.skipped ? blackBg(blue(' ' + formatNumber(state.skipped) + ' ')) : '') +
-      reset
+      this[success ? 'success' : 'blackBg'](' ' + formatNumber(success) + ' ') +
+      this[state.failed ? 'failure' : 'blackBg'](' ' + formatNumber(state.failed) + ' ') +
+      (state.skipped ? this.blackBg(this.blue(' ' + formatNumber(state.skipped) + ' ')) : '')
     );
   }
 }
