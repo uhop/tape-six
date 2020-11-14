@@ -48,13 +48,19 @@ const join = (...args) => args.map(value => value || '').join(''),
 
 // listing
 
-const notSep = '[^\\' + path.sep + ']*';
+const notSep = '[^\\' + path.sep + ']*',
+  notDotSep = '[^\\.\\' + path.sep + ']*';
 
 const sanitizeRe = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const prepRe = (string, separator, substitute) => string.split(separator).map(sanitizeRe).join(substitute);
-const mergeWildcards = folders => folders.reduce((acc, part) => ((part || (acc.length && acc[acc.length - 1])) && acc.push(part), acc), []);
+const prepRe = (string, substitute, allowDot) => {
+  const parts = string.split('*'),
+    startsWithStar = !parts[0],
+    result = parts.map(sanitizeRe).join(substitute);
+  return startsWithStar && allowDot ? result : notDotSep + result;
+}
+const mergeWildcards = folders => folders.reduce((acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc), []);
 
-const listFiles = async (folders, baseRe, parents) => {
+const listFiles = async (rootFolder, folders, baseRe, parents) => {
   const dir = path.join(rootFolder, parents.join(path.sep)),
     files = await fsp.readdir(dir, {withFileTypes: true});
 
@@ -72,31 +78,31 @@ const listFiles = async (folders, baseRe, parents) => {
   if (folders[0]) {
     for (const file of files) {
       if (file.isDirectory() && folders[0].test(file.name)) {
-        result = result.concat(await listFiles(theRest, baseRe, parents.concat(file.name)));
+        result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents.concat(file.name)));
       }
     }
     return result;
   }
 
-  result = result.concat(await listFiles(theRest, baseRe, parents));
+  result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents));
   for (const file of files) {
     if (file.isDirectory()) {
-      result = result.concat(await listFiles(folders, baseRe, parents.concat(file.name)));
+      result = result.concat(await listFiles(rootFolder, folders, baseRe, parents.concat(file.name)));
     }
   }
   return result;
 };
 
-const getListing = async wildcard => {
+export const listing = async (rootFolder, wildcard) => {
   const parsed = path.parse(wildcard),
-    baseRe = new RegExp('^' + prepRe(parsed.name, '*', notSep) + prepRe(parsed.ext, '*', notSep) + '$'),
+    baseRe = new RegExp('^' + prepRe(parsed.name, '.*') + prepRe(parsed.ext, '.*', true) + '$'),
     folders = mergeWildcards(
       parsed.dir
         .split(path.sep)
         .filter(part => part)
-        .map(part => (part === '**' ? null : new RegExp('^' + prepRe(part, '*', notSep) + '$')))
+        .map(part => (part === '**' ? null : new RegExp('^' + prepRe(part, notSep) + '$')))
     );
-  return listFiles(folders, baseRe, []);
+  return listFiles(rootFolder, folders, baseRe, []);
 };
 
 // sending helpers
@@ -148,7 +154,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://' + req.headers.host);
   if (url.pathname === '/--ls') {
     // process listing
-    return sendJson(req, res, await getListing(url.searchParams.get('q')), method === 'HEAD');
+    return sendJson(req, res, await listing(rootFolder, url.searchParams.get('q')), method === 'HEAD');
   }
 
   const fileName = path.join(rootFolder, url.pathname);
