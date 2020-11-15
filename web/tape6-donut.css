@@ -16,6 +16,6 @@ tape6-donut path {
 tape6-donut path:hover {
   /*transform: translate(-250px, -250px) scale(1.05) translate(237px, 237px);*/
   transform: matrix(1.05, 0, 0, 1.05, -5, -5);
-  opacity: 0.8;
+  /* opacity: 0.8; */
   z-index: 10;
 }

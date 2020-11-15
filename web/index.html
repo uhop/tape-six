@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Tape6 test runner</title>
+    <meta name="viewport" content="width=device-width, inital-scale=1">
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./tape6-hflip.css" />
     <script type="module" src="./tape6-hflip.js"></script>
@@ -10,35 +11,71 @@
     <link rel="stylesheet" href="./tape6-spinner.css" />
     <script type="module" src="./tape6-spinner.js"></script>
     <script type="module" src="./runner.js"></script>
+    <script type="module" src="../tests/manual/test-skip.js"></script>
+    <script type="module" src="../tests/manual/test-three-tests.js"></script>
   </head>
   <body class="tape6">
-    <h1>Tape6 test runner</h1>
-    <p>Below is the score card:</p>
-    <div class="score-card">
-      <tape6-hflip class="score">
-        <div class="shim">0</div>
-        <div class="front success">0</div>
-        <div class="back success"></div>
-      </tape6-hflip>
-      <div class="colon">:</div>
-      <tape6-hflip class="score">
-        <div class="shim">0</div>
-        <div class="front failure">0</div>
-        <div class="back failure"></div>
-      </tape6-hflip>
-      <tape6-donut width="200" height="200"></tape6-donut>
-      <table class="total">
-        <tbody>
-          <tr><td><div class="swatch">&nbsp;</div></td><td>Tests:</td><td>17</td></tr>
-          <tr><td><div class="swatch">&nbsp;</div></td><td>Asserts:</td><td>17</td></tr>
-          <tr><td><div class="swatch success">&nbsp;</div></td><td>Pass:</td><td>17</td></tr>
-          <tr><td><div class="swatch failure">&nbsp;</div></td><td>Fail:</td><td>17</td></tr>
-          <tr><td><div class="swatch skipped">&nbsp;</div></td><td>Skip:</td><td>17</td></tr>
-          <tr><td><div class="swatch todo">&nbsp;</div></td><td>TODO:</td><td>17</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <div class="page-wrap">
+      <h1>Tape6 test runner</h1>
+      <p>Below is the score card:</p>
+      <div class="score-card">
+        <div class="status success-dark">
+          <div class="message">All good!</div>
+          <div class="result">100% passed</div>
+        </div>
+        <!-- <div class="status failure-dark">
+        <div class="message">Need some work</div>
+        <div class="result">46.8% passed</div>
+      </div> -->
+        <tape6-donut width="200" height="200"></tape6-donut>
+        <table class="total">
+          <tbody>
+            <tr>
+              <td><div>&nbsp;</div></td>
+              <td>Tests:</td>
+              <td>17</td>
+            </tr>
+            <tr>
+              <td><div>&nbsp;</div></td>
+              <td>Asserts:</td>
+              <td>17</td>
+            </tr>
+            <tr>
+              <td><div class="swatch success">&nbsp;</div></td>
+              <td>Pass:</td>
+              <td>17</td>
+            </tr>
+            <tr>
+              <td><div class="swatch failure">&nbsp;</div></td>
+              <td>Fail:</td>
+              <td>17</td>
+            </tr>
+            <tr>
+              <td><div class="swatch skipped">&nbsp;</div></td>
+              <td>Skip:</td>
+              <td>17</td>
+            </tr>
+            <tr>
+              <td><div class="swatch todo">&nbsp;</div></td>
+              <td>TODO:</td>
+              <td>17</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <p>Done. <tape6-spinner depth="10"></tape6-spinner></p>
+      <div class="running">
+        <div><tape6-spinner depth="10"></tape6-spinner></div>
+        <div class="message">Currently running test: <strong>Some test</strong></div>
+      </div>
+
+      <form class="tools">
+        Show:
+        <label><input type="checkbox" name="failed-only" value="0" />failed only</label>
+        <label><input type="checkbox" name="show-data-failed" value="0" checked />failed data</label>
+      </form>
+
+      <div class="report collapse-passed"></div>
+    </div>
   </body>
 </html>

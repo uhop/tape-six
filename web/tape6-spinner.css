@@ -18,6 +18,11 @@ tape6-spinner .black {
   animation: tape6-spinner-rotate 10s infinite linear;
 }
 
+tape6-spinner.stop .black {
+  animation: none;
+  transform: rotate(45deg);
+}
+
 @keyframes tape6-spinner-rotate {
   0% {
     transform: rotate(0deg);

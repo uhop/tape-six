@@ -2,23 +2,51 @@
 
 body.tape6 {
   background: #ddd;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.tape6 .page-wrap {
+  width: 800px;
+  margin: 0 auto;
+  border-left: 2px solid #ccc;
+  border-right: 2px solid #ccc;
+  padding: 1em;
 }
 
 .tape6 .success {
+  color: white;
   background-color: green;
   fill: green;
 }
+.tape6 .success-dark {
+  color: white;
+  background-color: darkgreen;
+  fill: darkgreen;
+}
 .tape6 .failure {
+  color: white;
   background-color: red;
   fill: red;
 }
+.tape6 .failure-dark {
+  color: white;
+  background-color: darkred;
+  fill: darkred;
+}
 .tape6 .skipped {
+  color: white;
   background-color: blue;
   fill: blue;
 }
 .tape6 .todo {
+  color: white;
   background-color: orange;
   fill: orange;
+}
+.tape6 .nothing {
+  color: white;
+  background-color: darkgray;
+  fill: darkgray;
 }
 
 /* Score card */
@@ -29,37 +57,26 @@ body.tape6 {
 }
 .tape6 .score-card > * {
   margin-right: 0.1em;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 120px;
-  font-weight: bold;
-  line-height: 100%;
 }
 .tape6 .score-card > *:last-child {
   margin-right: 0;
 }
-.tape6 .score-card .colon {
-  padding-bottom: 0.125em;
-}
-
-/* flipper */
-
-.tape6 tape6-hflip.score {
-  color: white;
-}
-
-.tape6 tape6-hflip.score .front,
-.tape6 tape6-hflip.score .back,
-.tape6 tape6-hflip.score .shim
-{
-  padding: 0.25em 0.25em;
-  min-width: 2ex;
-  text-align: center;
+.tape6 .score-card .status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 24pt;
+  width: 10em;
+  padding: 0.5em 1em 0.5em 0em;
+  border: 1px solid #888;
   border-radius: 0.25em;
-  /* box-shadow: 8px 8px 5px rgba(0, 0, 0, 0.2); */
+  margin-right: -1.625em;
 }
-
-.tape6 tape6-hflip.score .shim {
-  visibility: hidden;
+.tape6 .score-card .status .result {
+  font-size: 75%;
+}
+.tape6 .score-card tape6-donut {
+  z-index: 2;
 }
 
 /* donut */
@@ -80,6 +97,8 @@ body.tape6 {
   width: 0.75em;
   height: 0.75em;
   border: 1px solid #888;
+  position: relative;
+  top: 0.25em;
 }
 
 /* spinner */
@@ -89,7 +108,59 @@ tape6-spinner {
   height: 64px;
 }
 
-tape6-spinner.small {
-  width: 16px;
-  height: 16px;
+/* running */
+
+.tape6 .running {
+  display: flex;
+  align-items: center;
+}
+
+.tape6 .running .message {
+  margin-left: 1em;
+}
+
+/* report */
+
+.tape6 .report .test > *, .tape6 .report .test .assert > * {
+  margin-left: 1em;
+}
+
+.tape6 .report .test > .header, .tape6 .report .test .assert > .header {
+  margin-left: 0;
+}
+
+.tape6 .report .test.passed > .header, .tape6 .report .test .assert.passed > .header {
+  color: darkgreen;
+}
+.tape6 .report .test.passed > .header:before, .tape6 .report .test .assert.passed > .header:before {
+  content: "\2713";
+}
+
+.tape6 .report .test.failed > .header, .tape6 .report .test .assert.failed > .header {
+  color: darkred;
+}
+.tape6 .report .test.failed > .header:before, .tape6 .report .test .assert.failed > .header:before {
+  content: "\2717";
+}
+
+.tape6 .report.failed-only .test.passed, .tape6 .report.failed-only .test .assert.passed {
+  display: none;
+}
+
+.tape6 .report.collapse-passed .test .assert.passed .data {
+  display: none;
+}
+
+.tape6 .report.collapse-failed .test .assert.failed .data {
+  display: none;
+}
+
+.tape6 .report .test .assert .data > pre {
+  margin-top: 0;
+  margin-left: 1em;
+}
+
+.tape6 .report .comment {
+  color: darkblue;
+  font-style: italic;
 }
