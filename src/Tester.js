@@ -23,7 +23,7 @@ class Tester {
     this.state.emit({type: 'comment', name: msg || 'comment', test: this.testNumber, marker: new Error(), time: this.state.timer.now()});
   }
 
-  skip(...args) {
+  skipTest(...args) {
     let msg;
     for (let i = args.length - 1; i >= 0; --i) {
       if (typeof args[i] == 'string') {
@@ -32,7 +32,6 @@ class Tester {
       }
     }
     this.state.emit({
-      type: 'skip',
       name: msg || 'skipped test',
       test: this.testNumber,
       marker: new Error(),

@@ -9,4 +9,5 @@ test('Simple smoke test', async t => {
   });
   t.pass('pass after');
   t.fail('fail after');
+  t.skipTest('skipped test');
 });
