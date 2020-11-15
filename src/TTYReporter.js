@@ -9,6 +9,7 @@ const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
 
 const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
   failureStyle = `\x1B[48;5;${buildColor(64, 0, 0)};1;97m`,
+  skippedStyle = `\x1B[48;5;${buildColor(0, 0, 64)};1;97m`,
   reset = '\x1B[0m';
 
 // main
@@ -25,7 +26,7 @@ class TTYReporter {
     this.showTime = showTime;
     this.showData = showData;
 
-    this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = this.todoAsserts = 0;
+    this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = this.skippedAsserts = this.todoAsserts = 0;
     this.testCounter = -1;
 
     this.lines = 0;
@@ -45,6 +46,7 @@ class TTYReporter {
     this.warning = this.paint('\x1B[41;1;37m', '\x1B[22;39;49m');
     this.success = this.paint(successStyle, reset);
     this.failure = this.paint(failureStyle, reset);
+    this.skipped = this.paint(skippedStyle, reset);
 
     this.out('');
   }
@@ -86,7 +88,8 @@ class TTYReporter {
         // summary
         {
           const state = event.data,
-            success = state.asserts - state.failed - state.skipped;
+            total = state.asserts - state.skipped,
+            success = total - state.failed;
 
           if (!this.showBanner) {
             this.out(
@@ -118,7 +121,11 @@ class TTYReporter {
           box1 = padBox(box1, 0, 2);
           box1 = drawBox(box1);
           box1 = padBox(box1, 0, 3);
-          box1 = normalizeBox([...box1, '', 'Passed: ' + (event.fail ? formatNumber((success / state.asserts) * 100, 1) + '%' : '100%')], ' ', 'center');
+          box1 = normalizeBox(
+            [...box1, '', 'Passed: ' + (event.fail ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%' : '100%')],
+            ' ',
+            'center'
+          );
           box1 = padBox(box1, 2, 0);
           box1 = box1.map(s => this[paintMethod](s));
           box1 = padBoxLeft(box1, 2);
@@ -178,13 +185,14 @@ class TTYReporter {
         const lastTest = this.testStack[this.testStack.length - 1],
           isFailed = event.fail && !event.skip && !event.todo;
         isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
+        event.skip && ++this.skippedAsserts;
         event.todo && ++this.todoAsserts;
-        text = (event.fail ? '✗' : '✓') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
         if (!isFailed && this.failureOnly) break;
+        text = (event.fail ? '✗' : '✓') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
         if (event.skip) {
           text += ' SKIP';
         } else if (event.todo) {
-          text += ' TODO';
+          text += ' ' + this.brightYellow('TODO');
         }
         event.name && (text += ' ' + event.name);
         if (event.skip) {
@@ -224,7 +232,11 @@ class TTYReporter {
     this.showScore();
   }
   showScore() {
-    this.out(this.success('  ' + this.successfulAsserts + '  ') + this.failure('  ' + this.failedAsserts + '  '));
+    this.out(
+      this.success('  ' + this.successfulAsserts + '  ') +
+        this.failure('  ' + this.failedAsserts + '  ') +
+        (this.skippedAsserts ? this.skipped('  ' + this.skippedAsserts + '  ') : '')
+    );
   }
   makeState(state) {
     const success = state.asserts - state.skipped - state.failed;
