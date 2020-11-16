@@ -17,10 +17,17 @@ class DomReporter {
         {
           const header = document.createElement('div');
           header.className = 'header';
+          if (event.todo) {
+            const todo = document.createElement('span');
+            todo.className = 'text-todo';
+            todo.appendChild(document.createTextNode('TODO'));
+            header.appendChild(todo);
+            header.appendChild(document.createTextNode(' '));
+          }
           header.appendChild(document.createTextNode(event.name));
           this.current.appendChild(header);
         }
-        this.root.appendChild(this.current);
+        ((this.stack.length && this.stack[this.stack.length - 1]) || this.root).appendChild(this.current);
         break;
       case 'end':
         if (this.current) {
@@ -54,6 +61,13 @@ class DomReporter {
           assert.className = 'assert ' + (event.fail ? 'failed' : 'passed');
           const header = document.createElement('div');
           header.className = 'header';
+          if (event.todo) {
+            const todo = document.createElement('span');
+            todo.className = 'text-todo';
+            todo.appendChild(document.createTextNode('TODO'));
+            header.appendChild(todo);
+            header.appendChild(document.createTextNode(' '));
+          }
           header.appendChild(document.createTextNode(event.name));
           assert.appendChild(header);
           if (event.operator) {
