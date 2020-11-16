@@ -1,5 +1,17 @@
 import {formatNumber} from '../src/utils/formatters.js';
 
+const tagsToReplace = {'&': '&amp;', '<': '&lt;', '>': '&gt;'};
+const escapeHtml = string => string.replace(/[&<>]/g, tag => tagsToReplace[tag] || tag);
+
+const formatName = event =>
+  '<span class="' +
+  (event.fail ? 'text-failure' : 'text-success') +
+  '">' +
+  ((event.skip && '<span class="text-skipped">SKIP</span>&nbsp;') || '') +
+  ((event.todo && '<span class="text-todo">TODO</span>&nbsp;') || '') +
+  escapeHtml(event.name || '') +
+  '</span>';
+
 class DashReporter {
   constructor({renumberAsserts = false} = {}) {
     this.renumberAsserts = renumberAsserts;
@@ -17,7 +29,7 @@ class DashReporter {
       case 'test':
         ++this.depth;
         ++this.testCounter;
-        this.currentTest = event.name;
+        this.currentTest = formatName(event);
         this.updateDashboard();
         break;
       case 'end':
@@ -31,7 +43,7 @@ class DashReporter {
         event.fail && !event.skip && !event.todo ? ++this.failureCounter : ++this.successCounter;
         event.skip && ++this.skipCounter;
         event.todo && ++this.todoCounter;
-        this.lastAssert = event.name; // TODO: add fancier name
+        this.lastAssert = formatName(event);
         this.updateDashboard();
         break;
     }
@@ -72,25 +84,17 @@ class DashReporter {
       let node = this.statusNode.querySelector('tape6-spinner');
       node.classList.remove('stop');
       node = this.statusNode.querySelector('.status-test');
-      while(node.lastChild) node.removeChild(node.lastChild);
-      node.appendChild(document.createTextNode('Running test: '));
-      let bold = document.createElement('strong');
-      bold.appendChild(document.createTextNode(this.currentTest));
-      node.appendChild(bold);
+      node.innerHTML = 'Running test: ' + this.currentTest;
       node = this.statusNode.querySelector('.status-assert');
-      while(node.lastChild) node.removeChild(node.lastChild);
-      node.appendChild(document.createTextNode('Last assert: '));
-      bold = document.createElement('strong');
-      bold.appendChild(document.createTextNode(this.lastAssert));
-      node.appendChild(bold);
+      node.innerHTML = 'Last assert: ' + this.lastAssert;
     } else {
       let node = this.statusNode.querySelector('tape6-spinner');
       node.classList.add('stop');
       node = this.statusNode.querySelector('.status-test');
-      while(node.lastChild) node.removeChild(node.lastChild);
+      while (node.lastChild) node.removeChild(node.lastChild);
       node.appendChild(document.createTextNode('All done.'));
       node = this.statusNode.querySelector('.status-assert');
-      while(node.lastChild) node.removeChild(node.lastChild);
+      while (node.lastChild) node.removeChild(node.lastChild);
     }
   }
   updateScoreCard() {
@@ -108,10 +112,10 @@ class DashReporter {
       node.classList.add('success-dark');
     }
     node = this.scoreNode.querySelector('.message');
-    while(node.lastChild) node.removeChild(node.lastChild);
+    while (node.lastChild) node.removeChild(node.lastChild);
     node.appendChild(document.createTextNode(fail ? 'Need some work' : 'All good!'));
     node = this.scoreNode.querySelector('.result');
-    while(node.lastChild) node.removeChild(node.lastChild);
+    while (node.lastChild) node.removeChild(node.lastChild);
     node.appendChild(document.createTextNode(result + '% passed'));
   }
 }
