@@ -61,11 +61,18 @@ class DomReporter {
           assert.className = 'assert ' + (event.fail ? 'failed' : 'passed');
           const header = document.createElement('div');
           header.className = 'header';
+          if (event.skip) {
+            const node = document.createElement('span');
+            node.className = 'text-skipped';
+            node.appendChild(document.createTextNode('SKIP'));
+            header.appendChild(node);
+            header.appendChild(document.createTextNode(' '));
+          }
           if (event.todo) {
-            const todo = document.createElement('span');
-            todo.className = 'text-todo';
-            todo.appendChild(document.createTextNode('TODO'));
-            header.appendChild(todo);
+            const node = document.createElement('span');
+            node.className = 'text-todo';
+            node.appendChild(document.createTextNode('TODO'));
+            header.appendChild(node);
             header.appendChild(document.createTextNode(' '));
           }
           header.appendChild(document.createTextNode(event.name));
