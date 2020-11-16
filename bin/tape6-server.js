@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
@@ -33,6 +35,13 @@ const mimeTable = {
   isTTY = process.stdout.isTTY,
   hasColors = isTTY && process.stdout.hasColors();
 
+let webAppRoot = process.env.WEBAPP_ROOT;
+if (!webAppRoot) {
+  const url = import.meta.url;
+  if (!/^file:\/\//i.test(url)) throw Error('Cannot identify the location of the web application. Use WEBAPP_PATH.');
+  webAppRoot = path.join(path.dirname(url.substr(7)), '../webApp/');
+}
+
 // common aliases
 const mimeAliases = {mjs: 'js', cjs: 'js', htm: 'html', jpeg: 'jpg'};
 Object.keys(mimeAliases).forEach(name => (mimeTable[name] = mimeTable[mimeAliases[name]]));
@@ -57,7 +66,7 @@ const prepRe = (string, substitute, allowDot) => {
     startsWithStar = !parts[0],
     result = parts.map(sanitizeRe).join(substitute);
   return startsWithStar && allowDot ? result : notDotSep + result;
-}
+};
 const mergeWildcards = folders => folders.reduce((acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc), []);
 
 const listFiles = async (rootFolder, folders, baseRe, parents) => {
@@ -93,7 +102,7 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
   return result;
 };
 
-export const listing = async (rootFolder, wildcard) => {
+const listing = async (rootFolder, wildcard) => {
   const parsed = path.parse(wildcard),
     baseRe = new RegExp('^' + prepRe(parsed.name, '.*') + prepRe(parsed.ext, '.*', true) + '$'),
     folders = mergeWildcards(
@@ -156,9 +165,18 @@ const server = http.createServer(async (req, res) => {
     // process listing
     return sendJson(req, res, await listing(rootFolder, url.searchParams.get('q')), method === 'HEAD');
   }
+  if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
+    // redirect to the web app
+    return sendRedirect(req, res, '/webApp/index.html');
+  }
 
-  const fileName = path.join(rootFolder, url.pathname);
-  if (fileName.includes('..')) return bailOut(req, res, 403);
+  if (path.normalize(url.pathname).includes('..')) return bailOut(req, res, 403);
+
+  let fileName = path.join(rootFolder, url.pathname);
+  if (url.pathname.substr(0, 8) == '/webApp/') {
+    // substitute
+    fileName = path.join(webAppRoot, url.pathname.substr(8));
+  }
 
   const ext = path.extname(fileName).toLowerCase(),
     stat = await fsp.stat(fileName).catch(() => null);
