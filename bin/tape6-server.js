@@ -182,8 +182,6 @@ const server = http.createServer(async (req, res) => {
     stat = await fsp.stat(fileName).catch(() => null);
   if (stat && stat.isFile()) return sendFile(req, res, fileName, ext, method === 'HEAD');
 
-  if (ext) return bailOut(req, res);
-
   if (stat && stat.isDirectory()) {
     if (fileName.length && fileName[fileName.length - 1] == path.sep) {
       const altFile = path.join(fileName, 'index.html'),
@@ -196,7 +194,7 @@ const server = http.createServer(async (req, res) => {
     return bailOut(req, res);
   }
 
-  if (fileName.length && fileName[fileName.length - 1] != path.sep) {
+  if (!ext && fileName.length && fileName[fileName.length - 1] != path.sep) {
     const altFile = fileName + '.html',
       stat = await fsp.stat(altFile).catch(() => null);
     if (stat && stat.isFile()) return sendFile(req, res, altFile, '.html', method === 'HEAD');
