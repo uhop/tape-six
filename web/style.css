@@ -42,7 +42,7 @@ body.tape6 {
 .tape6 .todo {
   color: white;
   background-color: orange;
-  fill: orange;
+  fill: darkorange;
 }
 .tape6 .nothing {
   color: white;
@@ -64,6 +64,10 @@ body.tape6 {
 }
 .tape6 .text-skipped {
   color: blue;
+}
+.tape6 .text-todo {
+  color: orange;
+  font-weight: bold;
 }
 .tape6 .text-comment {
   color: darkblue;
@@ -157,6 +161,7 @@ tape6-spinner {
   margin-left: 0;
 }
 
+.tape6 .report.failed-only .comment,
 .tape6 .report.failed-only .test.passed,
 .tape6 .report.failed-only .test .assert.passed,
 .tape6 .report.collapse-passed .test .assert.passed .data,
