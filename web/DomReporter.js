@@ -46,7 +46,7 @@ class DomReporter {
       case 'comment':
         {
           const comment = document.createElement('div');
-          comment.className = 'comment';
+          comment.className = 'comment text-comment';
           comment.appendChild(document.createTextNode(event.name));
           (this.current || this.root).appendChild(comment);
         }
@@ -131,7 +131,7 @@ class DomReporter {
               const row = document.createElement('div'),
                 name = document.createElement('span'),
                 value = document.createElement('pre');
-              row.className = 'data';
+              row.className = 'data stack';
               name.className = 'name';
               name.appendChild(document.createTextNode('stack:'));
               value.className = 'value';

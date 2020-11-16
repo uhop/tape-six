@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Tape6 test runner</title>
-    <meta name="viewport" content="width=device-width, inital-scale=1">
+    <meta name="viewport" content="width=device-width, inital-scale=1" />
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./tape6-hflip.css" />
     <script type="module" src="./tape6-hflip.js"></script>
@@ -18,61 +18,65 @@
     <div class="page-wrap">
       <h1>Tape6 test runner</h1>
       <p>Below is the score card:</p>
-      <div class="score-card">
-        <div class="status success-dark">
-          <div class="message">All good!</div>
-          <div class="result">100% passed</div>
+      <div class="score">
+        <div class="text nothing">
+          <div class="message">Awaiting&hellip;</div>
+          <div class="result">No results</div>
         </div>
-        <!-- <div class="status failure-dark">
+        <!-- <div class="text failure-dark">
         <div class="message">Need some work</div>
         <div class="result">46.8% passed</div>
       </div> -->
         <tape6-donut width="200" height="200"></tape6-donut>
-        <table class="total">
+        <table class="legend">
           <tbody>
-            <tr>
+            <tr class="legend-tests">
               <td><div>&nbsp;</div></td>
               <td>Tests:</td>
-              <td>17</td>
+              <td class="value">0</td>
             </tr>
-            <tr>
+            <tr class="legend-asserts">
               <td><div>&nbsp;</div></td>
               <td>Asserts:</td>
-              <td>17</td>
+              <td class="value">0</td>
             </tr>
-            <tr>
+            <tr class="legend-success">
               <td><div class="swatch success">&nbsp;</div></td>
               <td>Pass:</td>
-              <td>17</td>
+              <td class="value">0</td>
             </tr>
-            <tr>
+            <tr class="legend-failure">
               <td><div class="swatch failure">&nbsp;</div></td>
               <td>Fail:</td>
-              <td>17</td>
+              <td class="value">0</td>
             </tr>
-            <tr>
+            <tr class="legend-skipped">
               <td><div class="swatch skipped">&nbsp;</div></td>
               <td>Skip:</td>
-              <td>17</td>
+              <td class="value">0</td>
             </tr>
-            <tr>
+            <tr class="legend-todo">
               <td><div class="swatch todo">&nbsp;</div></td>
               <td>TODO:</td>
-              <td>17</td>
+              <td class="value">0</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="running">
+      <div class="status">
         <div><tape6-spinner depth="10"></tape6-spinner></div>
-        <div class="message">Currently running test: <strong>Some test</strong></div>
+        <div class="text">
+          <div class="status-test">Running test: <strong>some test</strong></div>
+          <div class="status-assert">Last assert: <strong>some assert</strong></div>
+        </div>
       </div>
 
       <form class="tools">
         Show:
         <label><input type="checkbox" name="failed-only" value="0" />failed only</label>
-        <label><input type="checkbox" name="show-data-failed" value="0" checked />failed data</label>
+        <label><input type="checkbox" name="show-data" value="0" />data</label>
+        <label><input type="checkbox" name="show-stack" value="0" />stack</label>
       </form>
 
       <div class="report collapse-passed"></div>
