@@ -64,6 +64,7 @@ body.tape6 {
 }
 .tape6 .text-skipped {
   color: blue;
+  font-weight: bold;
 }
 .tape6 .text-todo {
   color: orange;
