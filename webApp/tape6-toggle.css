@@ -1,0 +1,95 @@
+.tape6 label.tape6-toggle {
+  --color-primary: green;
+  --color-secondary: black;
+  --color-white: #eee;
+  --color-super-light-gray: #ccc;
+  --color-medium-light-gray: #aaa;
+  --color-light-gray: #888;
+  --color-medium-dark-gray: #444;
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox'] {
+  position: absolute;
+  left: -999999px;
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:checked ~ span.toggle {
+  background-color: var(--color-primary);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:checked ~ span.toggle:before {
+  background-color: var(--color-white);
+  left: calc(100% - 16px);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:checked ~ span.toggle:after {
+  content: 'ON';
+  color: var(--color-white);
+  left: calc(2px + 0.5em);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:disabled ~ span.toggle {
+  background-color: var(--color-super-light-gray);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:disabled ~ span.toggle:before {
+  background-color: var(--color-medium-light-gray);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:disabled ~ span.toggle:after {
+  color: var(--color-medium-light-gray);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox'][checked]:disabled ~ span.toggle {
+  background-color: var(--color-super-light-gray);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox'][checked]:disabled ~ span.toggle:before {
+  background-color: var(--color-medium-light-gray);
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox'][checked]:disabled ~ span.toggle:after {
+  color: var(--color-medium-light-gray);
+}
+
+.tape6 label.tape6-toggle > span.toggle {
+  display: inline-block;
+  position: relative;
+  font-size: 80%;
+  font-weight: 500;
+  width: calc(16px + 3em);
+  height: 18px;
+  top: 0.4em;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.1s ease-in;
+}
+
+.tape6 label.tape6-toggle > span.toggle:before {
+  content: '';
+  position: absolute;
+  top: 0.15em;
+  height: 14px;
+  width: 14px;
+  border-radius: 7px;
+  transition: all 0.1s ease-in;
+
+  background-color: var(--color-medium-light-gray);
+  left: 2px;
+}
+
+.tape6 label.tape6-toggle > span.toggle:after {
+  content: 'OFF';
+  position: absolute;
+  top: 0.03em;
+  color: var(--color-medium-dark-gray);
+  left: 18px;
+}
+
+.tape6 label.tape6-toggle > input[type='checkbox']:active ~ span.toggle,
+.tape6 label.tape6-toggle > input[type='checkbox']:focus ~ span.toggle {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 2px 0 var(--color-secondary);
+}
