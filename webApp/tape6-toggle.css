@@ -1,6 +1,6 @@
 .tape6 label.tape6-toggle {
-  --color-primary: green;
-  --color-secondary: black;
+  --color-primary: #736;
+  --color-secondary: white;
   --color-white: #eee;
   --color-super-light-gray: #ccc;
   --color-medium-light-gray: #aaa;
@@ -59,7 +59,7 @@
   font-weight: 500;
   width: calc(16px + 3em);
   height: 18px;
-  top: 0.4em;
+  top: 0.35em; /* whole toggle button */
   background-color: var(--color-white);
   border: 1px solid var(--color-light-gray);
   border-radius: 10px;
@@ -70,7 +70,7 @@
 .tape6 label.tape6-toggle > span.toggle:before {
   content: '';
   position: absolute;
-  top: 0.15em;
+  top: 0.2em; /* toggle knob */
   height: 14px;
   width: 14px;
   border-radius: 7px;
@@ -83,7 +83,7 @@
 .tape6 label.tape6-toggle > span.toggle:after {
   content: 'OFF';
   position: absolute;
-  top: 0.03em;
+  top: 0.06em; /* toggle text */
   color: var(--color-medium-dark-gray);
   left: 18px;
 }
