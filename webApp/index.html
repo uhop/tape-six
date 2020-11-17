@@ -74,13 +74,8 @@
     <div style="width: 0; height: 0; position: absolute; visibility: hidden">
       <svg viewBox="0 0 250 250">
         <defs>
-          <filter id="drop-shadow" height="130%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
-            <feOffset dx="2" dy="2" result="offsetblur" />
-            <feMerge>
-              <feMergeNode />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+          <filter id="drop-shadow">
+            <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="black" flood-opacity="0.3" />
           </filter>
         </defs>
       </svg>
