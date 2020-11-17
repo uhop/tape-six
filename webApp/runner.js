@@ -57,12 +57,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const tapReporter = new TapReporter({useJson: true}),
     domReporter = new DomReporter({root: document.querySelector('.tape6 .report')}),
     dashReporter = new DashReporter();
-  setReporter(event => (tapReporter.report(event), domReporter.report(event), dashReporter.report(event)));
+  setReporter(event => (/*tapReporter.report(event),*/ domReporter.report(event), dashReporter.report(event)));
 
   const donut = document.querySelector('tape6-donut');
   donut.show([{value: 0, className: 'nothing'}], {
     center: {x: 100, y: 100},
-    gap: 4,
+    // gap: 4,
     innerRadius: 40,
     radius: 90,
     startAngle: Math.PI / 2,

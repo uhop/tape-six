@@ -5,7 +5,6 @@ body.tape6 {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   overflow-y: scroll;
 }
-
 .tape6 .page-wrap {
   width: 800px;
   margin: 0 auto;
@@ -13,41 +12,60 @@ body.tape6 {
   border-right: 2px solid #ccc;
   padding: 1em;
 }
+.tape6 .tile {
+  padding: 1em 2em;
+  margin-bottom: 1em;
+  /* background-color: #eee; */
+  background-image: linear-gradient(135deg, #eee, #ddd 75%, #ccc);
+  border: 1px solid #888;
+  border-radius: 0.5em;
+  box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, 0.1);
+}
+.tape6 .tile:last-child {
+  margin-bottom: 0;
+}
 
 .tape6 .success {
   color: white;
   background-color: green;
   fill: green;
+  filter: url(#drop-shadow);
 }
 .tape6 .success-dark {
   color: white;
   background-color: darkgreen;
   fill: darkgreen;
+  filter: url(#drop-shadow);
 }
 .tape6 .failure {
   color: white;
   background-color: red;
   fill: red;
+  filter: url(#drop-shadow);
 }
 .tape6 .failure-dark {
   color: white;
   background-color: darkred;
   fill: darkred;
+  filter: url(#drop-shadow);
 }
 .tape6 .skipped {
   color: white;
   background-color: blue;
   fill: blue;
+  filter: url(#drop-shadow);
 }
 .tape6 .todo {
   color: white;
   background-color: orange;
   fill: darkorange;
+  filter: url(#drop-shadow);
 }
 .tape6 .nothing {
   color: white;
   background-color: darkgray;
   fill: darkgray;
+  filter: url(#drop-shadow);
 }
 
 .tape6 .text-success {
@@ -124,7 +142,7 @@ body.tape6 {
   height: 0.75em;
   border: 1px solid #888;
   position: relative;
-  top: 0.25em;
+  top: 0.125em;
 }
 
 .tape6 .legend .value {
@@ -134,20 +152,11 @@ body.tape6 {
 /* spinner */
 
 tape6-spinner {
+  position: fixed;
+  bottom: 1em;
+  right: 1em;
   width: 64px;
   height: 64px;
-}
-
-/* status */
-
-.tape6 .status {
-  display: flex;
-  align-items: center;
-}
-
-.tape6 .status .status-test,
-.tape6 .status .status-assert {
-  margin-left: 1em;
 }
 
 /* report */

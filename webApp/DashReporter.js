@@ -21,7 +21,7 @@ class DashReporter {
     this.scoreNode = document.querySelector('.tape6 .score');
     this.donutNode = this.scoreNode && this.scoreNode.querySelector('tape6-donut');
     this.legendNode = document.querySelector('.tape6 .legend');
-    this.statusNode = document.querySelector('.tape6 .status');
+    this.spinnerNode = document.querySelector('.tape6 tape6-spinner');
     this.running = true;
   }
   report(event) {
@@ -79,23 +79,8 @@ class DashReporter {
     node && (node.innerHTML = formatNumber(this.todoCounter));
   }
   updateStatus() {
-    if (!this.statusNode) return;
-    if (this.running) {
-      let node = this.statusNode.querySelector('tape6-spinner');
-      node.classList.remove('stop');
-      node = this.statusNode.querySelector('.status-test');
-      node.innerHTML = 'Running test: ' + this.currentTest;
-      node = this.statusNode.querySelector('.status-assert');
-      node.innerHTML = 'Last assert: ' + this.lastAssert;
-    } else {
-      let node = this.statusNode.querySelector('tape6-spinner');
-      node.classList.add('stop');
-      node = this.statusNode.querySelector('.status-test');
-      while (node.lastChild) node.removeChild(node.lastChild);
-      node.appendChild(document.createTextNode('All done.'));
-      node = this.statusNode.querySelector('.status-assert');
-      while (node.lastChild) node.removeChild(node.lastChild);
-    }
+    if (!this.spinnerNode) return;
+    this.spinnerNode[this.running ? 'show' : 'hide']();
   }
   updateScoreCard() {
     if (!this.scoreNode) return;

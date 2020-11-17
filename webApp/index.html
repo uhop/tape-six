@@ -2,10 +2,8 @@
 <html>
   <head>
     <title>Tape6 test runner</title>
-    <meta name="viewport" content="width=device-width, inital-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="./style.css" />
-    <link rel="stylesheet" href="./tape6-hflip.css" />
-    <script type="module" src="./tape6-hflip.js"></script>
     <link rel="stylesheet" href="./tape6-donut.css" />
     <script type="module" src="./tape6-donut.js"></script>
     <link rel="stylesheet" href="./tape6-spinner.css" />
@@ -19,16 +17,11 @@
   <body class="tape6">
     <div class="page-wrap">
       <h1>Tape6 test runner</h1>
-      <p>Below is the score card:</p>
-      <div class="score">
+      <div class="tile score">
         <div class="text nothing">
           <div class="message">Awaiting&hellip;</div>
           <div class="result">No results</div>
         </div>
-        <!-- <div class="text failure-dark">
-        <div class="message">Need some work</div>
-        <div class="result">46.8% passed</div>
-      </div> -->
         <tape6-donut width="200" height="200"></tape6-donut>
         <table class="legend">
           <tbody>
@@ -59,29 +52,37 @@
             </tr>
             <tr class="legend-todo">
               <td><div class="swatch todo">&nbsp;</div></td>
-              <td>TODO:</td>
+              <td>Todo:</td>
               <td class="value">0</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="status">
-        <div><tape6-spinner depth="10"></tape6-spinner></div>
-        <div class="text">
-          <div class="status-test">Running test:</div>
-          <div class="status-assert">Last assert:</div>
-        </div>
-      </div>
-
-      <form class="tools">
+      <form class="tile tools">
         Show:
         <label><input type="checkbox" name="failed-only" value="0" />failed only</label>
         <label><input type="checkbox" name="show-data" value="0" />data</label>
         <label><input type="checkbox" name="show-stack" value="0" />stack</label>
       </form>
 
-      <div class="report collapse-passed"></div>
+      <div class="tile report collapse-passed"></div>
+
+      <tape6-spinner depth="10"></tape6-spinner>
+    </div>
+    <div style="width: 0; height: 0; position: absolute; visibility: hidden">
+      <svg viewBox="0 0 250 250">
+        <defs>
+          <filter id="drop-shadow" height="130%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="2" dy="2" result="offsetblur" />
+            <feMerge>
+              <feMergeNode />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
     </div>
   </body>
 </html>
