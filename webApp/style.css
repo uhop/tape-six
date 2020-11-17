@@ -14,11 +14,8 @@ body.tape6 {
 }
 .tape6 .tile {
   padding: 1em 2em;
-  margin-bottom: 1em;
-  /* background-color: #eee; */
-  background-image: linear-gradient(135deg, #eee, #ddd 75%, #ccc);
+  background-image: linear-gradient(135deg, #eee, #ddd 80%, #ccc);
   border: 1px solid #888;
-  border-radius: 0.5em;
   box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, 0.1);
 }
 .tape6 .tile:last-child {
@@ -98,6 +95,9 @@ body.tape6 {
 .tape6 .score {
   display: flex;
   align-items: center;
+  margin-bottom: 1em;
+  border-top-left-radius: 0.5em;
+  border-top-right-radius: 0.5em;
 }
 .tape6 .score > * {
   margin-right: 0.1em;
@@ -159,7 +159,21 @@ tape6-spinner {
   height: 64px;
 }
 
+/* tools */
+
+.tape6 .tools {
+  color: #ddd;
+  background-color: #403;
+  background-image: none;
+  border-bottom-style: none;
+}
+
 /* report */
+
+.tape6 .report {
+  border-bottom-left-radius: 0.5em;
+  border-bottom-right-radius: 0.5em;
+}
 
 .tape6 .report .test > *,
 .tape6 .report .test .assert > * {
