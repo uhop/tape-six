@@ -3,8 +3,7 @@
 import {promises as fsp} from 'fs';
 import path from 'path';
 
-import {union, exclude} from '../src/utils/fileSets.js';
-import {listing, wildToRe} from '../src/node/listing.js';
+import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
 import {test, getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
@@ -30,16 +29,6 @@ for (let i = 2; i < process.argv.length; ++i) {
   files.push(arg);
 }
 
-if (!flagIsSet && !files.length) {
-  console.log('Help');
-  process.exit(1);
-}
-
-if (files.includes('@') && files.length != 1) {
-  console.log('Error: @');
-  process.exit(1);
-}
-
 const init = async () => {
   let reporter = getReporter();
   if (!reporter) {
@@ -57,19 +46,6 @@ const init = async () => {
     setReporter(reporter);
   }
 
-  if (files.length == 1 && files[0] == '@') {
-    try {
-      const pkg = JSON.parse(await fsp.readFile(path.join(process.cwd(), 'package.json')));
-      files = pkg.tape6 && Array.isArray(pkg.tape6.tests) && pkg.tape6.tests || [];
-      if(!flagIsSet) {
-        flags = pkg.tape6 && typeof pkg.tape6.flags == 'string' && typeof pkg.tape6.flags || '';
-      }
-    } catch (error) {
-      console.log('Error: cannot read and parse package.json in the current directory.');
-      process.exit(1);
-    }
-  }
-
   if (!flagIsSet) {
     flags = process.env.TAPE6_FLAGS || flags;
   }
@@ -81,15 +57,11 @@ const init = async () => {
   }
 
   const rootFolder = process.cwd();
-  let result = [];
-  for (const item of files) {
-    if (item.length && item[0] == '!') {
-      result = exclude(result, wildToRe(rootFolder, item.substr(1)));
-    } else {
-      result = union(result, await listing(rootFolder, item));
-    }
+  if (files.length) {
+    files = await resolvePatterns(rootFolder, files);
+  } else {
+    files = await resolveTests(rootFolder, 'node');
   }
-  files = result;
 };
 
 const main = async () => {
