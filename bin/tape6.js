@@ -4,7 +4,7 @@ import {promises as fsp} from 'fs';
 import path from 'path';
 
 import {union, exclude} from '../src/utils/fileSets.js';
-import {listing, wildToRe} from '../src/utils/listing.js';
+import {listing, wildToRe} from '../src/node/listing.js';
 
 import {test, getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';

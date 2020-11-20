@@ -4,6 +4,8 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 
+import {listing} from '../src/node/listing.js';
+
 const fsp = fs.promises;
 
 // simple static server with no dependencies
@@ -54,65 +56,6 @@ const join = (...args) => args.map(value => value || '').join(''),
   green = paint('\x1B[32m'),
   yellow = paint('\x1B[93m'),
   blue = paint('\x1B[44;97m', '\x1B[49;39m');
-
-// listing
-
-const notSep = '[^\\' + path.sep + ']*',
-  notDotSep = '[^\\.\\' + path.sep + ']*';
-
-const sanitizeRe = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const prepRe = (string, substitute, allowDot) => {
-  const parts = string.split('*'),
-    startsWithStar = !parts[0],
-    result = parts.map(sanitizeRe).join(substitute);
-  return startsWithStar && allowDot ? result : notDotSep + result;
-};
-const mergeWildcards = folders => folders.reduce((acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc), []);
-
-const listFiles = async (rootFolder, folders, baseRe, parents) => {
-  const dir = path.join(rootFolder, parents.join(path.sep)),
-    files = await fsp.readdir(dir, {withFileTypes: true});
-
-  let result = [];
-
-  if (!folders.length) {
-    for (const file of files) {
-      if (file.isFile() && baseRe.test(file.name)) result.push(path.join(dir, file.name));
-    }
-    return result;
-  }
-
-  const theRest = folders.slice(1);
-
-  if (folders[0]) {
-    for (const file of files) {
-      if (file.isDirectory() && folders[0].test(file.name)) {
-        result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents.concat(file.name)));
-      }
-    }
-    return result;
-  }
-
-  result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents));
-  for (const file of files) {
-    if (file.isDirectory()) {
-      result = result.concat(await listFiles(rootFolder, folders, baseRe, parents.concat(file.name)));
-    }
-  }
-  return result;
-};
-
-const listing = async (rootFolder, wildcard) => {
-  const parsed = path.parse(wildcard),
-    baseRe = new RegExp('^' + prepRe(parsed.name, '.*') + prepRe(parsed.ext, '.*', true) + '$'),
-    folders = mergeWildcards(
-      parsed.dir
-        .split(path.sep)
-        .filter(part => part)
-        .map(part => (part === '**' ? null : new RegExp('^' + prepRe(part, notSep) + '$')))
-    );
-  return listFiles(rootFolder, folders, baseRe, []);
-};
 
 // sending helpers
 
