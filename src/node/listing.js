@@ -59,6 +59,7 @@ export const listing = async (rootFolder, wildcard) => {
 };
 
 export const wildToRe = (rootFolder, wildcard) => {
+  if (wildcard.length && wildcard[wildcard.length - 1] == path.sep) wildcard += '**';
   const parsed = path.parse(path.join(rootFolder, wildcard)),
     folders = parsed.dir
       .substr(parsed.root.length)
