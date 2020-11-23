@@ -1,4 +1,4 @@
-import {getTimer} from './timer.js';
+import {getTimer} from './utils/timer.js';
 
 export class StopTest extends Error {}
 
@@ -51,10 +51,10 @@ class State {
         event.skip && ++this.skipped;
         isFailed && ++this.failed;
         event.id = this.asserts + this.offset;
-        event.diffTime = event.time - this.time;
+        !event.hasOwnProperty('diffTime') && (event.diffTime = event.time - this.time);
         break;
       case 'end':
-        event.diffTime = event.time - this.startTime;
+        !event.hasOwnProperty('diffTime') && (event.diffTime = event.time - this.startTime);
         break;
     }
 
