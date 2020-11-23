@@ -24,6 +24,10 @@ body.tape6 {
 .tape6 .tile:last-child {
   margin-bottom: 0;
 }
+.tape6 h1 {
+  color: #403;
+  text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.1);
+}
 
 .tape6 .success {
   color: white;
