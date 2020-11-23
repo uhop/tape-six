@@ -1,4 +1,5 @@
-import {getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
+import {selectTimer} from '../src/utils/timer.js';
+import {getReporter, setReporter, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
 import Deferred from '../src/utils/Deferred.js';
 import State from '../src/State.js';
@@ -8,18 +9,14 @@ import DashReporter from './DashReporter.js';
 
 setConfiguredFlag(true); // we are running the show
 
-const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce'},
+const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', s: 'showStack', l: 'showLog'},
   options = {};
 
 let flags = '';
 
 if (window.location.search) {
-  const dict = window.location.search
-    .substr(1)
-    .split('&')
-    .map(pair => pair.split(/=/))
-    .reduce((acc, pair) => ((acc[pair[0]] = pair[1]), acc), {});
-  flags = dict.flags || '';
+  const searchParams = new URLSearchParams(window.location.search.substr(1));
+  flags = searchParams.get('flags') || '';
 }
 
 for (let i = 0; i < flags.length; ++i) {
@@ -58,7 +55,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const tapReporter = new TapReporter({useJson: true}),
     domReporter = new DomReporter({root: document.querySelector('.tape6 .report')}),
     dashReporter = new DashReporter();
-  setReporter(event => (/*tapReporter.report(event),*/ domReporter.report(event), dashReporter.report(event)));
+  setReporter(event => (options.showLog && tapReporter.report(event), domReporter.report(event), dashReporter.report(event)));
 
   const donut = document.querySelector('tape6-donut');
   donut.show([{value: 0, className: 'nothing'}], {
@@ -71,13 +68,17 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   defer(async () => {
+    await selectTimer();
+
     let files;
 
     if (window.location.search) {
       const searchParams = new URLSearchParams(window.location.search.substr(1)),
         patterns = searchParams.getAll('q');
       if (patterns && patterns.length) {
-        files = await fetch('/--patterns?' + patterns.map(pattern => 'q=' + encodeURIComponent(pattern)).join('&')).then(response => (response.ok ? response.json() : null));
+        files = await fetch('/--patterns?' + patterns.map(pattern => 'q=' + encodeURIComponent(pattern)).join('&')).then(response =>
+          response.ok ? response.json() : null
+        );
       }
     }
 

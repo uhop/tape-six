@@ -1,12 +1,11 @@
+import {selectTimer} from './utils/timer.js';
 import State, {StopTest} from './State.js';
 import Tester from './Tester.js';
 import Deferred from './utils/Deferred.js';
-import {setTimer} from './timer.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
 
 let tests = [],
-  timerIsSet = false,
   reporter = null,
   testCounter = 0,
   isConfigured = false;
@@ -48,26 +47,13 @@ const processArgs = (name, options, testFn) => {
   return options;
 };
 
+let isTimerSet = false;
 export const test = async (name, options, testFn) => {
   options = processArgs(name, options, testFn);
-
-  if (!timerIsSet) {
-    // set HR timer
-    if (typeof window == 'object' && window.performance && typeof window.performance.now == 'function') {
-      setTimer(window.performance);
-    } else if (typeof process == 'object' && typeof process.exit == 'function') {
-      try {
-        const {performance} = await import('perf_hooks');
-        setTimer(performance);
-      } catch (error) {
-        setTimer(Date);
-      }
-    } else {
-      setTimer(Date);
-    }
-    timerIsSet = true;
+  if (!isTimerSet) {
+    await selectTimer();
+    isTimerSet = true;
   }
-
   const deferred = new Deferred();
   tests.push({options, deferred});
   return deferred.promise;
