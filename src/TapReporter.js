@@ -36,16 +36,24 @@ class TapReporter {
     this.useJson = useJson;
     this.depth = 0;
     this.assertCounter = 0;
+    this.opened = false;
+  }
+  open() {
+    if (!this.opened) {
+      this.write('TAP version 13');
+      this.opened = true;
+    }
   }
   report(event) {
     let text;
     switch (event.type) {
       case 'test':
-        !this.depth && this.write('TAP version 13');
+        this.open();
         event.name && this.write('# start: ' + event.name, 'info');
         ++this.depth;
         break;
       case 'comment':
+        this.open();
         this.write('# ' + event.name);
         break;
       case 'end':
@@ -63,11 +71,13 @@ class TapReporter {
         this.write('# time=' + event.diffTime.toFixed(3) + 'ms', 'summary-info');
         break;
       case 'bail-out':
+        this.open();
         text = 'Bail out!';
         event.name && (text += ' ' + event.name);
         this.write(text, 'bail-out');
         break;
       case 'assert':
+        this.open();
         text = (event.fail ? 'not ok' : 'ok') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
         if (event.skip) {
           text += ' # SKIP';
