@@ -24,10 +24,10 @@ const logger = (text, style) => {
   }
 };
 
-const formatValue = (value) => {
+const formatValue = value => {
   if (typeof value == 'string') return value;
   return JSON.stringify(value);
-}
+};
 
 class TapReporter {
   constructor({write = logger, useJson = false, renumberAsserts = false} = {}) {

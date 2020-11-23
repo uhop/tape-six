@@ -1,3 +1,8 @@
+const formatValue = value => {
+  if (typeof value == 'string') return value;
+  return JSON.stringify(value);
+};
+
 class DomReporter {
   constructor({root, renumberAsserts = false} = {}) {
     this.root = root;
@@ -90,33 +95,31 @@ class DomReporter {
             row.appendChild(value);
             assert.appendChild(row);
           }
-          if (event.data) {
-            if (event.data.hasOwnProperty('expected')) {
-              const row = document.createElement('div'),
-                name = document.createElement('span'),
-                value = document.createElement('code');
-              row.className = 'data';
-              name.className = 'name';
-              name.appendChild(document.createTextNode('expected:'));
-              value.className = 'value';
-              value.appendChild(document.createTextNode(JSON.stringify(event.data.expected)));
-              row.appendChild(name);
-              row.appendChild(value);
-              assert.appendChild(row);
-            }
-            if (event.data.hasOwnProperty('actual')) {
-              const row = document.createElement('div'),
-                name = document.createElement('span'),
-                value = document.createElement('code');
-              row.className = 'data';
-              name.className = 'name';
-              name.appendChild(document.createTextNode('actual:'));
-              value.className = 'value';
-              value.appendChild(document.createTextNode(JSON.stringify(event.data.actual)));
-              row.appendChild(name);
-              row.appendChild(value);
-              assert.appendChild(row);
-            }
+          if (event.hasOwnProperty('expected')) {
+            const row = document.createElement('div'),
+              name = document.createElement('span'),
+              value = document.createElement('code');
+            row.className = 'data';
+            name.className = 'name';
+            name.appendChild(document.createTextNode('expected:'));
+            value.className = 'value';
+            value.appendChild(document.createTextNode(formatValue(event.expected)));
+            row.appendChild(name);
+            row.appendChild(value);
+            assert.appendChild(row);
+          }
+          if (event.hasOwnProperty('actual')) {
+            const row = document.createElement('div'),
+              name = document.createElement('span'),
+              value = document.createElement('code');
+            row.className = 'data';
+            name.className = 'name';
+            name.appendChild(document.createTextNode('actual:'));
+            value.className = 'value';
+            value.appendChild(document.createTextNode(formatValue(event.actual)));
+            row.appendChild(name);
+            row.appendChild(value);
+            assert.appendChild(row);
           }
           if (event.at) {
             const row = document.createElement('div'),
@@ -132,8 +135,7 @@ class DomReporter {
             assert.appendChild(row);
           }
           {
-            const error = event.data && event.data.actual instanceof Error ? event.data.actual : event.marker,
-              stack = error && error.stack;
+            const stack = event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string' ? event.actual.stack : event.marker.stack;
             if (typeof stack == 'string') {
               const row = document.createElement('div'),
                 name = document.createElement('span'),
