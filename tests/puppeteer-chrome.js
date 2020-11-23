@@ -7,7 +7,7 @@ const main = async () => {
   page.on('console', msg => console[typeof console[msg.type()] == 'function' ? msg.type() : 'log'](msg.text()));
   page.on('error', e => console.error(e));
 
-  await page.exposeFunction('__reportTape6Results', async text => {
+  await page.exposeFunction('__tape6_reportResults', async text => {
     await browser.close();
     switch (text) {
       case 'success':
