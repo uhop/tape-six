@@ -38,8 +38,8 @@ class DomReporter {
         if (this.current) {
           this.current.classList.remove('running');
           this.current.classList.add(event.fail ? 'failed' : 'passed');
-          this.current = this.stack.pop();
         }
+        this.current = this.stack.pop();
         break;
       case 'comment':
         {
@@ -150,7 +150,7 @@ class DomReporter {
               assert.appendChild(row);
             }
           }
-          this.current.appendChild(assert);
+          (this.current || this.root).appendChild(assert);
         }
         break;
     }
