@@ -11,8 +11,8 @@ body.tape6 {
 .tape6 .page-wrap {
   width: 800px;
   margin: 0 auto;
-  border-left: 2px solid #ccc;
-  border-right: 2px solid #ccc;
+  /* border-left: 2px solid #ccc;
+  border-right: 2px solid #ccc; */
   padding: 1em;
 }
 .tape6 .tile {
