@@ -1,5 +1,5 @@
 import {stringRep, normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './utils/box.js';
-import {formatNumber, formatTime, formatValue} from './utils/formatters.js';
+import {formatNumber, formatTime} from './utils/formatters.js';
 
 // colors
 
@@ -52,6 +52,11 @@ class TTYReporter {
   }
   paint(prefix, suffix = '\x1B[39m') {
     return this.hasColors ? text => join(prefix, text, suffix) : text => text;
+  }
+  formatValue(value) {
+    if (typeof value == 'string') return value;
+    if (typeof value.type == 'string') return this.blue(JSON.stringify(value));
+    return this.red(this.italic(JSON.stringify(value)));
   }
   out(text) {
     if (this.depth < 2) {
@@ -213,16 +218,13 @@ class TTYReporter {
         if (!event.fail || event.skip || !this.showData) break;
 
         this.out(this.lowWhite('  operator: ') + event.operator);
-        if (event.data && typeof event.data == 'object') {
-          if (event.data.hasOwnProperty('expected')) {
-            this.out(this.lowWhite('  expected: ') + formatValue(event.data.expected));
-          }
-          if (event.data.hasOwnProperty('actual')) {
-            this.out(this.lowWhite('  actual:   ') + formatValue(event.data.actual));
-          }
+        if (event.hasOwnProperty('expected')) {
+          this.out(this.lowWhite('  expected: ') + this.formatValue(event.expected));
         }
-        const error = event.data && event.data.actual instanceof Error ? event.data.actual : event.marker,
-          stack = error && error.stack;
+        if (event.hasOwnProperty('actual')) {
+          this.out(this.lowWhite('  actual:   ') + this.formatValue(event.actual));
+        }
+        const stack = event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string' ? event.actual.stack : event.marker.stack;
         if (typeof stack == 'string') {
           this.out(this.lowWhite('  stack: |-'));
           stack.split('\n').forEach(line => this.out(this.lowWhite('    ' + line)));

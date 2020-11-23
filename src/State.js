@@ -2,6 +2,22 @@ import {getTimer} from './timer.js';
 
 export class StopTest extends Error {}
 
+const serialize = object => {
+  if (object instanceof Error) return {type: 'Error', message: object.message, stack: object.stack};
+  if (object instanceof RegExp) return {type: 'RegExp', source: object.source, flags: object.flags};
+  try {
+    return JSON.stringify(object);
+  } catch (error) {
+    // squelch
+  }
+  try {
+    return {type: 'String', value: String(object)};
+  } catch (error) {
+    // squelch
+  }
+  return {problem: 'cannot convert value to JSON or string'};
+};
+
 class State {
   constructor(parent, {callback, skip, todo, failOnce}) {
     this.parent = parent;
@@ -50,6 +66,11 @@ class State {
     if (!event.at && event.marker && typeof event.marker.stack == 'string') {
       const lines = event.marker.stack.split('\n');
       event.at = lines[Math.min(3, lines.length) - 1].trim().replace(/^at\s+/i, '');
+    }
+
+    if (event.type === 'assert' && event.data) {
+      event.data.hasOwnProperty('expected') && (event.expected = serialize(event.data.expected));
+      event.data.hasOwnProperty('actual') && (event.actual = serialize(event.data.actual));
     }
 
     this.callback(event);

@@ -24,6 +24,11 @@ const logger = (text, style) => {
   }
 };
 
+const formatValue = (value) => {
+  if (typeof value == 'string') return value;
+  return JSON.stringify(value);
+}
+
 class TapReporter {
   constructor({write = logger, useJson = false, renumberAsserts = false} = {}) {
     this.write = write;
@@ -76,21 +81,11 @@ class TapReporter {
           this.write('  ---', 'yaml');
           if (this.useJson) {
             this.write('  operator: ' + event.operator, 'yaml');
-            if (event.data && typeof event.data == 'object') {
-              if (event.data.hasOwnProperty('expected')) {
-                try {
-                  this.write('  expected: ' + JSON.stringify(event.data.expected), 'yaml');
-                } catch (error) {
-                  // squelch
-                }
-              }
-              if (event.data.hasOwnProperty('actual')) {
-                try {
-                  this.write('  actual:   ' + JSON.stringify(event.data.actual), 'yaml');
-                } catch (error) {
-                  // squelch
-                }
-              }
+            if (event.hasOwnProperty('expected')) {
+              this.write('  expected: ' + formatValue(event.expected), 'yaml');
+            }
+            if (event.hasOwnProperty('actual')) {
+              this.write('  actual:   ' + formatValue(event.actual), 'yaml');
             }
             event.at && this.write('  at: ' + event.at, 'yaml');
           } else {
@@ -106,8 +101,7 @@ class TapReporter {
             }
             yamlFormatter({at: event.at}, formatterOptions).forEach(line => this.write(line, 'yaml'));
           }
-          const error = event.data && event.data.actual instanceof Error ? event.data.actual : event.marker,
-            stack = error && error.stack;
+          const stack = event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string' ? event.actual.stack : event.marker.stack;
           if (typeof stack == 'string') {
             this.write('  stack: |-', 'yaml');
             stack.split('\n').forEach(line => this.write('    ' + line, 'yaml'));

@@ -28,22 +28,3 @@ export const formatTime = ms => {
   if (ms < DAY) return formatNumber(Math.floor(ms / HOUR), 0) + 'h' + omit(formatNumber(Math.floor((ms % HOUR) / MIN), 0), 'm');
   return formatNumber(Math.floor(ms / DAY), 0) + 'd' + omit(formatNumber(Math.floor((ms % DAY) / HOUR), 0), 'h');
 };
-
-export const formatValue = (value, skipJson) => {
-  if (
-    !skipJson &&
-    !(value instanceof Error || value instanceof RegExp || value instanceof Set || value instanceof Map || value instanceof Promise || typeof value == 'symbol')
-  ) {
-    try {
-      return JSON.stringify(value);
-    } catch (error) {
-      // squelch
-    }
-  }
-  try {
-    return String(value);
-  } catch (error) {
-    // squelch
-  }
-  return red(italic('*cannot be shown*'));
-};
