@@ -97,6 +97,11 @@ body.tape6 {
   font-style: italic;
 }
 
+.tape6 iframe.test-iframe {
+  width: 1px;
+  height: 1px;
+}
+
 /* score card */
 
 .tape6 .score {
@@ -184,43 +189,43 @@ tape6-spinner {
 }
 
 .tape6 .report .test > *,
-.tape6 .report .test .assert > * {
+.tape6 .report .assert > * {
   margin-left: 1em;
 }
 
 .tape6 .report .test > .header,
-.tape6 .report .test .assert > .header {
+.tape6 .report .assert > .header {
   margin-left: 0;
 }
 
 .tape6 .report.failed-only .comment,
 .tape6 .report.failed-only .test.passed,
-.tape6 .report.failed-only .test .assert.passed,
-.tape6 .report.collapse-passed .test .assert.passed .data,
-.tape6 .report.collapse-passed .test .assert.passed .stack,
-.tape6 .report.hide-data .test .assert.failed .data,
-.tape6 .report.hide-stack .test .assert.failed .stack {
+.tape6 .report.failed-only .assert.passed,
+.tape6 .report.collapse-passed .assert.passed .data,
+.tape6 .report.collapse-passed .assert.passed .stack,
+.tape6 .report.hide-data .assert.failed .data,
+.tape6 .report.hide-stack .assert.failed .stack {
   display: none;
 }
 
 .tape6 .report .test.passed > .header,
-.tape6 .report .test .assert.passed > .header {
+.tape6 .report .assert.passed > .header {
   color: darkgreen;
 }
 .tape6 .report .test.passed > .header:before,
-.tape6 .report .test .assert.passed > .header:before {
+.tape6 .report .assert.passed > .header:before {
   content: '\2713';
 }
 .tape6 .report .test.failed > .header,
-.tape6 .report .test .assert.failed > .header {
+.tape6 .report .assert.failed > .header {
   color: darkred;
 }
 .tape6 .report .test.failed > .header:before,
-.tape6 .report .test .assert.failed > .header:before {
+.tape6 .report .assert.failed > .header:before {
   content: '\2717';
 }
 
-.tape6 .report .test .assert .data > pre {
+.tape6 .report .assert .data > pre {
   margin-top: 0;
   margin-left: 1em;
 }
