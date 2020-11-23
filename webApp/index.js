@@ -1,5 +1,6 @@
 import {getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
+import Deferred from '../src/utils/Deferred.js';
 import State from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
 import DomReporter from './DomReporter.js';
@@ -70,19 +71,72 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   defer(async () => {
+    let files;
+
+    if (window.location.search) {
+      const searchParams = new URLSearchParams(window.location.search.substr(1)),
+        patterns = searchParams.getAll('q');
+      if (patterns && patterns.length) {
+        files = await fetch('/--patterns?' + patterns.map(pattern => 'q=' + encodeURIComponent(pattern)).join('&')).then(response => (response.ok ? response.json() : null));
+      }
+    }
+
+    if (!files || !files.length) {
+      files = await fetch('/--tests').then(response => (response.ok ? response.json() : null));
+    }
+
+    if (!files || !files.length) {
+      alert('No tests were specified for a browser!');
+      return;
+    }
+
     const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce});
 
-    rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
-    for (;;) {
-      const tests = getTests();
-      if (!tests.length) break;
-      clearTests();
-      await runTests(rootState, tests);
+    for (const file of files) {
+      rootState.emit({type: 'comment', name: 'file: /' + file, test: 0, time: rootState.timer.now()});
+      const iframe = document.createElement('iframe'),
+        deferred = new Deferred();
+      iframe.className = 'test-iframe';
+      window.__tape6_reporter = event => {
+        rootState.emit(event);
+        if (event.type === 'end' && event.test === 0) deferred.resolve();
+      };
+      if (/\.html?$/i.test(file)) {
+        iframe.src = '/' + file;
+        iframe.onerror = error => deferred.reject(error);
+        document.body.append(iframe);
+      } else {
+        document.body.append(iframe);
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(`
+          <!doctype html>
+          <html>
+            <head>
+              <title>Test IFRAME</title>
+              <script type="module">
+                const s = document.createElement('script');
+                s.setAttribute('type', 'module');
+                s.src = '/${file}';
+                s.onerror = error => window.parent.__tape6_error(error);
+                document.documentElement.appendChild(s);
+              </script>
+            </head>
+            <body></body>
+          </html>
+        `);
+        iframe.contentWindow.document.close();
+        window.__tape6_error = error => deferred.reject(error);
+      }
+      try {
+        await deferred.promise;
+      } catch (error) {
+        rootState.emit({type: 'comment', name: 'fail to load: /' + file, test: 0, time: rootState.timer.now()});
+      }
+      iframe.parentElement.removeChild(iframe);
     }
-    rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
 
-    if (typeof __reportTape6Results == 'function') {
-      __reportTape6Results(rootState.failed > 0 ? 'failure' : 'success');
+    if (typeof window.__tape6_reportResults == 'function') {
+      window.__tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
     }
   });
 });
