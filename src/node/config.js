@@ -13,7 +13,7 @@ export const resolvePatterns = async (rootFolder, patterns) => {
       result = union(result, await listing(rootFolder, item));
     }
   }
-  return result;
+  return result.map(fileName => path.relative(rootFolder, fileName));
 };
 
 export const resolveTests = async (rootFolder, type, traceFn) => {
