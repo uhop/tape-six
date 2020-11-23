@@ -42,6 +42,13 @@ defer(async () => {
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     }
+    if (isBrowser) {
+      if (typeof window.__tape6_reporter == 'function') {
+        reporter = window.__tape6_reporter;
+      } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
+        reporter = event => window.parent.__tape6_reporter(event);
+      }
+    }
     if (!reporter) {
       const tapReporter = new TapReporter({useJson: true});
       reporter = tapReporter.report.bind(tapReporter);
