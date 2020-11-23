@@ -43,6 +43,13 @@
     "src",
     "cjs"
   ],
+  "tape6": {
+    "tests": [
+      "/tests/manual/test-skip*.js",
+      "/tests/manual/test-todo.js",
+      "/tests/manual/test-three*.js"
+    ]
+  },
   "devDependencies": {
     "puppeteer": "^5.4.1"
   }
