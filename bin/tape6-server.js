@@ -4,7 +4,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 
-import {listing} from '../src/node/listing.js';
+import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
 const fsp = fs.promises;
 
@@ -104,9 +104,13 @@ const server = http.createServer(async (req, res) => {
   if (method !== 'GET' && method !== 'HEAD') return bailOut(req, res, 405);
 
   const url = new URL(req.url, 'http://' + req.headers.host);
-  if (url.pathname === '/--ls') {
-    // process listing
-    return sendJson(req, res, await listing(rootFolder, url.searchParams.get('q')), method === 'HEAD');
+  if (url.pathname === '/--tests') {
+    // get tests
+    return sendJson(req, res, await resolveTests(rootFolder, 'browser'), method === 'HEAD');
+  }
+  if (url.pathname === '/--patterns') {
+    // resolve patterns
+    return sendJson(req, res, await resolvePatterns(rootFolder, url.searchParams.getAll('q')), method === 'HEAD');
   }
   if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
     // redirect to the web app
