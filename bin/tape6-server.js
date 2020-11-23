@@ -114,7 +114,8 @@ const server = http.createServer(async (req, res) => {
   }
   if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
     // redirect to the web app
-    return sendRedirect(req, res, webAppPath);
+    url.pathname = webAppPath;
+    return sendRedirect(req, res, url.href);
   }
 
   if (path.normalize(url.pathname).includes('..')) return bailOut(req, res, 403);
