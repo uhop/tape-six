@@ -1,22 +1,30 @@
 import {selectTimer} from '../src/utils/timer.js';
 import {getReporter, setReporter, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
-import Deferred from '../src/utils/Deferred.js';
 import State from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
 import DomReporter from './DomReporter.js';
 import DashReporter from './DashReporter.js';
+import TestWorker from './TestWorker.js';
 
 setConfiguredFlag(true); // we are running the show
 
 const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', s: 'showStack', l: 'showLog'},
   options = {};
 
-let flags = '';
+let flags = '', parallel = 1, patterns = [];
 
 if (window.location.search) {
   const searchParams = new URLSearchParams(window.location.search.substr(1));
   flags = searchParams.get('flags') || '';
+  parallel = searchParams.get('par') || '';
+  if (parallel && !isNaN(parallel)) {
+    parallel = +parallel;
+    parallel = Math.min(100, Math.max(1, parallel));
+  } else {
+    parallel = 1;
+  }
+  patterns = searchParams.getAll('q');
 }
 
 for (let i = 0; i < flags.length; ++i) {
@@ -73,8 +81,6 @@ window.addEventListener('DOMContentLoaded', () => {
     let files;
 
     if (window.location.search) {
-      const searchParams = new URLSearchParams(window.location.search.substr(1)),
-        patterns = searchParams.getAll('q');
       if (patterns && patterns.length) {
         files = await fetch('/--patterns?' + patterns.map(pattern => 'q=' + encodeURIComponent(pattern)).join('&')).then(response =>
           response.ok ? response.json() : null
@@ -91,50 +97,13 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce});
+    const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
+      worker = new TestWorker(event => rootState.emit(event));
 
-    for (const file of files) {
-      rootState.emit({type: 'comment', name: 'file: /' + file, test: 0, time: rootState.timer.now()});
-      const iframe = document.createElement('iframe'),
-        deferred = new Deferred();
-      iframe.className = 'test-iframe';
-      window.__tape6_reporter = event => {
-        rootState.emit(event);
-        if (event.type === 'end' && event.test === 0) deferred.resolve();
-      };
-      if (/\.html?$/i.test(file)) {
-        iframe.src = '/' + file;
-        iframe.onerror = error => deferred.reject(error);
-        document.body.append(iframe);
-      } else {
-        document.body.append(iframe);
-        iframe.contentWindow.document.open();
-        iframe.contentWindow.document.write(`
-          <!doctype html>
-          <html>
-            <head>
-              <title>Test IFRAME</title>
-              <script type="module">
-                const s = document.createElement('script');
-                s.setAttribute('type', 'module');
-                s.src = '/${file}';
-                s.onerror = error => window.parent.__tape6_error(error);
-                document.documentElement.appendChild(s);
-              </script>
-            </head>
-            <body></body>
-          </html>
-        `);
-        iframe.contentWindow.document.close();
-        window.__tape6_error = error => deferred.reject(error);
-      }
-      try {
-        await deferred.promise;
-      } catch (error) {
-        rootState.emit({type: 'comment', name: 'fail to load: /' + file, test: 0, time: rootState.timer.now()});
-      }
-      iframe.parentElement.removeChild(iframe);
-    }
+    await new Promise(resolve => {
+      worker.done = () => resolve();
+      worker.execute(files);
+    });
 
     if (typeof window.__tape6_reportResults == 'function') {
       window.__tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
