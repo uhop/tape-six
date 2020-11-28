@@ -17,13 +17,10 @@ defer(async () => {
   if (isNode) {
     flags = process.env.TAPE6_FLAGS || '';
   } else if (isBrowser) {
-    if (window.location.search) {
-      const dict = window.location.search
-        .substr(1)
-        .split('&')
-        .map(pair => pair.split(/=/))
-        .reduce((acc, pair) => ((acc[pair[0]] = pair[1]), acc), {});
-      flags = dict.flags || '';
+    if (typeof window.__tape6_flags == 'string') {
+      flags = window.__tape6_flags;
+    } else if (window.location.search) {
+      flags = (new URLSearchParams(window.location.search.substr(1))).get('flags') || '';
     }
   }
 
@@ -43,10 +40,11 @@ defer(async () => {
       }
     }
     if (isBrowser) {
+      const id = window.__tape6_id || (new URLSearchParams(window.location.search.substr(1))).get('id');
       if (typeof window.__tape6_reporter == 'function') {
-        reporter = window.__tape6_reporter;
+        reporter = event => window.__tape6_reporter(id, event);
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
-        reporter = event => window.parent.__tape6_reporter(event);
+        reporter = event => window.parent.__tape6_reporter(id, event);
       }
     }
     if (!reporter) {
