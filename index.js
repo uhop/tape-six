@@ -33,9 +33,9 @@ defer(async () => {
   let reporter = getReporter();
   if (!reporter) {
     if (isNode && process.stdout.isTTY) {
-      const TTYReporter = (await import('./src/TTYReporter.js')).default;
       if (!process.env.TAPE6_TAP) {
-        const ttyReporter = new TTYReporter(options);
+        const TTYReporter = (await import('./src/TTYReporter.js')).default,
+          ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     }
