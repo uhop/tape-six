@@ -12,7 +12,9 @@ setConfiguredFlag(true); // we are running the show
 const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', s: 'showStack', l: 'showLog'},
   options = {};
 
-let flags = '', parallel = 1, patterns = [];
+let flags = '',
+  parallel = 1,
+  patterns = [];
 
 if (window.location.search) {
   const searchParams = new URLSearchParams(window.location.search.substr(1));
@@ -98,7 +100,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
-      worker = new TestWorker(event => rootState.emit(event));
+      worker = new TestWorker(event => rootState.emit(event), parallel, options);
 
     await new Promise(resolve => {
       worker.done = () => resolve();
