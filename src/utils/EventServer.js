@@ -1,9 +1,11 @@
 import defer from './defer.js';
 
 export default class EventServer {
-  constructor(reporter, numberOfTasks = 1) {
+  constructor(reporter, numberOfTasks = 1, options = {}) {
     this.reporter = reporter;
     this.numberOfTasks = numberOfTasks;
+    this.options = options;
+
     this.totalTasks = 0;
     this.fileQueue = [];
     this.passThroughId = null;
