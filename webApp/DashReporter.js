@@ -16,7 +16,8 @@ class DashReporter {
   constructor({renumberAsserts = false} = {}) {
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
-    this.depth = this.testCounter = this.assertCounter = this.successCounter = this.failureCounter = this.skipCounter = this.todoCounter = 0;
+    this.depth = this.assertCounter = this.failureCounter = this.skipCounter = this.todoCounter = 0;
+    this.testCounter = -1;
     this.currentTest = this.lastAssert = '';
     this.scoreNode = document.querySelector('.tape6 .score');
     this.donutNode = this.scoreNode && this.scoreNode.querySelector('tape6-donut');
@@ -40,7 +41,7 @@ class DashReporter {
         break;
       case 'assert':
         ++this.assertCounter;
-        event.fail && !event.skip && !event.todo ? ++this.failureCounter : ++this.successCounter;
+        event.fail && !event.skip && !event.todo && ++this.failureCounter;
         event.skip && ++this.skipCounter;
         event.todo && ++this.todoCounter;
         this.lastAssert = formatName(event);
@@ -56,8 +57,10 @@ class DashReporter {
   }
   updateDonut() {
     if (!this.donutNode) return;
+    const totalCounter = this.assertCounter - this.skipCounter,
+      successCounter = totalCounter - this.failureCounter;
     this.donutNode.show([
-      {value: this.successCounter, className: 'success'},
+      {value: successCounter, className: 'success'},
       {value: this.failureCounter, className: 'failure'},
       {value: this.skipCounter, className: 'skipped'},
       {value: this.todoCounter, className: 'todo'}
@@ -65,12 +68,14 @@ class DashReporter {
   }
   updateLegend() {
     if (!this.legendNode) return;
+    const totalCounter = this.assertCounter - this.skipCounter,
+      successCounter = totalCounter - this.failureCounter;
     let node = this.legendNode.querySelector('.legend-tests .value');
     node && (node.innerHTML = formatNumber(this.testCounter));
     node = this.legendNode.querySelector('.legend-asserts .value');
     node && (node.innerHTML = formatNumber(this.assertCounter));
     node = this.legendNode.querySelector('.legend-success .value');
-    node && (node.innerHTML = formatNumber(this.successCounter));
+    node && (node.innerHTML = formatNumber(successCounter));
     node = this.legendNode.querySelector('.legend-failure .value');
     node && (node.innerHTML = formatNumber(this.failureCounter));
     node = this.legendNode.querySelector('.legend-skipped .value');
@@ -84,9 +89,10 @@ class DashReporter {
   }
   updateScoreCard() {
     if (!this.scoreNode) return;
-    const total = this.assertCounter - this.skipCounter,
-      fail = this.successCounter < total,
-      result = total > 0 ? formatNumber(100 * (this.successCounter / total), 1) : '100';
+    const totalCounter = this.assertCounter - this.skipCounter,
+      successCounter = totalCounter - this.failureCounter,
+      fail = successCounter < totalCounter,
+      result = totalCounter > 0 ? formatNumber(100 * (successCounter / totalCounter), 1) : '100';
     let node = this.scoreNode.querySelector('.text');
     node.classList.remove('nothing');
     if (fail) {
