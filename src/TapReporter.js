@@ -3,11 +3,11 @@ import yamlFormatter from './utils/yamlFormatter.js';
 const formatterOptions = {offset: 2};
 
 const styles = {
-  info: 'color: blue; font-style: italic;',
+  info: 'color: #44f; font-style: italic;',
   success: 'color: green;',
   failure: 'color: red;',
   summary: 'font-weight: bold;',
-  'summary-info': 'font-weight: bold; color: blue; font-style: italic;',
+  'summary-info': 'font-weight: bold; color: #44f; font-style: italic;',
   'summary-success': 'font-weight: bold; color: green;',
   'summary-failure': 'font-weight: bold; color: red;',
   'summary-result-success': 'font-weight: bold; color: white; background-color: green; padding: 0.5em 1em;',
