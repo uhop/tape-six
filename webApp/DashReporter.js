@@ -57,10 +57,10 @@ class DashReporter {
   }
   updateDonut() {
     if (!this.donutNode) return;
-    const totalCounter = this.assertCounter - this.skipCounter,
-      successCounter = totalCounter - this.failureCounter;
+    const total = this.assertCounter - this.skipCounter,
+      success = total - this.failureCounter;
     this.donutNode.show([
-      {value: successCounter, className: 'success'},
+      {value: success, className: 'success'},
       {value: this.failureCounter, className: 'failure'},
       {value: this.skipCounter, className: 'skipped'},
       {value: this.todoCounter, className: 'todo'}
@@ -68,14 +68,14 @@ class DashReporter {
   }
   updateLegend() {
     if (!this.legendNode) return;
-    const totalCounter = this.assertCounter - this.skipCounter,
-      successCounter = totalCounter - this.failureCounter;
+    const total = this.assertCounter - this.skipCounter,
+      success = total - this.failureCounter;
     let node = this.legendNode.querySelector('.legend-tests .value');
     node && (node.innerHTML = formatNumber(this.testCounter));
     node = this.legendNode.querySelector('.legend-asserts .value');
     node && (node.innerHTML = formatNumber(this.assertCounter));
     node = this.legendNode.querySelector('.legend-success .value');
-    node && (node.innerHTML = formatNumber(successCounter));
+    node && (node.innerHTML = formatNumber(success));
     node = this.legendNode.querySelector('.legend-failure .value');
     node && (node.innerHTML = formatNumber(this.failureCounter));
     node = this.legendNode.querySelector('.legend-skipped .value');
@@ -89,10 +89,10 @@ class DashReporter {
   }
   updateScoreCard() {
     if (!this.scoreNode) return;
-    const totalCounter = this.assertCounter - this.skipCounter,
-      successCounter = totalCounter - this.failureCounter,
-      fail = successCounter < totalCounter,
-      result = totalCounter > 0 ? formatNumber(100 * (successCounter / totalCounter), 1) : '100';
+    const total = this.assertCounter - this.skipCounter,
+      success = total - this.failureCounter,
+      fail = success < total,
+      result = total > 0 ? formatNumber(100 * (success / total), 1) : '100';
     let node = this.scoreNode.querySelector('.text');
     node.classList.remove('nothing');
     if (fail) {
