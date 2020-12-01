@@ -1,41 +1,81 @@
 #!/usr/bin/env node
 
-import {promises as fsp} from 'fs';
+import cluster from 'cluster';
+import os from 'os';
 import path from 'path';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
-import {test, getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
-import defer from '../src/utils/defer.js';
+import {getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
 import State from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
+import TestWorker from '../src/node/TestWorker.js';
+import {selectTimer} from '../src/utils/timer.js';
+import defer from '../src/utils/defer.js';
 
-setConfiguredFlag(true); // we are running the show
+const options = {},
+  rootFolder = process.cwd();
 
-const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce'},
-  options = {};
+let flags = '',
+  parallel = '',
+  files = [];
 
-let flags = '', flagIsSet = false, files = [];
+const masterConfiguration = () => {
+  const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce'};
 
-for (let i = 2; i < process.argv.length; ++i) {
-  const arg = process.argv[i];
-  if (arg == '-f' || arg == '--flags') {
-    if (++i < process.argv.length) {
-      flags = process.argv[i];
-      flagIsSet = true;
+  let flagIsSet = false,
+    parIsSet = false;
+
+  for (let i = 2; i < process.argv.length; ++i) {
+    const arg = process.argv[i];
+    if (arg == '-f' || arg == '--flags') {
+      if (++i < process.argv.length) {
+        flags = process.argv[i];
+        flagIsSet = true;
+      }
+      break;
+    } else if (arg == '-p' || arg == '--par') {
+      if (++i < process.argv.length) {
+        parallel = process.argv[i];
+        parIsSet = true;
+        if (!parallel || isNaN(parallel)) {
+          parallel = '';
+          parIsSet = false;
+        }
+      }
+      break;
     }
-    break;
+    files.push(arg);
   }
-  files.push(arg);
-}
 
-const init = async () => {
+  if (!flagIsSet) {
+    flags = process.env.TAPE6_FLAGS || flags;
+  }
+  for (let i = 0; i < flags.length; ++i) {
+    const option = flags[i].toLowerCase(),
+      name = optionNames[option];
+    if (typeof name == 'string') options[name] = option !== flags[i];
+  }
+
+  if (!parIsSet) {
+    parallel = process.env.TAPE6_PAR || parallel;
+  }
+  if (parallel) {
+    parallel = Math.max(0, +parallel);
+    if (parallel === Infinity) parallel = 0;
+  } else {
+    parallel = 0;
+  }
+  if (!parallel) parallel = os.cpus().length;
+};
+
+const masterInitialization = async () => {
   let reporter = getReporter();
   if (!reporter) {
     if (process.stdout.isTTY) {
-      const TTYReporter = (await import('../src/TTYReporter.js')).default;
       if (!process.env.TAPE6_TAP) {
-        const ttyReporter = new TTYReporter(options);
+        const TTYReporter = (await import('../src/TTYReporter.js')).default,
+          ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     }
@@ -46,17 +86,6 @@ const init = async () => {
     setReporter(reporter);
   }
 
-  if (!flagIsSet) {
-    flags = process.env.TAPE6_FLAGS || flags;
-  }
-
-  for (let i = 0; i < flags.length; ++i) {
-    const option = flags[i].toLowerCase(),
-      name = optionNames[option];
-    if (typeof name == 'string') options[name] = option !== flags[i];
-  }
-
-  const rootFolder = process.cwd();
   if (files.length) {
     files = await resolvePatterns(rootFolder, files);
   } else {
@@ -64,24 +93,103 @@ const init = async () => {
   }
 };
 
-const main = async () => {
-  await init();
+const masterProcess = async () => {
+  masterConfiguration();
+  await masterInitialization();
+  await selectTimer();
 
-  console.log('ARGV:', process.argv.length);
-  console.log('TEST FILES:', files.length);
-  files.forEach(name => console.log(' ', name));
+  const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
+    worker = new TestWorker(event => rootState.emit(event), parallel, options);
 
-  // const rootState = new State(null, {callback: reporter, failOnce: options.failOnce});
+  await new Promise(resolve => {
+    worker.done = () => resolve();
+    worker.execute(files);
+  });
 
-  // rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
-  // for (;;) {
-  //   const tests = getTests();
-  //   if (!tests.length) break;
-  //   clearTests();
-  //   await runTests(rootState, tests);
-  // }
-  // rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
-
-  // process.exit(rootState.failed > 0 ? 1 : 0);
+  process.exit(rootState.failed > 0 ? 1 : 0);
 };
-main().then(() => console.log('Done.'), error => console.error('ERROR:', error));
+
+// const reporter = event => (console.log({event}), process.send({event}));
+
+class BufferedReporter {
+  constructor() {
+    this.buffer = [];
+    this.inFlight = false;
+    this.shouldExit = false;
+  }
+  report(event) {
+    if (this.inFlight) {
+      this.buffer.push(event);
+      return this;
+    }
+    this.buffer.push(event);
+    return this.send();
+  }
+  send() {
+    if (!this.buffer.length) {
+      this.shouldExit && defer(() => process.exit(0));
+      return this;
+    }
+    this.inFlight = true;
+    const events = this.buffer;
+    this.buffer = [];
+    process.send({events});
+    return this;
+  }
+}
+
+const reporter = new BufferedReporter();
+
+const workerProcess = async () => {
+  setConfiguredFlag(true); // we are running the show
+  await selectTimer();
+
+  await new Promise((resolve, reject) => {
+    process.on('message', async ({id, fileName, options, received}) => {
+      if (received) {
+        if (reporter.buffer.length) {
+          reporter.send();
+        } else if (reporter.shouldExit) {
+          process.exit(0);
+        }
+        return;
+      }
+
+      try {
+        await import(path.join(rootFolder, fileName));
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      const rootState = new State(null, {callback: event => reporter.report(event), failOnce: options && options.failOnce});
+
+      defer(async () => {
+      rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
+      for (;;) {
+        const tests = getTests();
+        if (!tests.length) break;
+        clearTests();
+        await runTests(rootState, tests);
+      }
+      rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
+      resolve();});
+    });
+    process.send({started: true});
+  });
+
+  if (reporter.inFlight || reporter.buffer.length) {
+    reporter.shouldExit = true;
+  } else {
+    process.exit(0);
+  }
+};
+
+const main = async () => {
+  if (cluster.isMaster) {
+    await masterProcess();
+  } else if (cluster.isWorker) {
+    await workerProcess();
+  }
+};
+main().catch(error => console.error('ERROR:', error));
