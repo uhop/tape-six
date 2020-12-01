@@ -101,10 +101,12 @@ const masterProcess = async () => {
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);
 
+  rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
   await new Promise(resolve => {
     worker.done = () => resolve();
     worker.execute(files);
   });
+  rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
 
   process.exit(rootState.failed > 0 ? 1 : 0);
 };
@@ -165,15 +167,14 @@ const workerProcess = async () => {
       const rootState = new State(null, {callback: event => reporter.report(event), failOnce: options && options.failOnce});
 
       defer(async () => {
-      rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
-      for (;;) {
-        const tests = getTests();
-        if (!tests.length) break;
-        clearTests();
-        await runTests(rootState, tests);
-      }
-      rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
-      resolve();});
+        for (;;) {
+          const tests = getTests();
+          if (!tests.length) break;
+          clearTests();
+          await runTests(rootState, tests);
+        }
+        resolve();
+      });
     });
     process.send({started: true});
   });
