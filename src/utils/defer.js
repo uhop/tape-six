@@ -9,7 +9,7 @@ if (typeof setImmediate == 'function') {
     'message',
     evt => {
       const src = evt.source;
-      if ((src === window || src === null) && evt.data === 'ay-process-tick') {
+      if ((src === window || src === null) && evt.data === 'tape6-process-tick') {
         evt.stopPropagation();
         if (buffer.length) {
           const tasks = buffer.slice(0);
@@ -22,14 +22,12 @@ if (typeof setImmediate == 'function') {
   );
   deferImplementation = fn => {
     buffer.push(fn);
-    window.postMessage('ay-process-tick', '*');
+    window.postMessage('tape6-process-tick', '*');
   };
 } else {
   deferImplementation = setTimeout;
 }
 
-const defer = fn => {
-  deferImplementation(fn);
-};
+const defer = fn => deferImplementation(fn);
 
 export default defer;
