@@ -5,16 +5,20 @@ export const setTimer = newTimer => (timer = newTimer);
 
 export const selectTimer = async () => {
   // set HR timer
-  if (typeof window == 'object' && window.performance && typeof window.performance.now == 'function') {
-    setTimer(window.performance);
-  } else if (typeof process == 'object' && typeof process.exit == 'function') {
+  if (typeof performance == 'object' && performance && typeof performance.now == 'function') {
+    // browser or Deno
+    setTimer(performance);
+    return;
+  }
+  if (typeof process == 'object' && typeof process.exit == 'function') {
+    // Node
     try {
       const {performance} = await import('perf_hooks');
       setTimer(performance);
+      return;
     } catch (error) {
-      setTimer(Date);
+      // squelch
     }
-  } else {
-    setTimer(Date);
   }
+  setTimer(Date);
 };
