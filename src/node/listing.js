@@ -9,7 +9,7 @@ const prepRe = (string, substitute, allowDot) => {
   const parts = string.split('*'),
     startsWithStar = !parts[0],
     result = parts.map(sanitizeRe).join(substitute);
-  return startsWithStar && allowDot ? result : notDotSep + result;
+  return startsWithStar && !allowDot ? notDotSep + result : result;
 }
 const mergeWildcards = folders => folders.reduce((acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc), []);
 
