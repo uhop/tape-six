@@ -9,7 +9,7 @@ export default class TestWorker extends EventServer {
       if (event.type === 'end' && event.test === 0) this.close(id);
     };
     window.__tape6_error = (id, error) => {
-      error && this.report(id, {type: 'comment', name: 'fail to load: ' + error.message, test: 0})
+      error && this.report(id, {type: 'comment', name: 'fail to load: ' + error.message, test: 0});
       this.close(id);
     };
   }
