@@ -14,14 +14,14 @@ defer(async () => {
 
   let flags = '';
 
-  if (isNode) {
-    flags = process.env.TAPE6_FLAGS || '';
-  } else if (isBrowser) {
+  if (isBrowser) {
     if (typeof window.__tape6_flags == 'string') {
       flags = window.__tape6_flags;
     } else if (window.location.search) {
       flags = (new URLSearchParams(window.location.search.substr(1))).get('flags') || '';
     }
+  } else if (isNode) {
+    flags = process.env.TAPE6_FLAGS || '';
   }
 
   for (let i = 0; i < flags.length; ++i) {
@@ -32,19 +32,18 @@ defer(async () => {
 
   let reporter = getReporter();
   if (!reporter) {
-    if (isNode && process.stdout.isTTY) {
-      if (!process.env.TAPE6_TAP) {
-        const TTYReporter = (await import('./src/TTYReporter.js')).default,
-          ttyReporter = new TTYReporter(options);
-        reporter = ttyReporter.report.bind(ttyReporter);
-      }
-    }
     if (isBrowser) {
       const id = window.__tape6_id || (new URLSearchParams(window.location.search.substr(1))).get('id');
       if (typeof window.__tape6_reporter == 'function') {
         reporter = event => window.__tape6_reporter(id, event);
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
         reporter = event => window.parent.__tape6_reporter(id, event);
+      }
+    } else if (isNode) {
+      if (process.stdout.isTTY && !process.env.TAPE6_TAP) {
+        const TTYReporter = (await import('./src/TTYReporter.js')).default,
+          ttyReporter = new TTYReporter(options);
+        reporter = ttyReporter.report.bind(ttyReporter);
       }
     }
     if (!reporter) {
@@ -66,7 +65,7 @@ defer(async () => {
   rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
 
   if (isNode) {
-    process.exit(rootState.failed > 0 ? 1 : 0);
+    !process.env.TAPE6_WORKER && process.exit(rootState.failed > 0 ? 1 : 0);
   } else if (typeof __reportTape6Results == 'function') {
     __reportTape6Results(rootState.failed > 0 ? 'failure' : 'success');
   }
