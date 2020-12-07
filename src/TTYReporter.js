@@ -28,6 +28,7 @@ class TTYReporter {
 
     this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = this.skippedAsserts = this.todoAsserts = 0;
     this.testCounter = -1;
+    this.technicalDepth = 0;
 
     this.lines = 0;
     this.testStack = [];
@@ -59,10 +60,10 @@ class TTYReporter {
     return this.red(this.italic(JSON.stringify(value)));
   }
   out(text) {
-    if (this.depth < 2) {
+    if (this.depth < 2 + this.technicalDepth) {
       this.output.write(text + '\n');
     } else {
-      this.output.write(stringRep(this.depth - 1, '  ') + text + '\n');
+      this.output.write(stringRep(this.depth - 1 - this.technicalDepth, '  ') + text + '\n');
     }
     ++this.lines;
     return this;
@@ -73,14 +74,15 @@ class TTYReporter {
     let text;
     switch (event.type) {
       case 'test':
-        this.depth && !this.failureOnly && this.out('\u25CB ' + (event.name || 'anonymous test'));
+        (this.depth > this.technicalDepth) && !this.failureOnly && this.out('\u25CB ' + (event.name || 'anonymous test'));
         ++this.depth;
         ++this.testCounter;
         this.testStack.push({name: event.name, lines: this.lines, fail: false});
         break;
       case 'end':
         this.testStack.pop();
-        if (--this.depth) {
+        --this.depth;
+        if (this.depth > this.technicalDepth) {
           if (this.failureOnly) break;
           text = (event.fail ? '✗' : '✓') + ' ' + (event.name || this.italic('anonymous test'));
           text = event.fail ? this.brightRed(text) : this.green(text);
@@ -89,6 +91,7 @@ class TTYReporter {
           this.out(text);
           break;
         }
+        if (this.depth) break;
 
         // summary
         {
