@@ -8,25 +8,28 @@ export default class TestWorker extends EventServer {
     super(reporter, numberOfTasks, options);
   }
   makeTask(fileName) {
-    const worker = cluster.fork({TAPE6_WORKER: 'true'}),
+    const worker = cluster.fork({TAPE6_WORKER: 'yes', TAPE6_TAP: ''}),
       id = String(worker.id);
     worker.on('message', msg => {
       if (msg.started) {
         worker.send({id, fileName, options: this.options});
       } else {
-        // console.log(id, msg);
-        msg.events.forEach(event => this.report(id, event));
-        worker.send({received: true});
+        let done = false;
+        msg.events.forEach(event => {
+          this.report(id, event);
+          if (event.type === 'end' && event.test === 0) done = true;
+        });
+        worker.send(done? {done: true} : {received: true});
       }
     });
     worker.on('exit', (code, signal) => {
-      let error = null;
+      let errorMsg = '';
       if (signal) {
-        error = Error(`Worker ${id} was killed by signal: ${signal}`);
+        errorMsg = `Worker ${id} was killed by signal: ${signal}`;
       } else if (code) {
-        error = Error(`Worker ${id} exited with error code: ${code}`);
+        errorMsg = `Worker ${id} exited with error code: ${code}`;
       }
-      error && this.report(id, {type: 'comment', name: 'fail to load: ' + error.message, test: 0});
+      errorMsg && this.report(id, {type: 'comment', name: 'fail to load: ' + errorMsg, test: 0});
       this.close(id);
     });
     return id;
