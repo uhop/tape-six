@@ -76,6 +76,8 @@ const masterInitialization = async () => {
       if (!process.env.TAPE6_TAP) {
         const TTYReporter = (await import('../src/TTYReporter.js')).default,
           ttyReporter = new TTYReporter(options);
+        ttyReporter.testCounter = -2;
+        ttyReporter.technicalDepth = 1;
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     }
@@ -111,8 +113,6 @@ const masterProcess = async () => {
   process.exit(rootState.failed > 0 ? 1 : 0);
 };
 
-// const reporter = event => (console.log({event}), process.send({event}));
-
 class BufferedReporter {
   constructor() {
     this.buffer = [];
@@ -143,16 +143,19 @@ class BufferedReporter {
 const reporter = new BufferedReporter();
 
 const workerProcess = async () => {
-  setConfiguredFlag(true); // we are running the show
-  await selectTimer();
+  setReporter(reporter.report.bind(reporter));
 
   await new Promise((resolve, reject) => {
-    process.on('message', async ({id, fileName, options, received}) => {
+    process.on('message', async ({id, fileName, options, received, done}) => {
+      reporter.inFlight = false;
+
+      if (done) return resolve();
+
       if (received) {
         if (reporter.buffer.length) {
           reporter.send();
         } else if (reporter.shouldExit) {
-          process.exit(0);
+          resolve();
         }
         return;
       }
@@ -163,18 +166,6 @@ const workerProcess = async () => {
         reject(error);
         return;
       }
-
-      const rootState = new State(null, {callback: event => reporter.report(event), failOnce: options && options.failOnce});
-
-      defer(async () => {
-        for (;;) {
-          const tests = getTests();
-          if (!tests.length) break;
-          clearTests();
-          await runTests(rootState, tests);
-        }
-        resolve();
-      });
     });
     process.send({started: true});
   });
