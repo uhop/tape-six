@@ -119,14 +119,29 @@ export const runTests = async (rootState, tests) => {
   }
 };
 
-test.skip = async function skip(name, options, testFn) {
+test.skip = function skip(name, options, testFn) {
   options = processArgs(name, options, testFn);
   return test({...options, skip: true});
 };
 
-test.todo = async function todo(name, options, testFn) {
+test.todo = function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
   return test({...options, todo: true});
+};
+
+test.asPromise = function asPromise(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  if (options.testFn) {
+    const testFn = options.testFn;
+    options.testFn = tester => new Promise((resolve, reject) => {
+      try {
+        testFn(tester, resolve, reject)
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  return test(options);
 };
 
 // test() (an embedded test runner) is added here to ./Tester.js to avoid circular dependencies
@@ -152,6 +167,21 @@ Tester.prototype.todo = async function todo(name, options, testFn) {
   } else {
     await runTests(this.state, [{options: {...options, todo: true}}]);
   }
+};
+
+Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
+  options = processArgs(name, options, testFn);
+  if (options.testFn) {
+    const testFn = options.testFn;
+    options.testFn = tester => new Promise((resolve, reject) => {
+      try {
+        testFn(tester, resolve, reject)
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  await runTests(this.state, [{options}]);
 };
 
 export default test;
