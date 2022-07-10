@@ -7,7 +7,7 @@ tape-six is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based 
 
 Why `tape-six`? It was supposed to be named `tape6` but `npm` does not allow names "similar" to existing packages. Instead of eliminating name-squatting they force to use unintuitive and unmemorable names. That's why all internal names, environment variables, and public names still use `tape6`.
 
-Why another library? Working on projects written in modern JS (with modules) I found two problems with existing unit test libraries:
+Why another library? Working on projects written in modern JS (with modules) I found several problems with existing unit test libraries:
 
 * In my opinion unit test files should be directly executable with `node`, `deno`, browsers (with a trivial HTML file to load a test file) without a need for a special test runner utility, which wraps and massages my beautiful code.
 * Some of them do not work with modules.
