@@ -1,6 +1,6 @@
 {
   "name": "tape6",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "description": "TAP for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
@@ -9,7 +9,8 @@
     ".": "./index.js"
   },
   "bin": {
-    "tape6": "bin/cli.js"
+    "tape6": "bin/tape6.js",
+    "tape6-server": "bin/tape6-server.js"
   },
   "scripts": {
     "start": "node bin/tape6-server.js --trace",
@@ -30,7 +31,7 @@
     "assert",
     "browser"
   ],
-  "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (http://lazutkin.com/)",
+  "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (https://www.lazutkin.com/)",
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/uhop/tape6/issues"
@@ -51,6 +52,6 @@
     ]
   },
   "devDependencies": {
-    "puppeteer": "^5.4.1"
+    "puppeteer": "^15.3.2"
   }
 }
