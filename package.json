@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "TAP for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
@@ -19,10 +19,10 @@
     "build": "npm run copyDeep6",
     "prepublishOnly": "npm run build"
   },
-  "github": "http://github.com/uhop/tape6",
+  "github": "http://github.com/uhop/tape-six",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uhop/tape6.git"
+    "url": "git+https://github.com/uhop/tape-six.git"
   },
   "keywords": [
     "tap",
@@ -34,15 +34,14 @@
   "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (https://www.lazutkin.com/)",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/uhop/tape6/issues"
+    "url": "https://github.com/uhop/tape-six/issues"
   },
-  "homepage": "https://github.com/uhop/tape6#readme",
+  "homepage": "https://github.com/uhop/tape-six#readme",
   "files": [
     "index.js",
     "bin",
-    "web",
-    "src",
-    "cjs"
+    "webApp",
+    "src"
   ],
   "tape6": {
     "tests": [
