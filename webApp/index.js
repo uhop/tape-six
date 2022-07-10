@@ -9,7 +9,7 @@ import TestWorker from './TestWorker.js';
 
 setConfiguredFlag(true); // we are running the show
 
-const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', s: 'showStack', l: 'showLog'},
+const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', s: 'showStack', l: 'showLog', n: 'showAssertNumber'},
   options = {};
 
 let flags = '',

@@ -15,7 +15,15 @@ const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
 // main
 
 class TTYReporter {
-  constructor({output = process.stdout, renumberAsserts = false, failureOnly = false, showBanner = true, showTime = true, showData = false} = {}) {
+  constructor({
+    output = process.stdout,
+    renumberAsserts = false,
+    failureOnly = false,
+    showBanner = true,
+    showTime = true,
+    showData = false,
+    showAssertNumber = false
+  } = {}) {
     if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
 
     this.output = output;
@@ -25,6 +33,7 @@ class TTYReporter {
     this.showBanner = showBanner;
     this.showTime = showTime;
     this.showData = showData;
+    this.showAssertNumber = showAssertNumber;
 
     this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = this.skippedAsserts = this.todoAsserts = 0;
     this.testCounter = -1;
@@ -74,7 +83,7 @@ class TTYReporter {
     let text;
     switch (event.type) {
       case 'test':
-        (this.depth > this.technicalDepth) && !this.failureOnly && this.out('\u25CB ' + (event.name || 'anonymous test'));
+        this.depth > this.technicalDepth && !this.failureOnly && this.out('\u25CB ' + (event.name || 'anonymous test'));
         ++this.depth;
         ++this.testCounter;
         this.testStack.push({name: event.name, lines: this.lines, fail: false});
@@ -196,7 +205,10 @@ class TTYReporter {
         event.skip && ++this.skippedAsserts;
         event.todo && ++this.todoAsserts;
         if (!isFailed && this.failureOnly) break;
-        text = (event.fail ? '✗' : '✓') + ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
+        text = (event.fail ? '✗' : '✓');
+        if (this.showAssertNumber) {
+          text += ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
+        }
         if (event.skip) {
           text += ' SKIP';
         } else if (event.todo) {

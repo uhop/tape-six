@@ -3,7 +3,7 @@ import defer from './src/utils/defer.js';
 import State from './src/State.js';
 import TapReporter from './src/TapReporter.js';
 
-const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce'};
+const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', n: 'showAssertNumber'};
 
 defer(async () => {
   if (getConfiguredFlag()) return; // bail out => somebody else is running the show
