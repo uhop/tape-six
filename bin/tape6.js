@@ -21,7 +21,7 @@ let flags = '',
   files = [];
 
 const masterConfiguration = () => {
-  const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce'};
+  const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', n: 'showAssertNumber'};
 
   let flagIsSet = false,
     parIsSet = false;
@@ -33,7 +33,7 @@ const masterConfiguration = () => {
         flags = process.argv[i];
         flagIsSet = true;
       }
-      break;
+      continue;
     } else if (arg == '-p' || arg == '--par') {
       if (++i < process.argv.length) {
         parallel = process.argv[i];
@@ -43,7 +43,7 @@ const masterConfiguration = () => {
           parIsSet = false;
         }
       }
-      break;
+      continue;
     }
     files.push(arg);
   }
