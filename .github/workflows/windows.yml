@@ -1,0 +1,39 @@
+name: Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      node-version:
+        description: 'Node.js version to run tests'
+        required: true
+        default: 18
+        type: number
+
+jobs:
+  tests:
+    name: Node.js ${{inputs.node-version}}
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{inputs.node-version}}
+    - name: Get NPM cache directory
+      id: npm-cache
+      run: echo "::set-output name=dir::$(npm config get cache)"
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: ${{steps.npm-cache.outputs.dir}}
+        key: windows-latest-node-${{hashFiles('**/package-lock.json')}}
+        restore-keys: |
+          windows-latest-node-
+          windows-latest-
+    - name: Install the package and run tests
+      run: |
+        npm ci
+        npm run build --if-present
+        npm test
