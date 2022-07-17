@@ -17,7 +17,8 @@
     "test-chrome": "node tests/puppeteer-chrome.js",
     "copyDeep6": "node scripts/copyFolder.js --src ./vendors/deep6/src --dst ./src/deep6 --clear",
     "build": "npm run copyDeep6",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "node ./bin/tape6.js"
   },
   "github": "http://github.com/uhop/tape-six",
   "repository": {
@@ -45,9 +46,7 @@
   ],
   "tape6": {
     "tests": [
-      "/tests/manual/test-skip*.js",
-      "/tests/manual/test-todo.js",
-      "/tests/manual/test-three*.js"
+      "/tests/test-*.*js"
     ]
   },
   "devDependencies": {
