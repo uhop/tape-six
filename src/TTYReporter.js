@@ -25,7 +25,7 @@ class TTYReporter {
   constructor({
     output = process.stdout,
     renumberAsserts = false,
-    failureOnly = true,
+    failureOnly = false,
     showBanner = output.isTTY,
     showTime = true,
     showData = true,
