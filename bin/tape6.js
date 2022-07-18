@@ -161,7 +161,16 @@ const workerProcess = async () => {
       }
 
       try {
-        await import(path.join(rootFolder, fileName));
+        let name = path.join(rootFolder, fileName);
+        if (!/^file:\/\//.test(name)) {
+          if (path.sep === '\\') {
+            // windows
+            name = 'file://' + path.posix.normalize(name);
+          } else {
+            name = 'file://' + name;
+          }
+        }
+        await import(name);
       } catch (error) {
         reject(error);
         return;
