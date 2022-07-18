@@ -1,4 +1,11 @@
-import {stringRep, normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './utils/box.js';
+import {
+  stringRep,
+  normalizeBox,
+  padBox,
+  padBoxLeft,
+  drawBox,
+  stackHorizontally
+} from './utils/box.js';
 import {formatNumber, formatTime} from './utils/formatters.js';
 
 // colors
@@ -19,15 +26,13 @@ class TTYReporter {
     output = process.stdout,
     renumberAsserts = false,
     failureOnly = false,
-    showBanner = true,
+    showBanner = output.isTTY,
     showTime = true,
     showData = false,
     showAssertNumber = false
   } = {}) {
-    if (!output || !output.isTTY) throw Error('Module TTYReporter works only with TTY output streams.');
-
     this.output = output;
-    this.hasColors = this.output.hasColors(256);
+    this.hasColors = output.isTTY && this.output.hasColors(256);
     this.renumberAsserts = renumberAsserts;
     this.failureOnly = failureOnly;
     this.showBanner = showBanner;
@@ -35,7 +40,13 @@ class TTYReporter {
     this.showData = showData;
     this.showAssertNumber = showAssertNumber;
 
-    this.depth = this.assertCounter = this.failedAsserts = this.successfulAsserts = this.skippedAsserts = this.todoAsserts = 0;
+    this.depth =
+      this.assertCounter =
+      this.failedAsserts =
+      this.successfulAsserts =
+      this.skippedAsserts =
+      this.todoAsserts =
+        0;
     this.testCounter = -1;
     this.technicalDepth = 0;
 
@@ -58,7 +69,7 @@ class TTYReporter {
     this.failure = this.paint(failureStyle, reset);
     this.skipped = this.paint(skippedStyle, reset);
 
-    this.out('');
+    this.output.isTTY && this.out('');
   }
   paint(prefix, suffix = '\x1B[39m') {
     return this.hasColors ? text => join(prefix, text, suffix) : text => text;
@@ -78,12 +89,16 @@ class TTYReporter {
     return this;
   }
   report(event) {
-    this.output.moveCursor(0, -1);
-    this.output.clearLine(0);
+    if (this.output.isTTY) {
+      this.output.moveCursor(0, -1);
+      this.output.clearLine(0);
+    }
     let text;
     switch (event.type) {
       case 'test':
-        this.depth > this.technicalDepth && !this.failureOnly && this.out('\u25CB ' + (event.name || 'anonymous test'));
+        this.depth > this.technicalDepth &&
+          !this.failureOnly &&
+          this.out('\u25CB ' + (event.name || 'anonymous test'));
         ++this.depth;
         ++this.testCounter;
         this.testStack.push({name: event.name, lines: this.lines, fail: false});
@@ -108,7 +123,7 @@ class TTYReporter {
             total = state.asserts - state.skipped,
             success = total - state.failed;
 
-          if (!this.showBanner) {
+          if (!this.showBanner || !this.output.isTTY) {
             this.out(
               this.blackBg(
                 '  ' +
@@ -139,7 +154,14 @@ class TTYReporter {
           box1 = drawBox(box1);
           box1 = padBox(box1, 0, 3);
           box1 = normalizeBox(
-            [...box1, '', 'Passed: ' + (event.fail ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%' : '100%')],
+            [
+              ...box1,
+              '',
+              'Passed: ' +
+                (event.fail
+                  ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%'
+                  : '100%')
+            ],
             ' ',
             'center'
           );
@@ -161,7 +183,18 @@ class TTYReporter {
             'left'
           );
           box2 = padBoxLeft(box2, 1);
-          box2 = stackHorizontally(normalizeBox(['tests:', 'asserts:', '  passed:', '  failed:', '  skipped:', '  todo:', 'time:']), box2);
+          box2 = stackHorizontally(
+            normalizeBox([
+              'tests:',
+              'asserts:',
+              '  passed:',
+              '  failed:',
+              '  skipped:',
+              '  todo:',
+              'time:'
+            ]),
+            box2
+          );
 
           box2[0] = this.brightWhite(box2[0]);
           // box2[1] = this.brightYellow(box2[1]);
@@ -205,7 +238,7 @@ class TTYReporter {
         event.skip && ++this.skippedAsserts;
         event.todo && ++this.todoAsserts;
         if (!isFailed && this.failureOnly) break;
-        text = (event.fail ? '✗' : '✓');
+        text = event.fail ? '✗' : '✓';
         if (this.showAssertNumber) {
           text += ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
         }
@@ -239,14 +272,17 @@ class TTYReporter {
         if (event.hasOwnProperty('actual')) {
           this.out(this.lowWhite('  actual:   ') + this.formatValue(event.actual));
         }
-        const stack = event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string' ? event.actual.stack : event.marker.stack;
+        const stack =
+          event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string'
+            ? event.actual.stack
+            : event.marker.stack;
         if (typeof stack == 'string') {
           this.out(this.lowWhite('  stack: |-'));
           stack.split('\n').forEach(line => this.out(this.lowWhite('    ' + line)));
         }
         break;
     }
-    this.showScore();
+    this.output.isTTY && this.showScore();
   }
   showScore() {
     this.out(

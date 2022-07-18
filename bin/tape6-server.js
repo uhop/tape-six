@@ -34,8 +34,7 @@ const mimeTable = {
   defaultMime = 'application/octet-stream',
   rootFolder = process.env.SERVER_ROOT || process.cwd(),
   traceCalls = process.argv.includes('--trace'),
-  isTTY = process.stdout.isTTY,
-  hasColors = isTTY && process.stdout.hasColors();
+  hasColors = process.stdout.isTTY && process.stdout.hasColors();
 
 let webAppPath = process.env.WEBAPP_PATH;
 if (!webAppPath) {

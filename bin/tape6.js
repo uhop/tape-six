@@ -86,7 +86,7 @@ const masterConfiguration = () => {
 const masterInitialization = async () => {
   let reporter = getReporter();
   if (!reporter) {
-    if (process.stdout.isTTY && !process.env.TAPE6_TAP) {
+    if (!process.env.TAPE6_TAP) {
       const TTYReporter = (await import('../src/TTYReporter.js')).default,
         ttyReporter = new TTYReporter(options);
       ttyReporter.testCounter = -2;

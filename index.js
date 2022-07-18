@@ -40,7 +40,7 @@ defer(async () => {
         reporter = event => window.parent.__tape6_reporter(id, event);
       }
     } else if (isNode) {
-      if (process.stdout.isTTY && !process.env.TAPE6_TAP) {
+      if (!process.env.TAPE6_TAP) {
         const TTYReporter = (await import('./src/TTYReporter.js')).default,
           ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
