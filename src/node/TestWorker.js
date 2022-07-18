@@ -1,6 +1,7 @@
 import cluster from 'cluster';
 import os from 'os';
 
+import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
 export default class TestWorker extends EventServer {
@@ -13,14 +14,22 @@ export default class TestWorker extends EventServer {
     worker.on('message', msg => {
       if (msg.started) {
         worker.send({id, fileName, options: this.options});
-      } else {
-        let done = false;
-        msg.events.forEach(event => {
-          this.report(id, event);
-          if (event.type === 'end' && event.test === 0) done = true;
-        });
-        worker.send(done? {done: true} : {received: true});
+        return;
       }
+      let done = false;
+      msg.events.forEach(event => {
+        try {
+          this.report(id, event);
+        } catch (error) {
+          if (error instanceof StopTest) {
+            console.error('# immediate StopTest:', error.message || 'StopTest is activated');
+            process.exit(1);
+          }
+          throw error;
+        }
+        if (event.type === 'end' && event.test === 0) done = true;
+      });
+      worker.send(done ? {done: true} : {received: true});
     });
     worker.on('exit', (code, signal) => {
       let errorMsg = '';
