@@ -40,8 +40,13 @@ const mimeTable = {
 let webAppPath = process.env.WEBAPP_PATH;
 if (!webAppPath) {
   const url = import.meta.url;
-  if (!/^file:\/\//i.test(url)) throw Error('Cannot identify the location of the web application. Use WEBAPP_PATH.');
-  webAppPath = path.relative(rootFolder, path.join(path.dirname(url.substr(7)), '../webApp/'));
+  if (!/^file:\/\//i.test(url))
+    throw Error('Cannot identify the location of the web application. Use WEBAPP_PATH.');
+  const isWindows = path.sep === '\\';
+  webAppPath = path.relative(
+    rootFolder,
+    path.join(path.dirname(url.substring(isWindows ? 8 : 7)), '../webApp/')
+  );
 }
 
 // common aliases
@@ -50,7 +55,11 @@ Object.keys(mimeAliases).forEach(name => (mimeTable[name] = mimeTable[mimeAliase
 
 // colors to use
 const join = (...args) => args.map(value => value || '').join(''),
-  paint = hasColors ? (prefix, suffix = '\x1B[39m') => text => join(prefix, text, suffix) : () => text => text,
+  paint = hasColors
+    ? (prefix, suffix = '\x1B[39m') =>
+        text =>
+          join(prefix, text, suffix)
+    : () => text => text,
   grey = paint('\x1B[2;37m', '\x1B[22;39m'),
   red = paint('\x1B[41;97m', '\x1B[49;39m'),
   green = paint('\x1B[32m'),
@@ -110,7 +119,12 @@ const server = http.createServer(async (req, res) => {
   }
   if (url.pathname === '/--patterns') {
     // resolve patterns
-    return sendJson(req, res, await resolvePatterns(rootFolder, url.searchParams.getAll('q')), method === 'HEAD');
+    return sendJson(
+      req,
+      res,
+      await resolvePatterns(rootFolder, url.searchParams.getAll('q')),
+      method === 'HEAD'
+    );
   }
   if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
     // redirect to the web app

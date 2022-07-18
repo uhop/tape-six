@@ -22,7 +22,8 @@ if (
 
 if (!/^file:\/\//.test(import.meta.url)) throw Error('Cannot get the current working directory');
 
-const rootFolder = path.join(path.dirname(import.meta.url.substring(7)), '..'),
+const isWindows = path.sep === '\\',
+  rootFolder = path.join(path.dirname(import.meta.url.substring(isWindows ? 8 : 7)), '..'),
   src = path.join(rootFolder, process.argv[srcIndex + 1]),
   dst = path.join(rootFolder, process.argv[dstIndex + 1]),
   clearFlag = process.argv.indexOf('--clear') > 0;
