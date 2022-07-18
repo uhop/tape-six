@@ -10,8 +10,12 @@ const prepRe = (string, substitute, allowDot) => {
     startsWithStar = !parts[0],
     result = parts.map(sanitizeRe).join(substitute);
   return startsWithStar && !allowDot ? notDotSep + result : result;
-}
-const mergeWildcards = folders => folders.reduce((acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc), []);
+};
+const mergeWildcards = folders =>
+  folders.reduce(
+    (acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc),
+    []
+  );
 
 const listFiles = async (rootFolder, folders, baseRe, parents) => {
   console.log('LIST_FILES:', rootFolder, folders, baseRe, parents);
@@ -33,7 +37,9 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
   if (folders[0]) {
     for (const file of files) {
       if (file.isDirectory() && folders[0].test(file.name)) {
-        result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents.concat(file.name)));
+        result = result.concat(
+          await listFiles(rootFolder, theRest, baseRe, parents.concat(file.name))
+        );
       }
     }
     console.log('LIST_FILES - FOLDER[0]:', result);
@@ -43,7 +49,9 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
   result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents));
   for (const file of files) {
     if (file.isDirectory()) {
-      result = result.concat(await listFiles(rootFolder, folders, baseRe, parents.concat(file.name)));
+      result = result.concat(
+        await listFiles(rootFolder, folders, baseRe, parents.concat(file.name))
+      );
     }
   }
   console.log('LIST_FILES - MAIN:', result);
@@ -52,7 +60,7 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
 
 export const listing = async (rootFolder, wildcard) => {
   console.log('LISTING:', rootFolder, wildcard);
-  const parsed = path.parse(wildcard),
+  const parsed = path.parse(path.normalize(wildcard)),
     baseRe = new RegExp('^' + prepRe(parsed.name, '.*') + prepRe(parsed.ext, '.*', true) + '$'),
     folders = mergeWildcards(
       parsed.dir
