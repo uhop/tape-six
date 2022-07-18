@@ -6,7 +6,14 @@ import path from 'path';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
-import {getTests, clearTests, getReporter, setReporter, runTests, setConfiguredFlag} from '../src/test.js';
+import {
+  getTests,
+  clearTests,
+  getReporter,
+  setReporter,
+  runTests,
+  setConfiguredFlag
+} from '../src/test.js';
 import State from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
 import TestWorker from '../src/node/TestWorker.js';
@@ -21,7 +28,14 @@ let flags = '',
   files = [];
 
 const masterConfiguration = () => {
-  const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', n: 'showAssertNumber'};
+  const optionNames = {
+    f: 'failureOnly',
+    t: 'showTime',
+    b: 'showBanner',
+    d: 'showData',
+    o: 'failOnce',
+    n: 'showAssertNumber'
+  };
 
   let flagIsSet = false,
     parIsSet = false;
@@ -72,14 +86,12 @@ const masterConfiguration = () => {
 const masterInitialization = async () => {
   let reporter = getReporter();
   if (!reporter) {
-    if (process.stdout.isTTY) {
-      if (!process.env.TAPE6_TAP) {
-        const TTYReporter = (await import('../src/TTYReporter.js')).default,
-          ttyReporter = new TTYReporter(options);
-        ttyReporter.testCounter = -2;
-        ttyReporter.technicalDepth = 1;
-        reporter = ttyReporter.report.bind(ttyReporter);
-      }
+    if (process.stdout.isTTY && !process.env.TAPE6_TAP) {
+      const TTYReporter = (await import('../src/TTYReporter.js')).default,
+        ttyReporter = new TTYReporter(options);
+      ttyReporter.testCounter = -2;
+      ttyReporter.technicalDepth = 1;
+      reporter = ttyReporter.report.bind(ttyReporter);
     }
     if (!reporter) {
       const tapReporter = new TapReporter({useJson: true});
@@ -108,7 +120,13 @@ const masterProcess = async () => {
     worker.done = () => resolve();
     worker.execute(files);
   });
-  rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
+  rootState.emit({
+    type: 'end',
+    test: 0,
+    time: rootState.timer.now(),
+    fail: rootState.failed > 0,
+    data: rootState
+  });
 
   process.exit(rootState.failed > 0 ? 1 : 0);
 };
