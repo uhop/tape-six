@@ -27,3 +27,13 @@ The documentation can be found in the [wiki](https://github.com/uhop/tape-six/wi
 
 The documentation is mostly TBD but you can inspect `tests/` to see how it is used.
 If you are familiar with other TAP-based libraries you'll feel right at home.
+
+## Release notes
+
+The last releases:
+
+* 0.9.2 *Fixed Windows runner.*
+* 0.9.1 *More updates related to renaming `tape6` &rArr; `tape-six`.*
+* 0.9.0 *Initial release.*
+
+For more info consult full [release notes](https://github.com/uhop/tape-six/wiki/Release-notes).
