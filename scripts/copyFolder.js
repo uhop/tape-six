@@ -6,7 +6,12 @@ const fsp = fs.promises;
 const srcIndex = process.argv.indexOf('--src'),
   dstIndex = process.argv.indexOf('--dst');
 
-if (srcIndex < 0 || dstIndex < 0 || srcIndex + 1 >= process.argv.length || dstIndex + 1 >= process.argv.length) {
+if (
+  srcIndex < 0 ||
+  dstIndex < 0 ||
+  srcIndex + 1 >= process.argv.length ||
+  dstIndex + 1 >= process.argv.length
+) {
   console.log('Copying files from one folder to another recursively.\n');
   console.log('Use: node copyFolder.js --src SRC_DIR --dst DST_DIR [--clear]\n');
   console.log('--src SRC_DIR --- source directory');
@@ -17,10 +22,12 @@ if (srcIndex < 0 || dstIndex < 0 || srcIndex + 1 >= process.argv.length || dstIn
 
 if (!/^file:\/\//.test(import.meta.url)) throw Error('Cannot get the current working directory');
 
-const rootFolder = path.join(path.dirname(import.meta.url.substr(7)), '..'),
+const rootFolder = path.join(path.dirname(import.meta.url.substring(7)), '..'),
   src = path.join(rootFolder, process.argv[srcIndex + 1]),
   dst = path.join(rootFolder, process.argv[dstIndex + 1]),
   clearFlag = process.argv.indexOf('--clear') > 0;
+
+console.log('COPY_FOLDER:', import.meta.url, rootFolder, src, dst);
 
 const clear = async folderName => {
   if (typeof fsp.rm == 'function') {
@@ -59,7 +66,10 @@ const copy = async (src, dst) => {
   const stack = ['.'];
   while (stack.length) {
     const folderName = stack.pop();
-    const [dirents] = await Promise.all([fsp.readdir(path.join(src, folderName), {withFileTypes: true}), ensure(path.join(dst, folderName))]);
+    const [dirents] = await Promise.all([
+      fsp.readdir(path.join(src, folderName), {withFileTypes: true}),
+      ensure(path.join(dst, folderName))
+    ]);
     for (const dirent of dirents) {
       if (dirent.isDirectory()) {
         stack.push(path.join(folderName, dirent.name));
@@ -67,7 +77,10 @@ const copy = async (src, dst) => {
         continue;
       }
       if (dirent.isFile()) {
-        await copyFile(path.join(src, folderName, dirent.name), path.join(dst, folderName, dirent.name));
+        await copyFile(
+          path.join(src, folderName, dirent.name),
+          path.join(dst, folderName, dirent.name)
+        );
         continue;
       }
     }
