@@ -23,6 +23,7 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
     for (const file of files) {
       if (file.isFile() && baseRe.test(file.name)) result.push(path.join(dir, file.name));
     }
+    console.log('LIST_FILES - FILES:', result);
     return result;
   }
 
@@ -34,6 +35,7 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
         result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents.concat(file.name)));
       }
     }
+    console.log('LIST_FILES - FOLDER[0]:', result);
     return result;
   }
 
@@ -43,10 +45,12 @@ const listFiles = async (rootFolder, folders, baseRe, parents) => {
       result = result.concat(await listFiles(rootFolder, folders, baseRe, parents.concat(file.name)));
     }
   }
+  console.log('LIST_FILES - MAIN:', result);
   return result;
 };
 
 export const listing = async (rootFolder, wildcard) => {
+  console.log('LISTING:', rootFolder, wildcard);
   const parsed = path.parse(wildcard),
     baseRe = new RegExp('^' + prepRe(parsed.name, '.*') + prepRe(parsed.ext, '.*', true) + '$'),
     folders = mergeWildcards(
@@ -60,9 +64,10 @@ export const listing = async (rootFolder, wildcard) => {
 
 export const wildToRe = (rootFolder, wildcard) => {
   if (wildcard.length && wildcard[wildcard.length - 1] == path.sep) wildcard += '**';
+  console.log('WILD_TO_RE:', rootFolder, wildcard);
   const parsed = path.parse(path.join(rootFolder, wildcard)),
     folders = parsed.dir
-      .substr(parsed.root.length)
+      .substring(parsed.root.length)
       .split(path.sep)
       .filter(part => part)
       .reduce((acc, part) => {
