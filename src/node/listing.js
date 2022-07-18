@@ -14,6 +14,7 @@ const prepRe = (string, substitute, allowDot) => {
 const mergeWildcards = folders => folders.reduce((acc, part) => ((part || !acc.length || acc[acc.length - 1]) && acc.push(part), acc), []);
 
 const listFiles = async (rootFolder, folders, baseRe, parents) => {
+  console.log('LIST_FILES:', rootFolder, folders, baseRe, parents);
   const dir = path.join(rootFolder, parents.join(path.sep)),
     files = await fsp.readdir(dir, {withFileTypes: true});
 
