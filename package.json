@@ -18,7 +18,7 @@
     "copyDeep6": "node scripts/copyFolder.js --src ./vendors/deep6/src --dst ./src/deep6 --clear",
     "build": "npm run copyDeep6",
     "prepublishOnly": "npm run build",
-    "test": "node ./bin/tape6.js"
+    "test": "node ./bin/tape6.js --flags FO"
   },
   "github": "http://github.com/uhop/tape-six",
   "repository": {
