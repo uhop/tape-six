@@ -25,10 +25,10 @@ class TTYReporter {
   constructor({
     output = process.stdout,
     renumberAsserts = false,
-    failureOnly = false,
+    failureOnly = true,
     showBanner = output.isTTY,
     showTime = true,
-    showData = false,
+    showData = true,
     showAssertNumber = false
   } = {}) {
     this.output = output;
