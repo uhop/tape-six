@@ -164,9 +164,9 @@ Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
   if (this.state.skip) {
     this.comment('SKIP test: ' + options.name);
-  } else {
-    await runTests(this.state, [{options: {...options, todo: true}}]);
+    return;
   }
+  await runTests(this.state, [{options: {...options, todo: true}}]);
 };
 
 Tester.prototype.asPromise = async function asPromise(name, options, testFn) {

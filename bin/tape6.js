@@ -191,7 +191,6 @@ const workerProcess = async () => {
         await import(name);
       } catch (error) {
         reject(error);
-        return;
       }
     });
     process.send({started: true});
@@ -204,11 +203,8 @@ const workerProcess = async () => {
   }
 };
 
-const main = async () => {
-  if (cluster.isMaster) {
-    await masterProcess();
-  } else if (cluster.isWorker) {
-    await workerProcess();
-  }
+const main = () => {
+  if (cluster.isWorker) return workerProcess();
+  return masterProcess();
 };
 main().catch(error => console.error('ERROR:', error));

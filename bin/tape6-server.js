@@ -159,8 +159,8 @@ const server = http.createServer(async (req, res) => {
   bailOut(req, res);
 });
 
-server.on('clientError', (err, socket) => {
-  if (err.code === 'ECONNRESET' || !socket.writable) return;
+server.on('clientError', (error, socket) => {
+  if (error.code === 'ECONNRESET' || !socket.writable) return;
   socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 });
 
