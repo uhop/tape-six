@@ -50,6 +50,6 @@
     ]
   },
   "devDependencies": {
-    "puppeteer": "^15.3.2"
+    "puppeteer": "^16.2.0"
   }
 }
