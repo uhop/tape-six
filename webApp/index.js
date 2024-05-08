@@ -108,7 +108,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     if (typeof window.__tape6_reportResults == 'function') {
-      window.__tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
+      await window.__tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
     }
   });
 });

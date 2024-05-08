@@ -66,8 +66,8 @@ defer(async () => {
 
   if (isNode) {
     !process.env.TAPE6_WORKER && process.exit(rootState.failed > 0 ? 1 : 0);
-  } else if (typeof __reportTape6Results == 'function') {
-    __reportTape6Results(rootState.failed > 0 ? 'failure' : 'success');
+  } else if (typeof __tape6_reportResults == 'function') {
+    __tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
   }
 });
 
