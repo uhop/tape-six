@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import cluster from 'cluster';
-import os from 'os';
-import path from 'path';
+import cluster from 'node:cluster';
+import os from 'node:os';
+import path from 'node:path';
+import process from 'node:process';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 

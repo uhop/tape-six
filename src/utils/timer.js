@@ -13,7 +13,7 @@ export const selectTimer = async () => {
   if (typeof process == 'object' && typeof process.exit == 'function') {
     // Node
     try {
-      const {performance} = await import('perf_hooks');
+      const {performance} = await import('node:perf_hooks');
       setTimer(performance);
       return;
     } catch (error) {

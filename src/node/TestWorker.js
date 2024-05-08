@@ -1,5 +1,6 @@
-import cluster from 'cluster';
-import os from 'os';
+import cluster from 'node:cluster';
+import os from 'node:os';
+import process from 'node:process';
 
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';

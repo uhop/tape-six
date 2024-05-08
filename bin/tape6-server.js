@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
@@ -34,7 +35,9 @@ const mimeTable = {
   defaultMime = 'application/octet-stream',
   rootFolder = process.env.SERVER_ROOT || process.cwd(),
   traceCalls = process.argv.includes('--trace'),
-  hasColors = process.stdout.isTTY && process.stdout.hasColors();
+  hasColors =
+    process.stdout.isTTY &&
+    (typeof process.stdout.hasColors == 'function' ? process.stdout.hasColors() : true);
 
 let webAppPath = process.env.WEBAPP_PATH;
 if (!webAppPath) {

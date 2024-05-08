@@ -1,3 +1,4 @@
+import process from 'node:process';
 import {
   stringRep,
   normalizeBox,
@@ -32,7 +33,9 @@ class TTYReporter {
     showAssertNumber = false
   } = {}) {
     this.output = output;
-    this.hasColors = output.isTTY && this.output.hasColors(256);
+    this.hasColors =
+      this.output.isTTY &&
+      (typeof this.output.hasColors == 'function' ? this.output.hasColors(256) : true);
     this.renumberAsserts = renumberAsserts;
     this.failureOnly = failureOnly;
     this.showBanner = showBanner;

@@ -1,3 +1,4 @@
+import process from 'node:process';
 import puppeteer from 'puppeteer';
 
 const main = async () => {
