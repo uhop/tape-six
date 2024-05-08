@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Tape-six test runner</title>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tape-six test runner</title>
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./tape6-donut.css" />
     <script type="module" src="./tape6-donut.js"></script>
@@ -57,10 +58,18 @@
       </div>
 
       <form class="tile tools">
-        Show:
-        &nbsp;&nbsp;<label class="tape6-toggle"><input type="checkbox" name="failed-only" value="0" /><span class="toggle"></span>&nbsp;failed only</label>
-        &nbsp;&nbsp;<label class="tape6-toggle"><input type="checkbox" name="show-data" value="0" /><span class="toggle"></span>&nbsp;data</label>
-        &nbsp;&nbsp;<label class="tape6-toggle"><input type="checkbox" name="show-stack" value="0" /><span class="toggle"></span>&nbsp;stack</label>
+        Show: &nbsp;&nbsp;<label class="tape6-toggle"
+          ><input type="checkbox" name="failed-only" value="0" /><span class="toggle"></span
+          >&nbsp;failed only</label
+        >
+        &nbsp;&nbsp;<label class="tape6-toggle"
+          ><input type="checkbox" name="show-data" value="0" /><span class="toggle"></span
+          >&nbsp;data</label
+        >
+        &nbsp;&nbsp;<label class="tape6-toggle"
+          ><input type="checkbox" name="show-stack" value="0" /><span class="toggle"></span
+          >&nbsp;stack</label
+        >
       </form>
 
       <div class="tile report collapse-passed"></div>
