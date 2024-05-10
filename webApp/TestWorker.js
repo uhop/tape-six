@@ -27,8 +27,10 @@ export default class TestWorker extends EventServer {
       iframe.contentWindow.document.open();
       iframe.contentWindow.document.write(`
         <!doctype html>
-        <html>
+        <html lang="en">
           <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>Test IFRAME</title>
             <script type="module">
               window.__tape6_id = ${JSON.stringify(id)};
