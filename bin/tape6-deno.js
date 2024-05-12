@@ -53,7 +53,7 @@ const config = () => {
   }
 
   if (!flagIsSet) {
-    flags = Deno.env.get("TAPE6_FLAGS") || flags;
+    flags = Deno.env.get('TAPE6_FLAGS') || flags;
   }
   for (let i = 0; i < flags.length; ++i) {
     const option = flags[i].toLowerCase(),
@@ -62,7 +62,7 @@ const config = () => {
   }
 
   if (!parIsSet) {
-    parallel = Deno.env.get("TAPE6_PAR") || parallel;
+    parallel = Deno.env.get('TAPE6_PAR') || parallel;
   }
   if (parallel) {
     parallel = Math.max(0, +parallel);
@@ -76,7 +76,7 @@ const config = () => {
 const init = async () => {
   let reporter = getReporter();
   if (!reporter) {
-    if (!Deno.env.get("TAPE6_TAP")) {
+    if (!Deno.env.get('TAPE6_TAP')) {
       const TTYReporter = (await import('../src/TTYReporter.js')).default,
         ttyReporter = new TTYReporter(options);
       ttyReporter.testCounter = -2;
@@ -101,6 +101,11 @@ const main = async () => {
   config();
   await init();
   await selectTimer();
+
+  addEventListener('error', event => {
+    console.log('UNHANDLED ERROR:', event.message);
+    event.preventDefault();
+  });
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);

@@ -21,7 +21,7 @@ let flags = '',
   parallel = '',
   files = [];
 
-const masterConfiguration = () => {
+const mainConfiguration = () => {
   const optionNames = {
     f: 'failureOnly',
     t: 'showTime',
@@ -77,7 +77,7 @@ const masterConfiguration = () => {
   if (!parallel) parallel = os.cpus().length;
 };
 
-const masterInitialization = async () => {
+const mainInitialization = async () => {
   let reporter = getReporter();
   if (!reporter) {
     if (!process.env.TAPE6_TAP) {
@@ -101,10 +101,12 @@ const masterInitialization = async () => {
   }
 };
 
-const masterProcess = async () => {
-  masterConfiguration();
-  await masterInitialization();
+const mainProcess = async () => {
+  mainConfiguration();
+  await mainInitialization();
   await selectTimer();
+
+  process.on('uncaughtException', error => console.error('UNHANDLEDERROR:', error));
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);
@@ -199,6 +201,6 @@ const workerProcess = async () => {
 
 const main = () => {
   if (cluster.isWorker) return workerProcess();
-  return masterProcess();
+  return mainProcess();
 };
 main().catch(error => console.error('ERROR:', error));
