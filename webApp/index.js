@@ -17,7 +17,7 @@ let flags = '',
   patterns = [];
 
 if (window.location.search) {
-  const searchParams = new URLSearchParams(window.location.search.substr(1));
+  const searchParams = new URLSearchParams(window.location.search.substring(1));
   flags = searchParams.get('flags') || '';
   parallel = searchParams.get('par') || '';
   if (parallel && !isNaN(parallel)) {

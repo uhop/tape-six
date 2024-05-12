@@ -18,7 +18,7 @@ defer(async () => {
     if (typeof window.__tape6_flags == 'string') {
       flags = window.__tape6_flags;
     } else if (window.location.search) {
-      flags = (new URLSearchParams(window.location.search.substr(1))).get('flags') || '';
+      flags = (new URLSearchParams(window.location.search.substring(1))).get('flags') || '';
     }
   } else if (isNode) {
     flags = process.env.TAPE6_FLAGS || '';
@@ -33,7 +33,7 @@ defer(async () => {
   let reporter = getReporter();
   if (!reporter) {
     if (isBrowser) {
-      const id = window.__tape6_id || (new URLSearchParams(window.location.search.substr(1))).get('id');
+      const id = window.__tape6_id || (new URLSearchParams(window.location.search.substring(1))).get('id');
       if (typeof window.__tape6_reporter == 'function') {
         reporter = event => window.__tape6_reporter(id, event);
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {

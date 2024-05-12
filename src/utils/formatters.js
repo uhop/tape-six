@@ -4,8 +4,8 @@ export const formatNumber = (n, precision = 0) => {
   if (!f && i.length <= 3) return n < 0 ? '-' + s : s;
   const parts = [];
   let start = i.length % 3;
-  start && parts.push(i.substr(0, start));
-  for (; start < i.length; start += 3) parts.push(i.substr(start, 3));
+  start && parts.push(i.substring(0, start));
+  for (; start < i.length; start += 3) parts.push(i.substring(start, start + 3));
   let result = parts.join(',');
   f && !/^0*$/.test(f) && (result += '.' + f.replace(/0+$/, ''));
   return n < 0 ? '-' + result : result;

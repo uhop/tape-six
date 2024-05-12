@@ -8,7 +8,7 @@ export const resolvePatterns = async (rootFolder, patterns) => {
   let result = [];
   for (const item of patterns) {
     if (item.length && item[0] == '!') {
-      result = exclude(result, wildToRe(rootFolder, item.substr(1)));
+      result = exclude(result, wildToRe(rootFolder, item.substring(1)));
     } else {
       result = union(result, await listing(rootFolder, item));
     }

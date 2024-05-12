@@ -74,7 +74,7 @@ const sendFile = (req, res, fileName, ext, justHeaders) => {
   if (!ext) {
     ext = path.extname(fileName).toLowerCase();
   }
-  let mime = ext && mimeTable[ext.substr(1)];
+  let mime = ext && mimeTable[ext.substring(1)];
   if (!mime || typeof mime != 'string') {
     mime = defaultMime;
   }

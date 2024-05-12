@@ -24,7 +24,7 @@ export const normalizeBox = (strings, symbol = ' ', align = 'right') => {
         return padding + s;
       case 'center':
         const half = padding.length >> 1;
-        return padding.substr(0, half) + s + padding.substr(half);
+        return padding.substring(0, half) + s + padding.substring(half);
     }
     return s + padding;
   });
