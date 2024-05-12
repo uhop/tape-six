@@ -7,14 +7,7 @@ import process from 'node:process';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
-import {
-  getTests,
-  clearTests,
-  getReporter,
-  setReporter,
-  runTests,
-  setConfiguredFlag
-} from '../src/test.js';
+import {getReporter, setReporter} from '../src/test.js';
 import State from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
 import TestWorker from '../src/node/TestWorker.js';
