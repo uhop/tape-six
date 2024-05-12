@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-env --ext=js
+#!/usr/bin/env -S deno run --allow-read --allow-env --allow-hrtime --ext=js
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
