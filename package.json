@@ -10,6 +10,8 @@
   },
   "bin": {
     "tape6": "bin/tape6.js",
+    "tape6-bun": "bin/tape6-bun.js",
+    "tape6-deno": "bin/tape6-deno.js",
     "tape6-server": "bin/tape6-server.js"
   },
   "scripts": {
@@ -50,6 +52,6 @@
     ]
   },
   "devDependencies": {
-    "puppeteer": "^22.8.0"
+    "puppeteer": "^22.8.1"
   }
 }
