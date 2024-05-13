@@ -9,10 +9,11 @@ do {
   //   break;
   // }
 
-  if (typeof process == 'object' && typeof process?.nextTick == 'function') {
-    deferImplementation = process.nextTick;
-    break;
-  }
+  // The selection below doesn't work in Bun
+  // if (typeof process == 'object' && typeof process?.nextTick == 'function') {
+  //   deferImplementation = process.nextTick;
+  //   break;
+  // }
 
   if (typeof setImmediate == 'function') {
     deferImplementation = setImmediate;
