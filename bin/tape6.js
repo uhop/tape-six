@@ -106,7 +106,7 @@ const mainProcess = async () => {
   await mainInitialization();
   await selectTimer();
 
-  process.on('uncaughtException', error => console.error('UNHANDLEDERROR:', error));
+  process.on('uncaughtException', error => console.error('UNHANDLED ERROR:', error));
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);
