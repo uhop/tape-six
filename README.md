@@ -32,7 +32,7 @@ If you are familiar with other TAP-based libraries you'll feel right at home.
 
 The most recent releases:
 
-* 0.9.4 *Updated deps.*
+* 0.9.4 *Updated deps. Added test runners for Bun and Deno.*
 * 0.9.3 *Made TTY reporter work with non-TTY streams.*
 * 0.9.2 *Fixed Windows runner.*
 * 0.9.1 *More updates related to renaming `tape6` &rArr; `tape-six`.*
