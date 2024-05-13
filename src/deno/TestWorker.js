@@ -17,6 +17,8 @@ export default class TestWorker extends EventServer {
         new URL(
           'data:text/javascript;charset=utf-8,' +
             encodeURIComponent(`
+              import {setReporter} from ${JSON.stringify(utilName.href)};
+
               const sanitizeMsg = msg => {
                 if (msg.type !== 'end') return msg;
                 const state = {};
@@ -27,9 +29,9 @@ export default class TestWorker extends EventServer {
                 return {...msg, data: state};
               };
 
+              setReporter(msg => postMessage(sanitizeMsg(msg)));
+
               try {
-                const {setReporter} = await import(${JSON.stringify(utilName.href)});
-                setReporter(msg => postMessage(sanitizeMsg(msg)));
                 await import(${JSON.stringify(testName.href)});
               } catch (error) {
                 postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
@@ -38,7 +40,7 @@ export default class TestWorker extends EventServer {
           `)
         ),
         {
-          type: 'module',
+          type: 'module'
           // deno: {permissions: 'inherit'}
         }
       );
@@ -55,7 +57,7 @@ export default class TestWorker extends EventServer {
         }
         throw error;
       }
-      if(msg.type === 'end' && msg.test === 0) {
+      if (msg.type === 'end' && msg.test === 0) {
         this.close(id);
         return;
       }
