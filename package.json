@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "TAP for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
@@ -52,6 +52,6 @@
     ]
   },
   "devDependencies": {
-    "puppeteer": "^22.8.1"
+    "puppeteer": "^22.11.0"
   }
 }
