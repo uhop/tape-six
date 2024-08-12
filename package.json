@@ -52,6 +52,6 @@
     ]
   },
   "devDependencies": {
-    "puppeteer": "^22.11.0"
+    "puppeteer": "^23.0.2"
   }
 }
