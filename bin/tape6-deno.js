@@ -1,5 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-env --allow-hrtime --ext=js
 
+import {fileURLToPath} from 'node:url';
+
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
@@ -16,7 +18,19 @@ let flags = '',
   parallel = '',
   files = [];
 
+const showSelf = () => {
+  const self = new URL(import.meta.url);
+  if (self.protocol === 'file:') {
+    console.log(fileURLToPath(self));
+  } else {
+    console.log(self);
+  }
+  Deno.exit(0);
+};
+
 const config = () => {
+  if (Deno.args.includes('--self')) showSelf();
+
   const optionNames = {
     f: 'failureOnly',
     t: 'showTime',

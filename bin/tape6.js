@@ -4,6 +4,7 @@ import cluster from 'node:cluster';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
+import {fileURLToPath} from 'node:url';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
@@ -21,7 +22,19 @@ let flags = '',
   parallel = '',
   files = [];
 
+const showSelf = () => {
+  const self = new URL(import.meta.url);
+  if (self.protocol === 'file:') {
+    console.log(fileURLToPath(self));
+  } else {
+    console.log(self);
+  }
+  process.exit(0);
+};
+
 const mainConfiguration = () => {
+  if (process.argv.includes('--self')) showSelf();
+
   const optionNames = {
     f: 'failureOnly',
     t: 'showTime',
@@ -42,7 +55,8 @@ const mainConfiguration = () => {
         flagIsSet = true;
       }
       continue;
-    } else if (arg == '-p' || arg == '--par') {
+    }
+    if (arg == '-p' || arg == '--par') {
       if (++i < process.argv.length) {
         parallel = process.argv[i];
         parIsSet = true;

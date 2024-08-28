@@ -4,12 +4,24 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import {fileURLToPath} from 'node:url';
 
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
 const fsp = fs.promises;
 
 // simple static server with no dependencies
+
+const showSelf = () => {
+  const self = new URL(import.meta.url);
+  if (self.protocol === 'file:') {
+    console.log(fileURLToPath(self));
+  } else {
+    console.log(self);
+  }
+  process.exit(0);
+};
+if (process.argv.includes('--self')) showSelf();
 
 // MIME source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 const mimeTable = {

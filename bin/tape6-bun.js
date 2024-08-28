@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import {fileURLToPath} from 'node:url';
+
 import {resolveTests, resolvePatterns} from '../src/node/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
@@ -16,7 +18,19 @@ let flags = '',
   parallel = '',
   files = [];
 
+const showSelf = () => {
+  const self = new URL(import.meta.url);
+  if (self.protocol === 'file:') {
+    console.log(fileURLToPath(self));
+  } else {
+    console.log(self);
+  }
+  process.exit(0);
+};
+
 const config = () => {
+  if (Bun.argv.includes('--self')) showSelf();
+
   const optionNames = {
     f: 'failureOnly',
     t: 'showTime',
