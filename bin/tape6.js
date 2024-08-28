@@ -14,6 +14,7 @@ import TapReporter from '../src/TapReporter.js';
 import TestWorker from '../src/node/TestWorker.js';
 import {selectTimer} from '../src/utils/timer.js';
 import defer from '../src/utils/defer.js';
+import sanitize from '../src/utils/sanitize.js';
 
 const options = {},
   rootFolder = process.cwd();
@@ -163,7 +164,7 @@ class BufferedReporter {
     this.inFlight = true;
     const events = this.buffer;
     this.buffer = [];
-    process.send({events});
+    process.send(sanitize({events}));
     return this;
   }
 }
