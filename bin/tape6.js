@@ -162,9 +162,14 @@ class BufferedReporter {
       return this;
     }
     this.inFlight = true;
-    const events = this.buffer;
+    let events = this.buffer;
     this.buffer = [];
-    process.send(sanitize({events}));
+    events = events.map(event => {
+      const result = {...event};
+      if (result?.data?.parent) delete result.data.parent;
+      return sanitize(result);
+    });
+    process.send({events});
     return this;
   }
 }
