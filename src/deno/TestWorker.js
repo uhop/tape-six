@@ -35,7 +35,6 @@ export default class TestWorker extends EventServer {
                 await import(${JSON.stringify(testName.href)});
               } catch (error) {
                 postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
-                close();
               }
           `)
         ),

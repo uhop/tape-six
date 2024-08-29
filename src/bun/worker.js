@@ -16,6 +16,5 @@ addEventListener('message', async event => {
     await import(msg.testName);
   } catch (error) {
     postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
-    close();
   }
 });
