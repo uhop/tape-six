@@ -61,6 +61,7 @@ defer(async () => {
     if (!tests.length) break;
     clearTests();
     await runTests(rootState, tests);
+    await new Promise(resolve => defer(resolve));
   }
   rootState.emit({type: 'end', test: 0, time: rootState.timer.now(), fail: rootState.failed > 0, data: rootState});
 

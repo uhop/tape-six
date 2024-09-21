@@ -1,6 +1,6 @@
 import test from '../index.js';
 
-test('Simple smoke test', t => {
+await test('Simple smoke test', t => {
   t.pass();
   t.ok(1 < 2);
   t.notOk(1 > 2);
@@ -11,7 +11,7 @@ test('Simple smoke test', t => {
   t.notDeepEqual([1], 1);
 });
 
-test('Simple smoke test', t => {
+await test('Simple smoke test', t => {
   t.pass();
   t.ok(1 < 2);
   t.notOk(1 > 2);
