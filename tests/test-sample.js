@@ -1,4 +1,5 @@
-import test from 'tape-six';
+// import test from 'tape-six';
+import test from '../index.js';
 
 test('Simple smoke test', t => {
   t.pass();
