@@ -9,6 +9,8 @@ defer(async () => {
   if (getConfiguredFlag()) return; // bail out => somebody else is running the show
 
   const isNode = typeof process == 'object' && typeof process.exit == 'function',
+    isDeno = typeof Deno == 'object' && typeof Deno.exit == 'function',
+    isBun = typeof Bun == 'object',
     isBrowser = typeof window == 'object' && !!window.location,
     options = {};
 
@@ -22,6 +24,10 @@ defer(async () => {
     }
   } else if (isNode) {
     flags = process.env.TAPE6_FLAGS || '';
+  } else if (isDeno) {
+    flags = Deno.env.get('TAPE6_FLAGS') || '';
+  } else if (isBun) {
+    flags = Bun.env.TAPE6_FLAGS || '';
   }
 
   for (let i = 0; i < flags.length; ++i) {
@@ -41,6 +47,18 @@ defer(async () => {
       }
     } else if (isNode) {
       if (!process.env.TAPE6_TAP) {
+        const TTYReporter = (await import('./src/TTYReporter.js')).default,
+          ttyReporter = new TTYReporter(options);
+        reporter = ttyReporter.report.bind(ttyReporter);
+      }
+    } else if (isDeno) {
+      if (!Deno.env.get('TAPE6_TAP')) {
+        const TTYReporter = (await import('./src/TTYReporter.js')).default,
+          ttyReporter = new TTYReporter(options);
+        reporter = ttyReporter.report.bind(ttyReporter);
+      }
+    } else if (isBun) {
+      if (!Bun.env.TAPE6_TAP) {
         const TTYReporter = (await import('./src/TTYReporter.js')).default,
           ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
@@ -67,6 +85,10 @@ defer(async () => {
 
   if (isNode) {
     !process.env.TAPE6_WORKER && process.exit(rootState.failed > 0 ? 1 : 0);
+  } else if (isDeno) {
+    !Deno.env.get('TAPE6_WORKER') && Deno.exit(rootState.failed > 0 ? 1 : 0);
+  } else if (isBun) {
+    !Bun.env.TAPE6_WORKER && process.exit(rootState.failed > 0 ? 1 : 0);
   } else if (typeof __tape6_reportResults == 'function') {
     __tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
   }
