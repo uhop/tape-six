@@ -35,6 +35,7 @@
     "browser"
   ],
   "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (https://www.lazutkin.com/)",
+  "funding": "https://github.com/sponsors/uhop",
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/uhop/tape-six/issues"
