@@ -1,5 +1,4 @@
-// import test from 'tape-six';
-import test from '../index.js';
+import test from 'tape-six';
 
 const timeout = ms => new Promise(resolve => setTimeout(resolve, ms));
 

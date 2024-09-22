@@ -99,6 +99,9 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const importmap = await fetch('/--importmap').then(response => (response.ok ? response.json() : null));
+    if (importmap) options.importmap = importmap;
+
     const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
       worker = new TestWorker(event => rootState.emit(event), parallel, options);
 

@@ -1,9 +1,12 @@
 import EventServer from '../src/utils/EventServer.js';
 
 export default class TestWorker extends EventServer {
-  constructor(...args) {
-    super(...args);
+  constructor(reporter, numberOfTasks, options) {
+    super(reporter, numberOfTasks, options);
+
+    this.importmap = options?.importmap;
     this.counter = 0;
+
     window.__tape6_reporter = (id, event) => {
       this.report(id, event);
       if (event.type === 'end' && event.test === 0) this.close(id);
@@ -32,6 +35,11 @@ export default class TestWorker extends EventServer {
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>Test IFRAME</title>
+            ${
+              this.importmap
+                ? `<script type="importmap">${JSON.stringify(this.importmap)}</script>`
+                : ''
+            }
             <script type="module">
               window.__tape6_id = ${JSON.stringify(id)};
               window.__tape6_flags = "${this.options.failOnce ? 'F' : ''}";

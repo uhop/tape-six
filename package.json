@@ -52,7 +52,13 @@
   "tape6": {
     "tests": [
       "/tests/test-*.*js"
-    ]
+    ],
+    "importmap": {
+      "imports": {
+        "tape-six": "../index.js",
+        "tape-six/": "../src/"
+      }
+    }
   },
   "devDependencies": {
     "puppeteer": "^23.4.0"

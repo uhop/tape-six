@@ -6,7 +6,7 @@ import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {resolveTests, resolvePatterns} from '../src/node/config.js';
+import {getConfig, resolveTests, resolvePatterns} from '../src/node/config.js';
 
 const fsp = fs.promises;
 
@@ -139,6 +139,11 @@ const server = http.createServer(async (req, res) => {
       await resolvePatterns(rootFolder, url.searchParams.getAll('q')),
       method === 'HEAD'
     );
+  }
+  if (url.pathname === '/--importmap') {
+    // get import map contents
+    const cfg = await getConfig(rootFolder);
+    return sendJson(req, res, cfg.importmap || {imports: {}}, method === 'HEAD');
   }
   if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
     // redirect to the web app

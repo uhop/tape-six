@@ -16,14 +16,16 @@ export const resolvePatterns = async (rootFolder, patterns) => {
   return result.map(fileName => path.relative(rootFolder, fileName));
 };
 
-export const resolveTests = async (rootFolder, type, traceFn) => {
-  let cfg;
+export const getConfig = async (rootFolder, traceFn) => {
+  let cfg = null;
+
   // check tape6.json
   try {
     cfg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'tape6.json')));
   } catch (error) {
     traceFn && traceFn('Cannot read tape6.json');
   }
+
   // check package.json, "tape6" section
   if (!cfg) {
     try {
@@ -33,10 +35,16 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
       traceFn && traceFn('Cannot read package.json');
     }
   }
+
   // check well-known files
-  if (!cfg) {
-    cfg = {[type]: {tests: '/tests/test-' + type + '.*js'}};
-  }
+  if (!cfg) cfg = {tests: ['/tests/test-*.*js']};
+
+  return cfg;
+};
+
+export const resolveTests = async (rootFolder, type, traceFn) => {
+  const cfg = await getConfig(rootFolder, traceFn);
+
   // determine test patterns
   let patterns = [];
   if (cfg[type]) {
@@ -46,11 +54,13 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
       patterns.push(cfg[type].tests);
     }
   }
+
   if (Array.isArray(cfg.tests)) {
     patterns = patterns.concat(cfg.tests);
   } else if (typeof cfg.tests == 'string') {
     patterns.push(cfg.tests);
   }
+
   // resolve patterns
   return resolvePatterns(rootFolder, patterns);
 };

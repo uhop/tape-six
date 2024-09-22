@@ -2,7 +2,7 @@ import process from 'node:process';
 import puppeteer from 'puppeteer';
 
 const main = async () => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox']});
   const page = await browser.newPage();
 
   page.on('console', msg => console[typeof console[msg.type()] == 'function' ? msg.type() : 'log'](msg.text()));
@@ -20,7 +20,7 @@ const main = async () => {
     }
   });
 
-  await page.goto('http://localhost:3000/tests/web/test-simple.html');
+  await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=c');
 };
 
 main().then(
