@@ -4,5 +4,6 @@
     "paths": {
       "tape-six": ["."]
     }
-  }
+  },
+  "exclude": ["node_modules"]
 }
