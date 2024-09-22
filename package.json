@@ -46,7 +46,7 @@
   "files": [
     "index.js",
     "bin",
-    "webApp",
+    "web-app",
     "src"
   ],
   "tape6": {
