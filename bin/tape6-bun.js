@@ -107,7 +107,7 @@ const init = async () => {
   if (files.length) {
     files = await resolvePatterns(rootFolder, files);
   } else {
-    files = await resolveTests(rootFolder, 'deno');
+    files = await resolveTests(rootFolder, 'bun');
   }
 };
 
