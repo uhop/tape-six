@@ -17,7 +17,8 @@ const optionNames = {
   b: 'showBanner',
   d: 'showData',
   o: 'failOnce',
-  n: 'showAssertNumber'
+  n: 'showAssertNumber',
+  c: 'hasColors'
 };
 
 defer(async () => {
@@ -81,7 +82,7 @@ defer(async () => {
       }
     }
     if (!reporter) {
-      const tapReporter = new TapReporter({useJson: true});
+      const tapReporter = new TapReporter({useJson: true, hasColors: options.hasColors});
       reporter = tapReporter.report.bind(tapReporter);
     }
     setReporter(reporter);

@@ -30,10 +30,12 @@ class TTYReporter {
     showBanner = output.isTTY,
     showTime = true,
     showData = true,
-    showAssertNumber = false
+    showAssertNumber = false,
+    hasColors = true
   } = {}) {
     this.output = output;
     this.hasColors =
+      hasColors &&
       this.output.isTTY &&
       (typeof this.output.hasColors == 'function' ? this.output.hasColors(256) : true);
     this.renumberAsserts = renumberAsserts;

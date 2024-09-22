@@ -30,8 +30,8 @@ const formatValue = value => {
 };
 
 class TapReporter {
-  constructor({write = logger, useJson = false, renumberAsserts = false} = {}) {
-    this.write = write;
+  constructor({write, useJson = false, renumberAsserts = false, hasColors = true} = {}) {
+    this.write = write || (hasColors ? logger : console.log.bind(console));
     this.renumberAsserts = renumberAsserts;
     this.useJson = useJson;
     this.depth = 0;
