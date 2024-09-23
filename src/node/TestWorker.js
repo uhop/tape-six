@@ -54,9 +54,6 @@ export default class TestWorker extends EventServer {
       });
       this.close(id);
     });
-    worker.on('exit', () => {
-      this.close(id);
-    });
     worker.postMessage({testName: testName.href, utilName: utilName.href});
     return id;
   }
