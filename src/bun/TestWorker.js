@@ -1,10 +1,8 @@
-import {sep} from 'node:path';
-
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
 const utilName = new URL('../test.js', import.meta.url),
-  baseName = Bun.pathToFileURL(process.cwd() + sep);
+  baseName = Bun.pathToFileURL(Bun.cwd);
 
 export default class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks = navigator.hardwareConcurrency, options) {
