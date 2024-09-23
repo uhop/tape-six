@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import process from 'node:process';
-
 import {fileURLToPath} from 'node:url';
 
 import {resolveTests, resolvePatterns} from '../src/utils/config.js';
@@ -119,7 +118,7 @@ const main = async () => {
   await init();
   await selectTimer();
 
-  process.on('uncaughtException', (error, origin) => console.error('UNHANDLED ERROR:', origin,error));
+  process.on('uncaughtException', (error, origin) => console.error('UNHANDLED ERROR:', origin, error));
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);
