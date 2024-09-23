@@ -59,7 +59,7 @@ if (!webAppPath) {
   const isWindows = path.sep === '\\';
   webAppPath = path.relative(
     rootFolder,
-    path.join(path.dirname(url.substring(isWindows ? 8 : 7)), '../web-app/')
+    path.join(path.dirname(fileURLToPath(url)), '../web-app/')
   );
 }
 
