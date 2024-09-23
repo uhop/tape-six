@@ -44,11 +44,15 @@ const serialize = object => {
     // squelch
   }
   try {
-    return {type: 'String', value: String(object)};
+    return JSON.stringify({type: 'String', value: String(object)});
   } catch (error) {
     // squelch
   }
-  return {type: 'Problem', value: 'cannot convert value to JSON or string', [signature]: signature};
+  return JSON.stringify({
+    type: 'Problem',
+    value: 'cannot convert value to JSON or string',
+    [signature]: signature
+  });
 };
 
 class State {
