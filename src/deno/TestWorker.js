@@ -16,47 +16,10 @@ export default class TestWorker extends EventServer {
   makeTask(fileName) {
     const testName = new URL(fileName, baseName),
       id = String(++this.counter),
-      worker = new Worker(new URL('./worker.js', import.meta.url),
-        // new URL(
-        //   'data:text/javascript;charset=utf-8,' +
-        //     encodeURIComponent(`
-        //       import {setReporter} from ${JSON.stringify(utilName.href)};
-
-        //       const sanitizeMsg = msg => {
-        //         if (msg.type !== 'end') return msg;
-        //         const state = {};
-        //         for (const [key, value] of Object.entries(msg.data)) {
-        //           if (typeof value != 'number') continue;
-        //           state[key] = value;
-        //         }
-        //         return {...msg, data: state};
-        //       };
-
-        //       setReporter(msg => postMessage(sanitizeMsg(msg)));
-
-        //       try {
-        //         await import(${JSON.stringify(testName.href)});
-        //       } catch (error) {
-        //         postMessage({type: 'test', test: 0, time: 0});
-        //         postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
-        //         postMessage({
-        //           name: 'fail',
-        //           test: 0,
-        //           marker: new Error(),
-        //           time: 0,
-        //           operator: 'fail',
-        //           fail: true,
-        //           data: {expected: true, actual: false}
-        //         });
-        //         postMessage({type: 'end', test: 0, time: 0, fail: true});
-        //       }
-        //   `)
-        // ),
-        {
-          type: 'module'
-          // deno: {permissions: 'inherit'}
-        }
-      );
+      worker = new Worker(new URL('./worker.js', import.meta.url), {
+        type: 'module'
+        // deno: {permissions: 'inherit'}
+      });
     this.idToWorker[id] = worker;
     worker.addEventListener('message', event => {
       const msg = event.data;
