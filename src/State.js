@@ -2,11 +2,44 @@ import {getTimer} from './utils/timer.js';
 
 export class StopTest extends Error {}
 
+export const signature = 'tape6-!@#$%^&*';
+
+const replacer =
+  (seen = new Set()) =>
+  (_, value) => {
+    if (typeof value == 'symbol')
+      return {type: 'Symbol', value: value.toString(), [signature]: signature};
+
+    if (value && typeof value == 'object') {
+      if (value instanceof Error)
+        return {
+          type: 'Error',
+          message: value.message,
+          stack: value.stack,
+          name: value.name,
+          [signature]: signature
+        };
+
+      if (value instanceof RegExp)
+        return {type: 'RegExp', source: value.source, flags: value.flags, [signature]: signature};
+
+      if (value instanceof Set)
+        return {type: 'Set', value: Array.from(value), [signature]: signature};
+
+      if (value instanceof Map)
+        return {type: 'Map', value: Object.fromEntries(value), [signature]: signature};
+
+      // break circular references
+      if (seen.has(value)) return {type: 'Circular', [signature]: signature};
+      seen.add(value);
+    }
+
+    return value;
+  };
+
 const serialize = object => {
-  if (object instanceof Error) return {type: 'Error', message: object.message, stack: object.stack};
-  if (object instanceof RegExp) return {type: 'RegExp', source: object.source, flags: object.flags};
   try {
-    return JSON.stringify(object);
+    return JSON.stringify(object, replacer());
   } catch (error) {
     // squelch
   }
@@ -15,7 +48,7 @@ const serialize = object => {
   } catch (error) {
     // squelch
   }
-  return {problem: 'cannot convert value to JSON or string'};
+  return {type: 'Problem', value: 'cannot convert value to JSON or string', [signature]: signature};
 };
 
 class State {
@@ -58,7 +91,13 @@ class State {
         break;
     }
 
-    if (event.type === 'assert' && event.operator === 'error' && event.data && event.data.actual && typeof event.data.actual.stack == 'string') {
+    if (
+      event.type === 'assert' &&
+      event.operator === 'error' &&
+      event.data &&
+      event.data.actual &&
+      typeof event.data.actual.stack == 'string'
+    ) {
       const lines = event.data.actual.stack.split('\n');
       event.at = lines[Math.min(2, lines.length) - 1].trim().replace(/^at\s+/i, '');
     }

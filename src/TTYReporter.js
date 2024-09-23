@@ -1,4 +1,6 @@
 import process from 'node:process';
+
+import {signature} from './State.js';
 import {
   stringRep,
   normalizeBox,
@@ -81,7 +83,11 @@ class TTYReporter {
   }
   formatValue(value) {
     if (typeof value == 'string') return value;
-    if (typeof value.type == 'string') return this.blue(JSON.stringify(value));
+    if (value && value[signature] === signature) {
+      value = {...value};
+      delete value[signature];
+      return this.blue(JSON.stringify(value));
+    }
     return this.red(this.italic(JSON.stringify(value)));
   }
   out(text) {
@@ -271,15 +277,20 @@ class TTYReporter {
         if (!event.fail || event.skip || !this.showData) break;
 
         this.out(this.lowWhite('  operator: ') + event.operator);
+
+        const expected = event.expected && JSON.parse(event.expected);
         if (event.hasOwnProperty('expected')) {
-          this.out(this.lowWhite('  expected: ') + this.formatValue(event.expected));
+          this.out(this.lowWhite('  expected: ') + this.formatValue(expected));
         }
+
+        const actual = event.actual && JSON.parse(event.actual);
         if (event.hasOwnProperty('actual')) {
-          this.out(this.lowWhite('  actual:   ') + this.formatValue(event.actual));
+          this.out(this.lowWhite('  actual:   ') + this.formatValue(actual));
         }
+
         const stack =
-          event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string'
-            ? event.actual.stack
+          actual?.type === 'Error' && typeof actual.stack == 'string'
+            ? actual.stack
             : event.marker.stack;
         if (typeof stack == 'string') {
           this.out(this.lowWhite('  stack: |-'));
