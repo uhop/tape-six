@@ -37,7 +37,8 @@ const config = () => {
     b: 'showBanner',
     d: 'showData',
     o: 'failOnce',
-    n: 'showAssertNumber'
+    n: 'showAssertNumber',
+    c: 'hasColors'
   };
 
   let flagIsSet = false,

@@ -37,7 +37,8 @@ const config = () => {
     b: 'showBanner',
     d: 'showData',
     o: 'failOnce',
-    n: 'showAssertNumber'
+    n: 'showAssertNumber',
+    c: 'hasColors'
   };
 
   let flagIsSet = false,
@@ -116,7 +117,7 @@ const main = async () => {
   await init();
   await selectTimer();
 
-  process.on('uncaughtException', error => console.error('UNHANDLED ERROR:', error));
+  process.on('uncaughtException', (error, origin) => console.error('UNHANDLED ERROR:', origin, error));
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);
