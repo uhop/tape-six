@@ -40,7 +40,15 @@ export default class TestWorker extends EventServer {
         errorMsg = `Worker ${id} exited with error code: ${code}`;
       }
       errorMsg && this.report(id, {type: 'comment', name: 'fail to load: ' + errorMsg, test: 0});
-      this.close(id);
+      try {
+        this.close(id);
+      } catch (error) {
+        if (error instanceof StopTest) {
+          console.error('# immediate StopTest:', error.message || 'StopTest is activated');
+          process.exit(1);
+        }
+        throw error;
+      }
     });
     return id;
   }
