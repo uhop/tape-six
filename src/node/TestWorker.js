@@ -1,55 +1,64 @@
-import cluster from 'node:cluster';
-import os from 'node:os';
-import process from 'node:process';
+import {Worker} from 'node:worker_threads';
 
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
+const utilName = new URL('../test.js', import.meta.url),
+  baseName = new URL('../../', import.meta.url);
+
 export default class TestWorker extends EventServer {
-  constructor(reporter, numberOfTasks = os.cpus().length, options = {}) {
+  constructor(reporter, numberOfTasks = navigator.hardwareConcurrency, options) {
     super(reporter, numberOfTasks, options);
+    this.counter = 0;
+    this.idToWorker = {};
   }
   makeTask(fileName) {
-    const worker = cluster.fork({TAPE6_WORKER: 'yes', TAPE6_TAP: ''}),
-      id = String(worker.id);
-    worker.on('message', msg => {
-      if (msg.started) {
-        worker.send({id, fileName, options: this.options});
-        return;
-      }
-      let done = false;
-      msg.events.forEach(event => {
-        try {
-          this.report(id, event);
-        } catch (error) {
-          if (error instanceof StopTest) {
-            console.error('# immediate StopTest:', error.message || 'StopTest is activated');
-            process.exit(1);
-          }
-          throw error;
-        }
-        if (event.type === 'end' && event.test === 0) done = true;
+    const testName = new URL(fileName, baseName),
+      id = String(++this.counter),
+      worker = new Worker(new URL('./worker.js', import.meta.url), {
+        type: 'module'
       });
-      worker.send(done ? {done: true} : {received: true});
-    });
-    worker.on('exit', (code, signal) => {
-      let errorMsg = '';
-      if (signal) {
-        errorMsg = `Worker ${id} was killed by signal: ${signal}`;
-      } else if (code) {
-        errorMsg = `Worker ${id} exited with error code: ${code}`;
-      }
-      errorMsg && this.report(id, {type: 'comment', name: 'fail to load: ' + errorMsg, test: 0});
+    this.idToWorker[id] = worker;
+    worker.on('message', msg => {
       try {
-        this.close(id);
+        this.report(id, msg);
       } catch (error) {
         if (error instanceof StopTest) {
           console.error('# immediate StopTest:', error.message || 'StopTest is activated');
+          worker.terminate();
           process.exit(1);
         }
         throw error;
       }
+      if (msg.type === 'end' && msg.test === 0) {
+        this.close(id);
+        return;
+      }
     });
+    worker.on('error', error => {
+      this.report(id, {
+        type: 'comment',
+        name: 'fail to load: ' + (error.message || 'Worker error`'),
+        test: 0
+      });
+      this.close(id);
+    });
+    worker.on('messageerror', error => {
+      this.report(id, {
+        type: 'comment',
+        name: 'fail to load: ' + (error.message || 'Worker error`'),
+        test: 0
+      });
+      this.close(id);
+    });
+    worker.postMessage({testName: testName.href, utilName: utilName.href});
     return id;
+  }
+  destroyTask(id) {
+    const worker = this.idToWorker[id];
+    if (worker) {
+      worker.terminate();
+      delete this.idToWorker[id];
+    }
   }
 }
