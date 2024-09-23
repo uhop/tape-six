@@ -2,7 +2,7 @@ import {promises as fsp} from 'node:fs';
 import path from 'node:path';
 
 import {listing, wildToRe} from './listing.js';
-import {union, exclude} from '../utils/fileSets.js';
+import {union, exclude} from './fileSets.js';
 
 export const resolvePatterns = async (rootFolder, patterns) => {
   let result = [];

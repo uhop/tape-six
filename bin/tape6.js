@@ -6,7 +6,7 @@ import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {resolveTests, resolvePatterns} from '../src/node/config.js';
+import {resolveTests, resolvePatterns} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import State from '../src/State.js';

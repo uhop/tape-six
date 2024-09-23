@@ -6,7 +6,7 @@ import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {getConfig, resolveTests, resolvePatterns} from '../src/node/config.js';
+import {getConfig, resolveTests, resolvePatterns} from '../src/utils/config.js';
 
 const fsp = fs.promises;
 
