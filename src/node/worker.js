@@ -16,6 +16,17 @@ parentPort.on('message', async msg => {
     setReporter(msg => parentPort.postMessage(sanitizeMsg(msg)));
     await import(msg.testName);
   } catch (error) {
+    parentPort.postMessage({type: 'test', test: 0, time: 0});
     parentPort.postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
+    parentPort.postMessage({
+      name: 'fail',
+      test: 0,
+      marker: new Error(),
+      time: 0,
+      operator: 'fail',
+      fail: true,
+      data: {expected: true, actual: false}
+    });
+    parentPort.postMessage({type: 'end', test: 0, time: 0, fail: true});
   }
 });
