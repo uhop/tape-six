@@ -1,10 +1,13 @@
+import process from 'node:process';
+import {sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {Worker} from 'node:worker_threads';
 
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
 const utilName = new URL('../test.js', import.meta.url),
-  baseName = new URL('../../', import.meta.url);
+  baseName = pathToFileURL(process.cwd() + sep);
 
 export default class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks = navigator.hardwareConcurrency, options) {
@@ -49,6 +52,9 @@ export default class TestWorker extends EventServer {
         name: 'fail to load: ' + (error.message || 'Worker error`'),
         test: 0
       });
+      this.close(id);
+    });
+    worker.on('exit', () => {
       this.close(id);
     });
     worker.postMessage({testName: testName.href, utilName: utilName.href});

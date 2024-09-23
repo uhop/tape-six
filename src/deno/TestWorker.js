@@ -1,8 +1,11 @@
+import {pathToFileURL} from 'node:url';
+import {sep} from 'node:path';
+
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
 const utilName = new URL('../test.js', import.meta.url),
-  baseName = new URL('../../', import.meta.url);
+  baseName = pathToFileURL(Deno.cwd() + sep);
 
 export default class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks = navigator.hardwareConcurrency, options) {
@@ -13,31 +16,42 @@ export default class TestWorker extends EventServer {
   makeTask(fileName) {
     const testName = new URL(fileName, baseName),
       id = String(++this.counter),
-      worker = new Worker(
-        new URL(
-          'data:text/javascript;charset=utf-8,' +
-            encodeURIComponent(`
-              import {setReporter} from ${JSON.stringify(utilName.href)};
+      worker = new Worker(new URL('./worker.js', import.meta.url),
+        // new URL(
+        //   'data:text/javascript;charset=utf-8,' +
+        //     encodeURIComponent(`
+        //       import {setReporter} from ${JSON.stringify(utilName.href)};
 
-              const sanitizeMsg = msg => {
-                if (msg.type !== 'end') return msg;
-                const state = {};
-                for (const [key, value] of Object.entries(msg.data)) {
-                  if (typeof value != 'number') continue;
-                  state[key] = value;
-                }
-                return {...msg, data: state};
-              };
+        //       const sanitizeMsg = msg => {
+        //         if (msg.type !== 'end') return msg;
+        //         const state = {};
+        //         for (const [key, value] of Object.entries(msg.data)) {
+        //           if (typeof value != 'number') continue;
+        //           state[key] = value;
+        //         }
+        //         return {...msg, data: state};
+        //       };
 
-              setReporter(msg => postMessage(sanitizeMsg(msg)));
+        //       setReporter(msg => postMessage(sanitizeMsg(msg)));
 
-              try {
-                await import(${JSON.stringify(testName.href)});
-              } catch (error) {
-                postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
-              }
-          `)
-        ),
+        //       try {
+        //         await import(${JSON.stringify(testName.href)});
+        //       } catch (error) {
+        //         postMessage({type: 'test', test: 0, time: 0});
+        //         postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
+        //         postMessage({
+        //           name: 'fail',
+        //           test: 0,
+        //           marker: new Error(),
+        //           time: 0,
+        //           operator: 'fail',
+        //           fail: true,
+        //           data: {expected: true, actual: false}
+        //         });
+        //         postMessage({type: 'end', test: 0, time: 0, fail: true});
+        //       }
+        //   `)
+        // ),
         {
           type: 'module'
           // deno: {permissions: 'inherit'}
@@ -69,6 +83,7 @@ export default class TestWorker extends EventServer {
       });
       this.close(id);
     });
+    worker.postMessage({testName: testName.href, utilName: utilName.href});
     return id;
   }
   destroyTask(id) {
