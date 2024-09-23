@@ -33,6 +33,16 @@ export const sanitize = (value, processed, seen = new Set()) => {
     if (isProhibited(v, seen)) continue;
     result[k] = sanitize(v, true, seen);
   }
+
+  // was it an error? => copy non-enumerable properties
+  if (value instanceof Error) {
+    if (value.name && !result.name) result.name = value.name;
+    if (value.message && !result.message) result.message = value.message;
+    if (value.stack && !result.stack) result.stack = value.stack;
+    if (value.type && !result.type) result.type = value.type;
+    if (!result.type) result.type = 'Error';
+  }
+
   return result;
 };
 
