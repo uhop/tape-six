@@ -67,6 +67,7 @@ export const setReporter = newReporter => (reporter = newReporter);
 
 export const runTests = async (rootState, tests) => {
   for (let i = 0; i < tests.length; ++i) {
+    if (rootState.stopTest) return false;
     const {options, deferred} = tests[i],
       testNumber = ++testCounter,
       state = new State(rootState, options),
@@ -77,16 +78,25 @@ export const runTests = async (rootState, tests) => {
       try {
         state.emit({type: 'test', name: options.name, test: testNumber, time: state.timer.now()});
         if (options.skip) {
-          state.emit({type: 'comment', name: 'SKIP test: ' + options.name, test: testNumber, time: state.timer.now()});
+          state.emit({
+            type: 'comment',
+            name: 'SKIP test: ' + options.name,
+            test: testNumber,
+            time: state.timer.now()
+          });
         } else if (options.testFn) {
           if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
             const result = options.testFn(tester);
             if (result && typeof result == 'object' && typeof result.then == 'function') {
-              const timedOut = await Promise.race([result.then(() => false), timeout(options.timeout).then(() => true)]);
+              const timedOut = await Promise.race([
+                result.then(() => false),
+                timeout(options.timeout).then(() => true)
+              ]);
               if (timedOut) {
                 state.emit({
                   type: 'comment',
-                  name: 'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
+                  name:
+                    'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
                   test: testNumber,
                   time: state.timer.now()
                 });
@@ -98,25 +108,49 @@ export const runTests = async (rootState, tests) => {
           }
         }
       } catch (error) {
-        if (!(error instanceof StopTest)) {
+        if (error instanceof StopTest) {
+          state.emit({
+            type: 'comment',
+            name: 'Stop tests: ' + String(error),
+            test: testNumber,
+            marker: new Error(),
+            time: state.timer.now()
+          });
+        } else {
           state.emit({
             name: 'UNEXPECTED EXCEPTION: ' + String(error),
             test: testNumber,
             marker: new Error(),
             time: state.timer.now(),
-            operator: 'error',
+            operator: 'exception',
             fail: true,
             data: {
               actual: error
             }
           });
+          state.failOnce &&
+            state.emit({
+              type: 'comment',
+              name: 'Stop tests: ' + String(error),
+              test: testNumber,
+              marker: new Error(),
+              time: state.timer.now()
+            });
         }
       }
-      state.emit({type: 'end', name: options.name, test: testNumber, time: state.timer.now(), fail: state.failed > 0, data: state});
+      state.emit({
+        type: 'end',
+        name: options.name,
+        test: testNumber,
+        time: state.timer.now(),
+        fail: state.failed > 0,
+        data: state
+      });
       state.updateParent();
     }
     deferred && deferred.resolve(state);
   }
+  return true;
 };
 
 test.skip = function skip(name, options, testFn) {
@@ -133,13 +167,14 @@ test.asPromise = function asPromise(name, options, testFn) {
   options = processArgs(name, options, testFn);
   if (options.testFn) {
     const testFn = options.testFn;
-    options.testFn = tester => new Promise((resolve, reject) => {
-      try {
-        testFn(tester, resolve, reject)
-      } catch (error) {
-        reject(error);
-      }
-    });
+    options.testFn = tester =>
+      new Promise((resolve, reject) => {
+        try {
+          testFn(tester, resolve, reject);
+        } catch (error) {
+          reject(error);
+        }
+      });
   }
   return test(options);
 };
@@ -173,13 +208,14 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
   options = processArgs(name, options, testFn);
   if (options.testFn) {
     const testFn = options.testFn;
-    options.testFn = tester => new Promise((resolve, reject) => {
-      try {
-        testFn(tester, resolve, reject)
-      } catch (error) {
-        reject(error);
-      }
-    });
+    options.testFn = tester =>
+      new Promise((resolve, reject) => {
+        try {
+          testFn(tester, resolve, reject);
+        } catch (error) {
+          reject(error);
+        }
+      });
   }
   await runTests(this.state, [{options}]);
 };

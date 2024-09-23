@@ -1,7 +1,7 @@
 import {selectTimer} from '../src/utils/timer.js';
 import {getReporter, setReporter, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
-import State from '../src/State.js';
+import State, {StopTest} from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
 import DomReporter from './DomReporter.js';
 import DashReporter from './DashReporter.js';
@@ -77,6 +77,14 @@ window.addEventListener('DOMContentLoaded', () => {
     emptyClass: 'nothing'
   });
 
+  const safeEmit = rootState => event => {
+    try {
+      rootState.emit(event);
+    } catch (error) {
+      if (!(error instanceof StopTest)) throw error;
+    }
+  };
+
   defer(async () => {
     await selectTimer();
 
@@ -103,7 +111,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (importmap) options.importmap = importmap;
 
     const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
-      worker = new TestWorker(event => rootState.emit(event), parallel, options);
+      worker = new TestWorker(safeEmit(rootState), parallel, options);
 
     await new Promise(resolve => {
       worker.done = () => resolve();

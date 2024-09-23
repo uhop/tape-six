@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {resolveTests, resolvePatterns} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
-import State from '../src/State.js';
+import State, {StopTest} from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
 import {selectTimer} from '../src/utils/timer.js';
 
@@ -116,6 +116,14 @@ const init = async () => {
   }
 };
 
+const safeEmit = rootState => event => {
+  try {
+    rootState.emit(event);
+  } catch (error) {
+    if (!(error instanceof StopTest)) throw error;
+  }
+};
+
 const main = async () => {
   config();
   await init();
@@ -127,7 +135,7 @@ const main = async () => {
   });
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
-    worker = new TestWorker(event => rootState.emit(event), parallel, options);
+    worker = new TestWorker(safeEmit(rootState), parallel, options);
 
   rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
 

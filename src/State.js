@@ -66,6 +66,7 @@ class State {
     this.offset = parent.asserts || 0;
     this.timer = parent.timer || getTimer();
     this.asserts = this.skipped = this.failed = 0;
+    this.stopTest = false;
     this.startTime = this.time = this.timer.now();
   }
 
@@ -97,7 +98,7 @@ class State {
 
     if (
       event.type === 'assert' &&
-      event.operator === 'error' &&
+      (event.operator === 'error' || event.operator === 'exception') &&
       event.data &&
       event.data.actual &&
       typeof event.data.actual.stack == 'string'
@@ -120,20 +121,37 @@ class State {
         (event.actual = serialize(event.data.actual));
     }
 
+    switch (event.type) {
+      case 'assert':
+        if (isFailed && this.failOnce && !this.skip) event.stopTest = true;
+        break;
+      case 'bail-out':
+        event.stopTest = true;
+        break;
+    }
+
+    if (event.stopTest) {
+      if (!this.stopTest) {
+        for (const state of this) state.skip = state.stopTest = true;
+      }
+    } else if (this.stopTest) {
+      event.stopTest = true;
+    }
+
     this.callback(event);
 
     switch (event.type) {
       case 'assert':
-        if (isFailed && this.failOnce && !this.skip) {
-          for (let state = this; state; state = state.parent) state.skip = true;
-          throw new StopTest('failOnce is activated');
-        }
+        if (event.stopTest && event.operator !== 'exception') throw new StopTest('failOnce is activated');
         this.time = this.timer.now();
         break;
       case 'bail-out':
-        for (let state = this; state; state = state.parent) state.skip = true;
         throw new StopTest('bailOut is activated');
     }
+  }
+
+  *[Symbol.iterator]() {
+    for (let state = this; state; state = state.parent) yield state;
   }
 }
 

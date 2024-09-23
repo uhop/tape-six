@@ -73,13 +73,21 @@ defer(async () => {
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     } else if (isBun) {
-      if (!Bun.env.TAPE6_TAP) {
+      if (Bun.env.TAPE6_JSONL) {
+        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
+          jsonlReporter = new JSONLReporter(options);
+        reporter = jsonlReporter.report.bind(jsonlReporter);
+      } else if (!Bun.env.TAPE6_TAP) {
         const TTYReporter = (await import('./src/TTYReporter.js')).default,
           ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     } else if (isNode) {
-      if (!process.env.TAPE6_TAP) {
+      if (process.env.TAPE6_JSONL) {
+        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
+          jsonlReporter = new JSONLReporter(options);
+        reporter = jsonlReporter.report.bind(jsonlReporter);
+      } else if (!process.env.TAPE6_TAP) {
         const TTYReporter = (await import('./src/TTYReporter.js')).default,
           ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
@@ -99,7 +107,8 @@ defer(async () => {
     const tests = getTests();
     if (!tests.length) break;
     clearTests();
-    await runTests(rootState, tests);
+    const canContinue = await runTests(rootState, tests);
+    if (!canContinue) break;
     await new Promise(resolve => defer(resolve));
   }
   rootState.emit({
