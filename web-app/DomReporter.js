@@ -145,8 +145,6 @@ class DomReporter {
             assert.appendChild(row);
           }
           {
-            console.log('EXPECTED:', typeof event.expected, event.expected, expected);
-            console.log('ACTUAL:', typeof event.actual, event.actual, actual);
             const stack =
               actual?.type === 'Error' && typeof actual.stack == 'string'
                 ? actual.stack
