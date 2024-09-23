@@ -108,8 +108,12 @@ class State {
     }
 
     if (event.type === 'assert' && event.data) {
-      event.data.hasOwnProperty('expected') && (event.expected = serialize(event.data.expected));
-      event.data.hasOwnProperty('actual') && (event.actual = serialize(event.data.actual));
+      typeof event.expected != 'string' &&
+        event.data.hasOwnProperty('expected') &&
+        (event.expected = serialize(event.data.expected));
+      typeof event.actual != 'string' &&
+        event.data.hasOwnProperty('actual') &&
+        (event.actual = serialize(event.data.actual));
     }
 
     this.callback(event);
