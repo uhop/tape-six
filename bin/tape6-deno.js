@@ -91,7 +91,11 @@ const config = () => {
 const init = async () => {
   let reporter = getReporter();
   if (!reporter) {
-    if (!Deno.env.get('TAPE6_TAP')) {
+    if (Deno.env.get('TAPE6_JSONL')) {
+      const JSONLReporter = (await import('../src/JSONLReporter.js')).default,
+        jsonlReporter = new JSONLReporter(options);
+      reporter = jsonlReporter.report.bind(jsonlReporter);
+    } else if (!Deno.env.get('TAPE6_TAP')) {
       const TTYReporter = (await import('../src/TTYReporter.js')).default,
         ttyReporter = new TTYReporter(options);
       ttyReporter.testCounter = -2;

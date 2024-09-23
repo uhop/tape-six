@@ -63,7 +63,11 @@ defer(async () => {
         reporter = event => window.parent.__tape6_reporter(id, event);
       }
     } else if (isDeno) {
-      if (!Deno.env.get('TAPE6_TAP')) {
+      if (Deno.env.TAPE6_JSONL) {
+        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
+          jsonlReporter = new JSONLReporter(options);
+        reporter = jsonlReporter.report.bind(jsonlReporter);
+      } else if (!Deno.env.get('TAPE6_TAP')) {
         const TTYReporter = (await import('./src/TTYReporter.js')).default,
           ttyReporter = new TTYReporter(options);
         reporter = ttyReporter.report.bind(ttyReporter);
@@ -107,11 +111,11 @@ defer(async () => {
   });
 
   if (isDeno) {
-    !Deno.env.get('TAPE6_WORKER') && Deno.exit(rootState.failed > 0 ? 1 : 0);
+    Deno.exit(rootState.failed > 0 ? 1 : 0);
   } else if (isBun) {
-    !Bun.env.TAPE6_WORKER && process.exit(rootState.failed > 0 ? 1 : 0);
+    process.exit(rootState.failed > 0 ? 1 : 0);
   } else if (isNode) {
-    !process.env.TAPE6_WORKER && process.exit(rootState.failed > 0 ? 1 : 0);
+    process.exit(rootState.failed > 0 ? 1 : 0);
   } else if (typeof __tape6_reportResults == 'function') {
     __tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
   }

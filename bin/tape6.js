@@ -92,7 +92,11 @@ const config = () => {
 const init = async () => {
   let reporter = getReporter();
   if (!reporter) {
-    if (!process.env.TAPE6_TAP) {
+    if (process.env.TAPE6_JSONL) {
+      const JSONLReporter = (await import('../src/JSONLReporter.js')).default,
+        jsonlReporter = new JSONLReporter(options);
+      reporter = jsonlReporter.report.bind(jsonlReporter);
+    } else if (!process.env.TAPE6_TAP) {
       const TTYReporter = (await import('../src/TTYReporter.js')).default,
         ttyReporter = new TTYReporter(options);
       ttyReporter.testCounter = -2;
@@ -118,7 +122,9 @@ const main = async () => {
   await init();
   await selectTimer();
 
-  process.on('uncaughtException', (error, origin) => console.error('UNHANDLED ERROR:', origin, error));
+  process.on('uncaughtException', (error, origin) =>
+    console.error('UNHANDLED ERROR:', origin, error)
+  );
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);

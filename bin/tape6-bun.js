@@ -12,7 +12,7 @@ import {selectTimer} from '../src/utils/timer.js';
 import TestWorker from '../src/bun/TestWorker.js';
 
 const options = {},
-  rootFolder = process.cwd();
+  rootFolder = Bun.cwd;
 
 let flags = '',
   parallel = '',
@@ -68,7 +68,7 @@ const config = () => {
   }
 
   if (!flagIsSet) {
-    flags = process.env.TAPE6_FLAGS || flags;
+    flags = Bun.env.TAPE6_FLAGS || flags;
   }
   for (let i = 0; i < flags.length; ++i) {
     const option = flags[i].toLowerCase(),
@@ -77,7 +77,7 @@ const config = () => {
   }
 
   if (!parIsSet) {
-    parallel = process.env.TAPE6_PAR || parallel;
+    parallel = Bun.env.TAPE6_PAR || parallel;
   }
   if (parallel) {
     parallel = Math.max(0, +parallel);
@@ -91,7 +91,11 @@ const config = () => {
 const init = async () => {
   let reporter = getReporter();
   if (!reporter) {
-    if (!process.env.TAPE6_TAP) {
+    if (Bun.env.TAPE6_JSONL) {
+      const JSONLReporter = (await import('../src/JSONLReporter.js')).default,
+        jsonlReporter = new JSONLReporter(options);
+      reporter = jsonlReporter.report.bind(jsonlReporter);
+    } else if (!Bun.env.TAPE6_TAP) {
       const TTYReporter = (await import('../src/TTYReporter.js')).default,
         ttyReporter = new TTYReporter(options);
       ttyReporter.testCounter = -2;
@@ -117,7 +121,9 @@ const main = async () => {
   await init();
   await selectTimer();
 
-  process.on('uncaughtException', (error, origin) => console.error('UNHANDLED ERROR:', origin, error));
+  process.on('uncaughtException', (error, origin) =>
+    console.error('UNHANDLED ERROR:', origin, error)
+  );
 
   const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
     worker = new TestWorker(event => rootState.emit(event), parallel, options);
