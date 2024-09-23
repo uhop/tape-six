@@ -1,5 +1,11 @@
+import {signature} from '../src/State.js';
+
 const formatValue = value => {
   if (typeof value == 'string') return value;
+  if (value && value[signature] === signature) {
+    value = {...value};
+    delete value[signature];
+  }
   return JSON.stringify(value);
 };
 
@@ -32,7 +38,9 @@ class DomReporter {
           header.appendChild(document.createTextNode(event.name));
           this.current.appendChild(header);
         }
-        ((this.stack.length && this.stack[this.stack.length - 1]) || this.root).appendChild(this.current);
+        ((this.stack.length && this.stack[this.stack.length - 1]) || this.root).appendChild(
+          this.current
+        );
         break;
       case 'end':
         if (this.current) {
@@ -95,6 +103,7 @@ class DomReporter {
             row.appendChild(value);
             assert.appendChild(row);
           }
+          const expected = event.expected && JSON.parse(event.expected);
           if (event.hasOwnProperty('expected')) {
             const row = document.createElement('div'),
               name = document.createElement('span'),
@@ -103,11 +112,12 @@ class DomReporter {
             name.className = 'name';
             name.appendChild(document.createTextNode('expected:'));
             value.className = 'value';
-            value.appendChild(document.createTextNode(formatValue(event.expected)));
+            value.appendChild(document.createTextNode(formatValue(expected)));
             row.appendChild(name);
             row.appendChild(value);
             assert.appendChild(row);
           }
+          const actual = event.actual && JSON.parse(event.actual);
           if (event.hasOwnProperty('actual')) {
             const row = document.createElement('div'),
               name = document.createElement('span'),
@@ -116,7 +126,7 @@ class DomReporter {
             name.className = 'name';
             name.appendChild(document.createTextNode('actual:'));
             value.className = 'value';
-            value.appendChild(document.createTextNode(formatValue(event.actual)));
+            value.appendChild(document.createTextNode(formatValue(actual)));
             row.appendChild(name);
             row.appendChild(value);
             assert.appendChild(row);
@@ -135,7 +145,12 @@ class DomReporter {
             assert.appendChild(row);
           }
           {
-            const stack = event.actual && event.actual.type === 'Error' && typeof event.actual.stack == 'string' ? event.actual.stack : event.marker.stack;
+            console.log('EXPECTED:', typeof event.expected, event.expected, expected);
+            console.log('ACTUAL:', typeof event.actual, event.actual, actual);
+            const stack =
+              actual?.type === 'Error' && typeof actual.stack == 'string'
+                ? actual.stack
+                : event.marker.stack;
             if (typeof stack == 'string') {
               const row = document.createElement('div'),
                 name = document.createElement('span'),
@@ -144,7 +159,9 @@ class DomReporter {
               name.className = 'name';
               name.appendChild(document.createTextNode('stack:'));
               value.className = 'value';
-              stack.split('\n').forEach(line => value.appendChild(document.createTextNode(line + '\n')));
+              stack
+                .split('\n')
+                .forEach(line => value.appendChild(document.createTextNode(line + '\n')));
               row.appendChild(name);
               row.appendChild(value);
               assert.appendChild(row);
