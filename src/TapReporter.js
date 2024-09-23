@@ -119,15 +119,6 @@ class TapReporter {
             yamlFormatter({operator: event.operator}, formatterOptions).forEach(line =>
               this.write(line, 'yaml')
             );
-            // if (event.data) {
-            //   yamlFormatter(
-            //     {
-            //       expected: event.data.expected,
-            //       actual: event.data.actual
-            //     },
-            //     formatterOptions
-            //   ).forEach(line => this.write(line, 'yaml'));
-            // }
             yamlFormatter(
               {
                 expected: event.expected && JSON.parse(event.expected),
