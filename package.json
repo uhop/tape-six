@@ -12,7 +12,8 @@
     "tape6": "bin/tape6.js",
     "tape6-bun": "bin/tape6-bun.js",
     "tape6-deno": "bin/tape6-deno.js",
-    "tape6-server": "bin/tape6-server.js"
+    "tape6-server": "bin/tape6-server.js",
+    "tape6-runner": "bin/tape6-runner.js"
   },
   "scripts": {
     "start": "node bin/tape6-server.js --trace",
