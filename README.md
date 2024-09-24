@@ -32,6 +32,7 @@ If you are familiar with other TAP-based libraries you'll feel right at home.
 
 The most recent releases:
 
+* 0.10.0 *Refactored test runners, refactored stopping tests on failure, added JSONL reporter, fixed bugs.*
 * 0.9.6 *Updated deps.*
 * 0.9.5 *Updated the lock file.*
 * 0.9.4 *Updated deps. Added test runners for Bun and Deno.*
