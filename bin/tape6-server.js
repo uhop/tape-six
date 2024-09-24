@@ -67,7 +67,7 @@ if (!webAppPath) {
 const mimeAliases = {mjs: 'js', cjs: 'js', htm: 'html', jpeg: 'jpg'};
 Object.keys(mimeAliases).forEach(name => (mimeTable[name] = mimeTable[mimeAliases[name]]));
 
-// colors to use
+// escape codes to use
 const join = (...args) => args.map(value => value || '').join(''),
   paint = hasColors
     ? (prefix, suffix = '\x1B[39m') =>
@@ -79,6 +79,8 @@ const join = (...args) => args.map(value => value || '').join(''),
   green = paint('\x1B[32m'),
   yellow = paint('\x1B[93m'),
   blue = paint('\x1B[44;97m', '\x1B[49;39m');
+
+const link = (url, text = url) => paint('\x1B]8;;' + url + '\x1B\\', '\x1B]8;;\x1B\\')(text);
 
 // sending helpers
 
@@ -223,7 +225,12 @@ server.on('listening', () => {
       grey(' at ') +
       yellow(bind) +
       grey(', serving static files from ') +
-      yellow(rootFolder) +
-      '\n'
+      yellow(rootFolder)
   );
+  if (host && bind) {
+    console.log(
+      grey('Open ') + link('http://' + host + ':' + port + '/') + grey(' in your browser')
+    );
+  }
+  console.log();
 });
