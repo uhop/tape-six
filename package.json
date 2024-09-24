@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "TAP the test harness for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
@@ -21,9 +21,9 @@
     "build": "npm run copyDeep6",
     "prepublishOnly": "npm run build",
     "test": "node ./bin/tape6.js --flags FO",
-    "test-bun": "bun run ./bin/tape6-bun.js --flags FO",
-    "test-deno": "deno run -A ./bin/tape6-deno.js --flags FO",
-    "test-chrome": "node tests/puppeteer-chrome.js"
+    "test:bun": "bun run ./bin/tape6-bun.js --flags FO",
+    "test:deno": "deno run -A ./bin/tape6-deno.js --flags FO",
+    "test:chrome": "node tests/puppeteer-chrome.js"
   },
   "github": "http://github.com/uhop/tape-six",
   "repository": {

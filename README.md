@@ -32,6 +32,7 @@ If you are familiar with other TAP-based libraries you'll feel right at home.
 
 The most recent releases:
 
+* 0.12.0 *Removed data to avoid serializing non-serializable objects.*
 * 0.11.0 *Minor improvements to the server: temporary redirects, a hyperlink to the web app.*
 * 0.10.0 *Refactored test runners, refactored stopping tests on failure, added JSONL reporter, fixed bugs.*
 * 0.9.6 *Updated deps.*
