@@ -22,12 +22,7 @@ export default class TestWorker extends EventServer {
       try {
         this.report(id, msg);
       } catch (error) {
-        if (error instanceof StopTest) {
-          console.error('# immediate StopTest:', error.message || 'StopTest is activated');
-          worker.terminate();
-          process.exit(1);
-        }
-        throw error;
+        if (!(error instanceof StopTest)) throw error;
       }
       if (msg.type === 'end' && msg.test === 0) {
         this.close(id);
