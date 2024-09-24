@@ -109,7 +109,7 @@ const sendJson = (req, res, json, justHeaders) => {
   traceCalls && console.log(green('200') + ' ' + grey(req.method) + ' ' + grey(req.url));
 };
 
-const sendRedirect = (req, res, to, code = 301) => {
+const sendRedirect = (req, res, to, code = 307) => {
   res.writeHead(code, {Location: to});
   res.end();
   traceCalls && console.log(blue(code) + ' ' + grey(req.method) + ' ' + grey(req.url));
