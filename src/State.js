@@ -113,12 +113,14 @@ class State {
     }
 
     if (event.type === 'assert' && event.data) {
-      typeof event.expected != 'string' &&
-        event.data.hasOwnProperty('expected') &&
-        (event.expected = serialize(event.data.expected));
-      typeof event.actual != 'string' &&
-        event.data.hasOwnProperty('actual') &&
-        (event.actual = serialize(event.data.actual));
+      if (typeof event.expected != 'string' && event.data.hasOwnProperty('expected')) {
+        event.expected = serialize(event.data.expected);
+      }
+      if (typeof event.expected == 'string') delete event.data.expected;
+      if (typeof event.actual != 'string' && event.data.hasOwnProperty('actual')) {
+        event.actual = serialize(event.data.actual);
+      }
+      if (typeof event.actual == 'string') delete event.data.actual;
     }
 
     switch (event.type) {
@@ -142,7 +144,8 @@ class State {
 
     switch (event.type) {
       case 'assert':
-        if (event.stopTest && event.operator !== 'exception') throw new StopTest('failOnce is activated');
+        if (event.stopTest && event.operator !== 'exception')
+          throw new StopTest('failOnce is activated');
         this.time = this.timer.now();
         break;
       case 'bail-out':
