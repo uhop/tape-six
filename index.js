@@ -99,7 +99,7 @@ const init = async () => {
     setReporter(reporter);
   }
 
-  return {reporter, options, isBrowser, isDeno, isBun, isNode};
+  return {reporter, options};
 };
 
 let settings = null;
@@ -107,7 +107,7 @@ let settings = null;
 const testCallback = async () => {
   if (!settings) settings = await init();
 
-  const {reporter, options, isDeno, isBun, isNode} = settings,
+  const {reporter, options} = settings,
     rootState = new State(null, {callback: reporter, failOnce: options.failOnce});
 
   rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
@@ -129,11 +129,11 @@ const testCallback = async () => {
     data: rootState
   });
 
-  if (isDeno) {
+  if (typeof Deno == 'object') {
     rootState.failed > 0 && Deno.exit(1);
-  } else if (isBun) {
+  } else if (typeof Bun == 'object') {
     rootState.failed > 0 && process.exit(1);
-  } else if (isNode) {
+  } else if (typeof process == 'object' && process.versions?.node) {
     rootState.failed > 0 && process.exit(1);
   } else if (typeof __tape6_reportResults == 'function') {
     __tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
