@@ -39,7 +39,8 @@ const replacer =
 
 const serialize = object => {
   try {
-    return JSON.stringify(object, replacer());
+    const result = JSON.stringify(object, replacer());
+    if (typeof result == 'string') return result;
   } catch (error) {
     // squelch
   }
