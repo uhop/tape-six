@@ -4,14 +4,24 @@ import Tester from './Tester.js';
 import Deferred from './utils/Deferred.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
+import defer from './utils/defer.js';
 
 let tests = [],
   reporter = null,
   testCounter = 0,
-  isConfigured = false;
+  isConfigured = false,
+  notifyCallback = null;
 
 export const getConfiguredFlag = () => isConfigured;
 export const setConfiguredFlag = value => (isConfigured = !!value);
+
+export const registerNotifyCallback = callback => {
+  if (tests.length) {
+    defer(callback);
+  } else {
+    notifyCallback = callback;
+  }
+};
 
 const processArgs = (name, options, testFn) => {
   // normalize arguments
@@ -55,7 +65,11 @@ export const test = async (name, options, testFn) => {
     isTimerSet = true;
   }
   const deferred = new Deferred();
-  tests.push({options, deferred});
+  if (tests.push({options, deferred}) === 1 && notifyCallback) {
+    defer(notifyCallback);
+    notifyCallback = null;
+  }
+
   return deferred.promise;
 };
 
