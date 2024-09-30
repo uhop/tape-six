@@ -24,9 +24,161 @@ Why another library? Working on projects written in modern JS (with modules) I f
 ## Docs
 
 The documentation can be found in the [wiki](https://github.com/uhop/tape-six/wiki).
+See how it can be used in [tests/](https://github.com/uhop/tape-six/tree/master/tests).
 
-The documentation is mostly TBD but you can inspect `tests/` to see how it is used.
-If you are familiar with other TAP-based libraries you'll feel right at home.
+The whole API is based on two objects: `test` and `Tester`.
+
+### `test`
+
+`test` is the entry point to the test suite:
+
+```js
+import test from 'tape-six';
+```
+
+This function registers a test suite. Available options:
+
+* `async test(name, options, testFn)` &mdash; registers a test suite to be executed asynchronously.
+  The returned promise is resolved when the test suite is finished.
+  * In most cases no need to wait for the returned promise.
+  * The test function has the following signature: `testFn(tester)`
+* `test.skip(name, options, testFn)` &mdash; registers a test suite to be skipped.
+  * It is used to mark a test suite to be skipped. It will not be executed.
+* `test.todo(name, options, testFn)` &mdash; registers a test suite that is marked as work in progress.
+  * Tests in this suite will be executed, errors will be reported but not counted as failures.
+  * It is used to mark tests for incomplete features under development.
+* `test.asPromise(name, options, testPromiseFn)` &mdash; registers a test suite to be executed asynchronously
+  using the callback-style API to notify that the test suite is finished.
+  * The test function has a different signature: `testPromiseFn(tester, resolve, reject)`.
+
+The arguments mentioned above are:
+
+* `name` &mdash; the optional name of the test suite. If not provided, it will be set to the name of the test function or `'(anonymous)'`.
+* `options` &mdash; the optional options object. Available options:
+  * `skip` &mdash; if `true`, the test suite will be skipped.
+  * `todo` &mdash; if `true`, the test suite will be marked as work in progress.
+  * `name` &mdash; the optional name of the test suite. If not provided, it will be set to the name of the test function or `'(anonymous)'`.
+    * Can be overridden by the `name` argument.
+  * `testFn` &mdash; the optional test function to be executed.
+    * Can be overridden by the `testFn` argument.
+  * `timeout` &mdash; the optional timeout in milliseconds. It is used for asynchronous tests.
+    * If the timeout is exceeded, the test suite will be marked as failed.
+    * **Important:** JavaScript does not provide a generic way to cancel asynchronous operations.
+      When the timeout is exceeded, `tape6` will stop waiting for the test to finish,
+      but it will continue running in the background.
+    * The default: no timeout.
+  * `testFn` &mdash; the test function to be executed. It will be called with the `tester` object.
+    The result will be ignored.
+    * This function can be an asynchronous one or return a promise.
+  * `testPromiseFn` &mdash; the test function to be executed. It will be called with the `tester` object
+    and two callbacks: `resolve` and `reject` modeled on the [Promise API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise).
+
+Given all that `test` and its helpers can be called like this:
+
+```js
+test(name, options, testFn);
+test(name, testFn);
+test(testFn);
+test(name, options);
+test(options, testFn);
+test(options);
+
+// example:
+test('foo', t => {
+  t.pass();
+});
+test('bar', async t => {
+  t.fail();
+});
+```
+
+### `Tester`
+
+`Tester` helps to do asserts and provides an interface between a test suite and the test harness.
+The following methods are available:
+
+* Asserts:
+  * `pass(msg)` &mdash; asserts that the test passed.
+  * `fail(msg)` &mdash; asserts that the test failed.
+  * `ok(val, msg)` &mdash; asserts that `val` is truthy.
+    * `true()` &mdash; an alias of `ok()`.
+    * `assert()` &mdash; an alias of `ok()`.
+  * `notOk(val, msg)` &mdash; asserts that `val` is falsy.
+    * `false()` &mdash; an alias of `notOk()`.
+    * `notok()` &mdash; an alias of `notOk()`.
+  * `error(err, msg)` &mdash; asserts that `err` is falsy.
+    * `ifError()` &mdash; an alias of `error()`.
+    * `ifErr()` &mdash; an alias of `error()`.
+    * `iferror()` &mdash; an alias of `error()`.
+  * `strictEqual(a, b, msg)` &mdash; asserts that `a` and `b` are strictly equal.
+    * Strict equality is defined as `a === b`.
+    * `is()` &mdash; an alias of `strictEqual()`.
+    * `equal()` &mdash; an alias of `strictEqual()`.
+    * `isEqual()` &mdash; an alias of `strictEqual()`.
+    * `equals()` &mdash; an alias of `strictEqual()`.
+    * `strictEquals()` &mdash; an alias of `strictEqual()`.
+  * `notStrictEqual(a, b, msg)` &mdash; asserts that `a` and `b` are not strictly equal.
+    * `not()` &mdash; an alias of `notStrictEqual()`.
+    * `notEqual()` &mdash; an alias of `notStrictEqual()`.
+    * `notEquals()` &mdash; an alias of `notStrictEqual()`.
+    * `notStrictEquals()` &mdash; an alias of `notStrictEqual()`.
+    * `doesNotEqual()` &mdash; an alias of `notStrictEqual()`.
+    * `isUnequal()` &mdash; an alias of `notStrictEqual()`.
+  * `looseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are loosely equal.
+    * Loose equality is defined as `a == b`.
+    * `looseEquals()` &mdash; an alias of `looseEqual()`.
+  * `notLooseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are not loosely equal.
+    * `notLooseEquals()` &mdash; an alias of `notLooseEqual()`.
+  * `deepEqual(a, b, msg)` &mdash; asserts that `a` and `b` are deeply equal.
+    * Individual components of `a` and `b` are compared recursively using the strict equality.
+    * See [deep6's equal()](https://github.com/uhop/deep6/wiki/equal()) for details.
+    * `same()` &mdash; an alias of `deepEqual()`.
+    * `deepEquals()` &mdash; an alias of `deepEqual()`.
+    * `isEquivalent()` &mdash; an alias of `deepEqual()`.
+  * `notDeepEqual(a, b, msg)` &mdash; asserts that `a` and `b` are not deeply equal.
+    * `notSame()` &mdash; an alias of `notDeepEqual()`.
+    * `notDeepEquals()` &mdash; an alias of `notDeepEqual()`.
+    * `notEquivalent()` &mdash; an alias of `notDeepEqual()`.
+    * `notDeeply()` &mdash; an alias of `notDeepEqual()`.
+    * `isNotDeepEqual()` &mdash; an alias of `notDeepEqual()`.
+    * `isNotEquivalent()` &mdash; an alias of `notDeepEqual()`.
+  * `deepLooseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are deeply loosely equal.
+    * Individual components of `a` and `b` are compared recursively using the loose equality.
+  * `notDeepLooseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are not deeply loosely equal.
+  * `throws(fn, msg)` &mdash; asserts that `fn` throws.
+    * `fn` is called with no arguments in the global context.
+  * `doesNotThrow(fn, msg)` &mdash; asserts that `fn` does not throw.
+  * `matchString(string, regexp, msg)` &mdash; asserts that `string` matches `regexp`.
+  * `doesNotMatchString(string, regexp, msg)` &mdash; asserts that `string` does not match `regexp`.
+  * `match(a, b, msg)` &mdash; asserts that `a` matches `b`.
+    * See [deep6's match()](https://github.com/uhop/deep6/wiki/match()) for details.
+  * `doesNotMatch(a, b, msg)` &mdash; asserts that `a` does not match `b`.
+  * `rejects(promise, msg)` &mdash; asserts that `promise` rejects.
+    * This is an asynchronous method. It is likely to be waited for.
+    * `doesNotResolve()` &mdash; an alias of `rejects()`.
+  * `resolves(promise, msg)` &mdash; asserts that `promise` resolves.
+    * This is an asynchronous method. It is likely to be waited for.
+    * `doesNotReject()` &mdash; an alias of `resolves()`.
+* Embedded test suites (all of them are asynchronous and should be waited for):
+  * `test(name, options, testFn)` &mdash; runs a test suite asynchronously. See `test()` above.
+  * `skip(name, options, testFn)` &mdash; skips a test suite asynchronously. See `test.skip()` above.
+  * `todo(name, options, testFn)` &mdash; runs a provisional test suite asynchronously. See `test.todo()` above.
+  * `asPromise(name, options, testPromiseFn)` &mdash; runs a test suite asynchronously. See `test.asPromise()` above.
+* Miscellaneous:
+  * `any` &mdash; returns the `any` object. It can be used in deep equivalency asserts to match any value.
+    See [deep6's any](https://github.com/uhop/deep6/wiki/any) for details.
+  * `plan(n)` &mdash; sets the number of tests in the test suite. Rarely used.
+  * `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
+  * `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
+  * `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness.
+
+### Command-line utilities
+
+TBD
+
+### Setting up your project
+
+TBD
 
 ## Release notes
 
