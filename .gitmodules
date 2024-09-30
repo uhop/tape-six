@@ -1,3 +1,6 @@
 [submodule "vendors/deep6"]
 	path = vendors/deep6
 	url = git@github.com:uhop/deep6.git
+[submodule "wiki"]
+	path = wiki
+	url = git@github.com:uhop/tape-six.wiki.git
