@@ -83,12 +83,22 @@ test(name, options);
 test(options, testFn);
 test(options);
 
-// example:
+// examples:
 test('foo', t => {
   t.pass();
 });
 test('bar', async t => {
   t.fail();
+});
+test(function baz(t) {
+  t.ok(1 < 2);
+});
+test({
+  name: 'qux',
+  todo: true,
+  testFn: t => {
+    t.ok(1 < 2);
+  }
 });
 ```
 
@@ -171,6 +181,38 @@ The following methods are available:
   * `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
   * `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
   * `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness.
+
+In all cases, the `msg` message is optional. If it is not provided, some suitable generic message will be used.
+
+Example:
+
+```js
+test('Sample test', async t => {
+  const result = await getFromDb({first: 'Bob', last: 'Smith'});
+  t.equal(result.position, 'chief bozo', 'the position is correct');
+  t.ok(result.manager, 'the manager exists');
+
+  const manager = await getFromDb(result.manager);
+  t.ok(manager, 'the manager is retrieved');
+  t.equal(manager.first, 'Jane', 'the manager is Jane');
+  t.deepEqual(manager.employees, ['Bob Smith'], 'Jane manages only Bob Smith');
+});
+```
+
+### Running tests
+
+It is super easy to run tests:
+
+1. Install the `tape-six` package: `npm i -D tape-six`
+2. Write a test. For example, you named it `test.js`.
+3. Run the test: `node test.js`
+   1. Or: `bun run test.js`
+   2. Or: `deno run -A test.js`
+   3. Or you can run them in a browser!
+4. Profit!
+
+If you have a lot of tests, you can organize them using multiple files and directories.
+`tape-six` provides multiple test runners that can run them in different environments.
 
 ### Command-line utilities
 
