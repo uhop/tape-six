@@ -32,6 +32,7 @@ If you are familiar with other TAP-based libraries you'll feel right at home.
 
 The most recent releases:
 
+* 0.12.3 *Technical release: exposed internal classes for external utilities.*
 * 0.12.2 *Fixed a minor serialization issue.*
 * 0.12.1 *Minor Deno-related refactoring, fixed the way tests are triggered.*
 * 0.12.0 *Removed data to avoid serializing non-serializable objects.*

@@ -1,13 +1,14 @@
 {
   "name": "tape-six",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "description": "TAP the test harness for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
   "module": "index.js",
   "exports": {
     ".": "./index.js",
-    "./bin/*": "./bin/*"
+    "./bin/*": "./bin/*",
+    "./*": "./src/*"
   },
   "bin": {
     "tape6": "bin/tape6.js",
