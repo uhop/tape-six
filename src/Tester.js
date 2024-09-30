@@ -398,11 +398,11 @@ setAliases('ok', 'true, assert');
 setAliases('notOk', 'false, notok');
 setAliases('error', 'ifError, ifErr, iferror');
 setAliases('strictEqual', 'is, equal, equals, isEqual, strictEquals');
-setAliases('notStrictEqual', 'not, notEqual, notEquals, isNotEqual, doesNotEqual, isInequal, notStrictEquals, isNot');
+setAliases('notStrictEqual', 'not, notEqual, notEquals, isNotEqual, doesNotEqual, isUnequal, notStrictEquals, isNot');
 setAliases('looseEqual', 'looseEquals');
 setAliases('notLooseEqual', 'notLooseEquals');
 setAliases('deepEqual', 'same, deepEquals, isEquivalent');
-setAliases('notDeepEqual', 'notSame, notDeepEquals, notEquivalent, notDeeply, isNotDeepEqual, isNotDeepEqual, isNotEquivalent, isInequivalent');
+setAliases('notDeepEqual', 'notSame, notDeepEquals, notEquivalent, notDeeply, isNotDeepEqual, isNotEquivalent');
 setAliases('rejects', 'doesNotResolve');
 setAliases('resolves', 'doesNotReject');
 
