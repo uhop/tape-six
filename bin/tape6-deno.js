@@ -38,7 +38,7 @@ const config = () => {
     d: 'showData',
     o: 'failOnce',
     n: 'showAssertNumber',
-    c: 'hasColors'
+    m: 'monochrome'
   };
 
   let flagIsSet = false,
@@ -103,7 +103,7 @@ const init = async () => {
       reporter = ttyReporter.report.bind(ttyReporter);
     }
     if (!reporter) {
-      const tapReporter = new TapReporter({useJson: true});
+      const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome});
       reporter = tapReporter.report.bind(tapReporter);
     }
     setReporter(reporter);

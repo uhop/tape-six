@@ -9,7 +9,17 @@ import TestWorker from './TestWorker.js';
 
 setConfiguredFlag(true); // we are running the show
 
-const optionNames = {f: 'failureOnly', t: 'showTime', b: 'showBanner', d: 'showData', o: 'failOnce', s: 'showStack', l: 'showLog', n: 'showAssertNumber'},
+const optionNames = {
+    f: 'failureOnly',
+    t: 'showTime',
+    b: 'showBanner',
+    d: 'showData',
+    o: 'failOnce',
+    s: 'showStack',
+    l: 'showLog',
+    n: 'showAssertNumber',
+    m: 'monochrome'
+  },
   options = {};
 
 let flags = '',
@@ -62,10 +72,16 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  const tapReporter = new TapReporter({useJson: true}),
+  const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome}),
     domReporter = new DomReporter({root: document.querySelector('.tape6 .report')}),
     dashReporter = new DashReporter();
-  setReporter(event => (options.showLog && tapReporter.report(event), domReporter.report(event), dashReporter.report(event)));
+  setReporter(
+    event => (
+      options.showLog && tapReporter.report(event),
+      domReporter.report(event),
+      dashReporter.report(event)
+    )
+  );
 
   const donut = document.querySelector('tape6-donut');
   donut.show([{value: 0, className: 'nothing'}], {
@@ -92,9 +108,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (window.location.search) {
       if (patterns && patterns.length) {
-        files = await fetch('/--patterns?' + patterns.map(pattern => 'q=' + encodeURIComponent(pattern)).join('&')).then(response =>
-          response.ok ? response.json() : null
-        );
+        files = await fetch(
+          '/--patterns?' + patterns.map(pattern => 'q=' + encodeURIComponent(pattern)).join('&')
+        ).then(response => (response.ok ? response.json() : null));
       }
     }
 
@@ -107,7 +123,9 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const importmap = await fetch('/--importmap').then(response => (response.ok ? response.json() : null));
+    const importmap = await fetch('/--importmap').then(response =>
+      response.ok ? response.json() : null
+    );
     if (importmap) options.importmap = importmap;
 
     const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),

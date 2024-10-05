@@ -20,7 +20,7 @@ const main = async () => {
     }
   });
 
-  await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=c');
+  await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=M');
 };
 
 main().then(
