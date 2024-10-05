@@ -3,21 +3,30 @@
 [npm-img]:      https://img.shields.io/npm/v/tape-six.svg
 [npm-url]:      https://npmjs.org/package/tape-six
 
-tape-six is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests. It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
+tape-six is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
+It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/),
+[Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
 
-Why `tape-six`? It was supposed to be named `tape6` but `npm` does not allow names "similar" to existing packages. Instead of eliminating name-squatting they force to use unintuitive and unmemorable names. That's why all internal names, environment variables, and public names still use `tape6`.
+Why `tape-six`? It was supposed to be named `tape6` but `npm` does not allow names "similar"
+to existing packages. Instead of eliminating name-squatting they force to use unintuitive and
+unmemorable names. That's why all internal names, environment variables, and public names still use `tape6`.
 
 ## Rationale
 
-Why another library? Working on projects written in modern JS (with modules) I found several problems with existing unit test libraries:
+Why another library? Working on projects written in modern JS (with modules) I found several problems
+with existing unit test libraries:
 
-* In my opinion unit test files should be directly executable with `node`, `deno`, `bun`, browsers (with a trivial HTML file to load a test file) without a need for a special test runner utility, which wraps and changes my beautiful code.
+* In my opinion unit test files should be directly executable with `node`, `deno`, `bun`, browsers
+  (with a trivial HTML file to load a test file) without a need for a special test runner utility,
+  which wraps and changes my beautiful code.
   * Debugging my tests should be trivial. It should not be different from debugging any regular file.
 * The test harness should not obfuscate code nor include hundreds of other packages.
   * I want to debug my code, not dependencies I've never heard about.
   * I want to see where a problem happens, not some guts of a test harness.
 * Tests should work with ES modules natively.
-  * What if I want to debug some CommonJS code with Node? Fret not! Modules can import CommonJS files directly. But not the other way around (yet). And it helps to test how module users can use your beautiful CommonJS package.
+  * What if I want to debug some CommonJS code with Node? Fret not! Modules can import CommonJS files directly.
+    But not the other way around (yet). And it helps to test how module users can use your beautiful
+    CommonJS package.
 * The [DX](https://en.wikipedia.org/wiki/User_experience#Developer_experience) in browsers are usually abysmal.
   * Both console-based debugging and a UI to navigate results should be properly supported.
 
@@ -105,7 +114,7 @@ test({
 ### `Tester`
 
 `Tester` helps to do asserts and provides an interface between a test suite and the test harness.
-The following methods are available:
+The following methods are available (all `msg` arguments are optional):
 
 * Asserts:
   * `pass(msg)` &mdash; asserts that the test passed.
