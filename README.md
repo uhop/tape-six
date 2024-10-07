@@ -223,18 +223,20 @@ It is super easy to run tests:
 If you have a lot of tests, you can organize them using multiple files and directories.
 `tape-six` provides multiple test runners that can run them in different environments.
 
+### Configuring test runners
+
+See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for details.
+
 ### Command-line utilities
 
-TBD
-
-### Setting up your project
-
-TBD
+* [tape6](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6) &mdash; the main utility of the package to run tests in different environments.
+* [tape6-server](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6-server) &mdash; a custom web server with a web application that helps running tests in browsers.
 
 ## Release notes
 
 The most recent releases:
 
+* 1.0.1 *Technical release: added more links.*
 * 1.0.0 *The first official release.*
 * 0.12.3 *Technical release: exposed internal classes for external utilities.*
 * 0.12.2 *Fixed a minor serialization issue.*
