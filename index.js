@@ -11,7 +11,6 @@ import {
 import defer from './src/utils/defer.js';
 import State from './src/State.js';
 import TapReporter from './src/TapReporter.js';
-import JSONLReporter from './src/JSONLReporter.js';
 
 const optionNames = {
   f: 'failureOnly',
@@ -62,6 +61,10 @@ const init = async () => {
         reporter = event => window.__tape6_reporter(id, event);
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
         reporter = event => window.parent.__tape6_reporter(id, event);
+      } else if (options.useJsonL) {
+        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
+          jsonlReporter = new JSONLReporter(options);
+        reporter = jsonlReporter.report.bind(jsonlReporter);
       }
     } else if (isDeno) {
       if (Deno.env.TAPE6_JSONL) {
@@ -95,10 +98,8 @@ const init = async () => {
       }
     }
     if (!reporter) {
-      const textReporter = options.useJsonL
-        ? new JSONLReporter()
-        : new TapReporter({useJson: true, hasColors: !options.monochrome});
-      reporter = textReporter.report.bind(textReporter);
+      const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome});
+      reporter = tapReporter.report.bind(tapReporter);
     }
     setReporter(reporter);
   }
