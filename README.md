@@ -235,6 +235,7 @@ TBD
 
 The most recent releases:
 
+* 1.0.0 *The first official release.*
 * 0.12.3 *Technical release: exposed internal classes for external utilities.*
 * 0.12.2 *Fixed a minor serialization issue.*
 * 0.12.1 *Minor Deno-related refactoring, fixed the way tests are triggered.*
