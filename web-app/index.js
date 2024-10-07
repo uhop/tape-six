@@ -3,6 +3,7 @@ import {getReporter, setReporter, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
 import State, {StopTest} from '../src/State.js';
 import TapReporter from '../src/TapReporter.js';
+import JSONLReporter from '../src/JSONLReporter.js';
 import DomReporter from './DomReporter.js';
 import DashReporter from './DashReporter.js';
 import TestWorker from './TestWorker.js';
@@ -18,7 +19,8 @@ const optionNames = {
     s: 'showStack',
     l: 'showLog',
     n: 'showAssertNumber',
-    m: 'monochrome'
+    m: 'monochrome',
+    j: 'useJsonL'
   },
   options = {};
 
@@ -72,12 +74,19 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome}),
-    domReporter = new DomReporter({root: document.querySelector('.tape6 .report')}),
-    dashReporter = new DashReporter();
+  const dashReporter = new DashReporter(),
+    domReporter = new DomReporter({root: document.querySelector('.tape6 .report')});
+
+  let textReporter = null;
+  if (options.showLog) {
+    textReporter = options.useJsonL
+      ? new JSONLReporter()
+      : new TapReporter({useJson: true, hasColors: !options.monochrome});
+  }
+
   setReporter(
     event => (
-      options.showLog && tapReporter.report(event),
+      textReporter && textReporter.report(event),
       domReporter.report(event),
       dashReporter.report(event)
     )

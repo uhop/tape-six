@@ -11,6 +11,7 @@ import {
 import defer from './src/utils/defer.js';
 import State from './src/State.js';
 import TapReporter from './src/TapReporter.js';
+import JSONLReporter from './src/JSONLReporter.js';
 
 const optionNames = {
   f: 'failureOnly',
@@ -19,7 +20,8 @@ const optionNames = {
   d: 'showData',
   o: 'failOnce',
   n: 'showAssertNumber',
-  m: 'monochrome'
+  m: 'monochrome',
+  j: 'useJsonL'
 };
 
 const init = async () => {
@@ -93,8 +95,10 @@ const init = async () => {
       }
     }
     if (!reporter) {
-      const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome});
-      reporter = tapReporter.report.bind(tapReporter);
+      const textReporter = options.useJsonL
+        ? new JSONLReporter()
+        : new TapReporter({useJson: true, hasColors: !options.monochrome});
+      reporter = textReporter.report.bind(textReporter);
     }
     setReporter(reporter);
   }

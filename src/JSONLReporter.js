@@ -1,5 +1,5 @@
 class JSONLReporter {
-  constructor({renumberAsserts = false}) {
+  constructor({renumberAsserts = false} = {}) {
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
   }
