@@ -3,7 +3,7 @@
 [npm-img]:      https://img.shields.io/npm/v/tape-six.svg
 [npm-url]:      https://npmjs.org/package/tape-six
 
-tape-six is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
+`tape-six` is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
 It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/),
 [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
 
