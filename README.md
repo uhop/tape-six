@@ -236,6 +236,7 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 
 The most recent releases:
 
+* 1.0.2 *Bugfix for Deno using the JSONL reporter.*
 * 1.0.1 *Technical release: added more links.*
 * 1.0.0 *The first official release.*
 * 0.12.3 *Technical release: exposed internal classes for external utilities.*
