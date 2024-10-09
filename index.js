@@ -67,7 +67,7 @@ const init = async () => {
         reporter = jsonlReporter.report.bind(jsonlReporter);
       }
     } else if (isDeno) {
-      if (Deno.env.TAPE6_JSONL) {
+      if (Deno.env.get('TAPE6_JSONL')) {
         const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
           jsonlReporter = new JSONLReporter(options);
         reporter = jsonlReporter.report.bind(jsonlReporter);
