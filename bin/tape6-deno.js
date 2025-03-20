@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-env --allow-hrtime --ext=js
+#!/usr/bin/env -S deno run --allow-read --allow-env --ext=js
 
 import {fileURLToPath} from 'node:url';
 
@@ -85,7 +85,7 @@ const config = () => {
   } else {
     parallel = 0;
   }
-  if (!parallel) parallel = navigator.hardwareConcurrency;
+  if (!parallel) parallel = globalThis.navigator?.hardwareConcurrency || 1;
 };
 
 const init = async () => {

@@ -86,7 +86,7 @@ const config = () => {
   } else {
     parallel = 0;
   }
-  if (!parallel) parallel = navigator.hardwareConcurrency;
+  if (!parallel) parallel = globalThis.navigator?.hardwareConcurrency || 1;
 };
 
 const init = async () => {

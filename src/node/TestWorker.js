@@ -10,7 +10,7 @@ const utilName = new URL('../test.js', import.meta.url),
   baseName = pathToFileURL(process.cwd() + sep);
 
 export default class TestWorker extends EventServer {
-  constructor(reporter, numberOfTasks = navigator.hardwareConcurrency, options) {
+  constructor(reporter, numberOfTasks = globalThis.navigator?.hardwareConcurrency || 1, options) {
     super(reporter, numberOfTasks, options);
     this.counter = 0;
     this.idToWorker = {};
