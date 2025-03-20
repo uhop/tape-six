@@ -25,7 +25,9 @@
     "test": "node ./bin/tape6.js --flags FO",
     "test:bun": "bun run ./bin/tape6-bun.js --flags FO",
     "test:deno": "deno run -A ./bin/tape6-deno.js --flags FO",
-    "test:chrome": "node tests/puppeteer-chrome.js"
+    "test:chrome": "node tests/puppeteer-chrome.js",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write ."
   },
   "github": "http://github.com/uhop/tape-six",
   "repository": {

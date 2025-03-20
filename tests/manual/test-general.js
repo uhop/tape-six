@@ -12,9 +12,9 @@ test('Simple smoke test', async t => {
   t.strictEqual(1, 2);
   t.strictEqual(2, 2);
   // throw new Error('sudden death!');
-  t.strictEqual(2, "2");
-  t.looseEqual(2, "2");
-  t.looseEqual(2, "3");
+  t.strictEqual(2, '2');
+  t.looseEqual(2, '2');
+  t.looseEqual(2, '3');
   t.deepEqual([1], [1]);
   t.notDeepEqual([1], [1]);
   // await new Promise((_, reject) => reject(new Error(12345)));

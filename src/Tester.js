@@ -20,7 +20,13 @@ class Tester {
   }
 
   comment(msg) {
-    this.state.emit({type: 'comment', name: msg || 'comment', test: this.testNumber, marker: new Error(), time: this.state.timer.now()});
+    this.state.emit({
+      type: 'comment',
+      name: msg || 'comment',
+      test: this.testNumber,
+      marker: new Error(),
+      time: this.state.timer.now()
+    });
   }
 
   skipTest(...args) {
@@ -343,7 +349,8 @@ class Tester {
   }
 
   rejects(promise, msg) {
-    if (!promise || typeof promise.then != 'function') throw new TypeError('the first argument should be a promise');
+    if (!promise || typeof promise.then != 'function')
+      throw new TypeError('the first argument should be a promise');
     return promise
       .then(
         () => null,
@@ -366,7 +373,8 @@ class Tester {
   }
 
   resolves(promise, msg) {
-    if (!promise || typeof promise.then != 'function') throw new TypeError('the first argument should be a promise');
+    if (!promise || typeof promise.then != 'function')
+      throw new TypeError('the first argument should be a promise');
     return promise
       .then(
         () => null,
@@ -392,17 +400,24 @@ class Tester {
 }
 Tester.prototype.any = Tester.prototype._ = any;
 
-const setAliases = (source, aliases) => aliases.split(', ').forEach(alias => (Tester.prototype[alias] = Tester.prototype[source]));
+const setAliases = (source, aliases) =>
+  aliases.split(', ').forEach(alias => (Tester.prototype[alias] = Tester.prototype[source]));
 
 setAliases('ok', 'true, assert');
 setAliases('notOk', 'false, notok');
 setAliases('error', 'ifError, ifErr, iferror');
 setAliases('strictEqual', 'is, equal, equals, isEqual, strictEquals');
-setAliases('notStrictEqual', 'not, notEqual, notEquals, isNotEqual, doesNotEqual, isUnequal, notStrictEquals, isNot');
+setAliases(
+  'notStrictEqual',
+  'not, notEqual, notEquals, isNotEqual, doesNotEqual, isUnequal, notStrictEquals, isNot'
+);
 setAliases('looseEqual', 'looseEquals');
 setAliases('notLooseEqual', 'notLooseEquals');
 setAliases('deepEqual', 'same, deepEquals, isEquivalent');
-setAliases('notDeepEqual', 'notSame, notDeepEquals, notEquivalent, notDeeply, isNotDeepEqual, isNotEquivalent');
+setAliases(
+  'notDeepEqual',
+  'notSame, notDeepEquals, notEquivalent, notDeeply, isNotDeepEqual, isNotEquivalent'
+);
 setAliases('rejects', 'doesNotResolve');
 setAliases('resolves', 'doesNotReject');
 

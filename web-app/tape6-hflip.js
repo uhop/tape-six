@@ -5,7 +5,7 @@ class Tape6HFlip extends HTMLElement {
     this.inTransition = false;
     this.flipper = document.createElement('div');
     this.flipper.className = 'flipper';
-    while(this.firstChild) {
+    while (this.firstChild) {
       this.flipper.appendChild(this.firstChild);
     }
     this.addEventListener('transitionend', this);

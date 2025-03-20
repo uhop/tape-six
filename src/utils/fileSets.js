@@ -1,6 +1,7 @@
 // file sets are represented as sorted name lists with no duplicated items
 
-export const normalize = fileSet => fileSet.sort().filter((name, i, list) => !i || list[i - 1] !== name);
+export const normalize = fileSet =>
+  fileSet.sort().filter((name, i, list) => !i || list[i - 1] !== name);
 
 export const union = (a, b) => {
   if (!a.length) return b.slice(0);

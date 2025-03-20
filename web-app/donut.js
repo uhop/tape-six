@@ -80,7 +80,10 @@ export const makeSegment = (args, options) => {
       data.x4 = (innerRadius * Math.cos(start) + cx).toFixed(precision);
       data.y4 = (innerRadius * Math.sin(start) + cy).toFixed(precision);
       // a segment
-      path = tmpl('M${x1} ${y1}A${r} ${r} 0 ${lg} 1 ${x2} ${y2}L${x3} ${y3}A${r0} ${r0} 0 ${lg} 0 ${x4} ${y4}L${x1} ${y1}z', data);
+      path = tmpl(
+        'M${x1} ${y1}A${r} ${r} 0 ${lg} 1 ${x2} ${y2}L${x3} ${y3}A${r0} ${r0} 0 ${lg} 0 ${x4} ${y4}L${x1} ${y1}z',
+        data
+      );
     }
   }
   node.setAttribute('d', path);
@@ -186,7 +189,10 @@ export const processPieRun = (data, options) => {
     });
     newTotal = sizes.reduce((acc, size) => acc + size.angle, 0);
     const excess = newTotal - total,
-      totalForLargeAngles = sizes.reduce((acc, size) => (size.angle <= minAngle ? acc : acc + size.angle), 0);
+      totalForLargeAngles = sizes.reduce(
+        (acc, size) => (size.angle <= minAngle ? acc : acc + size.angle),
+        0
+      );
     changeRatio = (totalForLargeAngles - excess) / totalForLargeAngles;
     sizes.forEach(size => {
       if (size.angle > minAngle) {

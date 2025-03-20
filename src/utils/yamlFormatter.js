@@ -135,13 +135,18 @@ const yamlFormatter = (object, options) => {
   options = {...defaultOptions, ...options};
   const lines = [],
     string = options.string || ' ',
-    offset = !isNaN(options.offset) && options.offset > 0 ? repeatString(options.offset, string) : typeof options.offset == 'string' ? options.offset : '',
+    offset =
+      !isNaN(options.offset) && options.offset > 0
+        ? repeatString(options.offset, string)
+        : typeof options.offset == 'string'
+          ? options.offset
+          : '',
     levelOffset =
       !isNaN(options.levelOffset) && options.levelOffset > 0
         ? repeatString(options.levelOffset, string)
         : typeof options.levelOffset == 'string'
-        ? options.levelOffset
-        : '',
+          ? options.levelOffset
+          : '',
     opts = {levelOffset, maxDepth: options.maxDepth};
   format(object, opts, 0, offset, lines);
   return lines;

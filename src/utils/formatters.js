@@ -24,7 +24,21 @@ export const formatTime = ms => {
   if (ms < SEC) return formatNumber(ms, 1) + 'ms';
   if (ms < 10000) return formatNumber(ms / SEC, 3) + 's';
   if (ms < MIN) return formatNumber(ms / SEC, 2) + 's';
-  if (ms < HOUR) return formatNumber(Math.floor(ms / MIN), 0) + 'm' + omit(formatNumber(Math.floor((ms % MIN) / SEC), 0), 's');
-  if (ms < DAY) return formatNumber(Math.floor(ms / HOUR), 0) + 'h' + omit(formatNumber(Math.floor((ms % HOUR) / MIN), 0), 'm');
-  return formatNumber(Math.floor(ms / DAY), 0) + 'd' + omit(formatNumber(Math.floor((ms % DAY) / HOUR), 0), 'h');
+  if (ms < HOUR)
+    return (
+      formatNumber(Math.floor(ms / MIN), 0) +
+      'm' +
+      omit(formatNumber(Math.floor((ms % MIN) / SEC), 0), 's')
+    );
+  if (ms < DAY)
+    return (
+      formatNumber(Math.floor(ms / HOUR), 0) +
+      'h' +
+      omit(formatNumber(Math.floor((ms % HOUR) / MIN), 0), 'm')
+    );
+  return (
+    formatNumber(Math.floor(ms / DAY), 0) +
+    'd' +
+    omit(formatNumber(Math.floor((ms % DAY) / HOUR), 0), 'h')
+  );
 };

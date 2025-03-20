@@ -7,7 +7,9 @@ tape6-donut path {
   transform-origin: 0 0;
   transform: matrix(1, 0, 0, 1, 0, 0);
   opacity: 1;
-  transition: transform 0.2s linear, opacity 0.2s linear;
+  transition:
+    transform 0.2s linear,
+    opacity 0.2s linear;
 
   stroke-width: 1px; /*3px;*/
   stroke: #888;

@@ -10,7 +10,7 @@ class Tape6Donut extends HTMLElement {
     this.appendChild(this.svg);
   }
   clear() {
-    while(this.svg.lastChild) this.svg.removeChild(this.svg.lastChild);
+    while (this.svg.lastChild) this.svg.removeChild(this.svg.lastChild);
     return this;
   }
   show(data, options, add) {

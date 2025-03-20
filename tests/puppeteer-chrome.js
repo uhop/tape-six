@@ -5,7 +5,9 @@ const main = async () => {
   const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox']});
   const page = await browser.newPage();
 
-  page.on('console', msg => console[typeof console[msg.type()] == 'function' ? msg.type() : 'log'](msg.text()));
+  page.on('console', msg =>
+    console[typeof console[msg.type()] == 'function' ? msg.type() : 'log'](msg.text())
+  );
   page.on('error', e => console.error(e));
 
   await page.exposeFunction('__tape6_reportResults', async text => {

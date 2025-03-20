@@ -29,7 +29,6 @@ const isWindows = path.sep === '\\',
   dst = path.join(rootFolder, process.argv[dstIndex + 1]),
   clearFlag = process.argv.indexOf('--clear') > 0;
 
-
 const clear = async folderName => {
   if (typeof fsp.rm == 'function') {
     await fsp.rm(folderName, {recursive: true});
