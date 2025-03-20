@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "TAP the test harness for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
@@ -66,6 +66,6 @@
     }
   },
   "devDependencies": {
-    "puppeteer": "^24.1.0"
+    "puppeteer": "^24.4.0"
   }
 }
