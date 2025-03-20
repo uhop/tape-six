@@ -11,7 +11,7 @@ on:
 
 jobs:
   tests:
-    name: Node.js ${{inputs.node-version}}
+    name: Node.js ${{inputs.node-version}} (special test)
     runs-on: windows-latest
 
     steps:
