@@ -48,10 +48,10 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
   // determine test patterns
   let patterns = [];
   if (cfg[type]) {
-    if (Array.isArray(cfg[type].tests)) {
-      patterns = patterns.concat(cfg[type].tests);
-    } else if (typeof cfg[type].tests == 'string') {
-      patterns.push(cfg[type].tests);
+    if (Array.isArray(cfg[type])) {
+      patterns = patterns.concat(cfg[type]);
+    } else if (typeof cfg[type] == 'string') {
+      patterns.push(cfg[type]);
     }
   }
 
