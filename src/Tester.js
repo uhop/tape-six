@@ -15,8 +15,8 @@ class Tester {
     this.testNumber = testNumber;
   }
 
-  plan(n) {
-    this.state.setPlan(n);
+  plan(_n) {
+    // this.state.setPlan(_n);
   }
 
   comment(msg) {
