@@ -1,3 +1,5 @@
+// @ts-self-types="./index.d.ts"
+
 import {
   test,
   getTests,
