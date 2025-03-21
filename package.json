@@ -1,10 +1,11 @@
 {
   "name": "tape-six",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "TAP the test harness for the modern JavaScript (ES6).",
   "type": "module",
   "main": "index.js",
   "module": "index.js",
+  "types": "index.d.ts",
   "exports": {
     ".": "./index.js",
     "./bin/*": "./bin/*",
@@ -22,12 +23,16 @@
     "copyDeep6": "node scripts/copyFolder.js --src ./vendors/deep6/src --dst ./src/deep6 --clear",
     "build": "npm run copyDeep6",
     "prepublishOnly": "npm run build",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write .",
     "test": "node ./bin/tape6.js --flags FO",
     "test:bun": "bun run ./bin/tape6-bun.js --flags FO",
     "test:deno": "deno run -A ./bin/tape6-deno.js --flags FO",
     "test:chrome": "node tests/puppeteer-chrome.js",
-    "lint": "prettier --check .",
-    "lint:fix": "prettier --write ."
+    "ts-check": "tsc --noEmit",
+    "ts-test": "node ./bin/tape6.js --flags FO '/ts-tests/test-*.ts'",
+    "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO '/ts-tests/test-*.ts'",
+    "ts-test:deno": "deno run -A ./bin/tape6-deno.js --flags FO '/ts-tests/test-*.ts'"
   },
   "github": "http://github.com/uhop/tape-six",
   "repository": {
@@ -66,6 +71,8 @@
     }
   },
   "devDependencies": {
-    "puppeteer": "^24.4.0"
+    "@types/node": "^22.13.10",
+    "puppeteer": "^24.4.0",
+    "typescript": "^5.8.2"
   }
 }

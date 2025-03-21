@@ -236,6 +236,7 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 
 The most recent releases:
 
+- 1.1.0 _Added TypeScript support._
 - 1.0.4 _Bugfix for platform-specific tests, old platforms, minor updates to accommodate Deno 2, updated dev deps._
 - 1.0.3 _Minor update to accommodate changes in Bun and updated dev deps._
 - 1.0.2 _Bugfix for Deno using the JSONL reporter._
