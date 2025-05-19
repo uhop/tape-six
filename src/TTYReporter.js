@@ -76,7 +76,40 @@ class TTYReporter {
     this.failure = this.paint(failureStyle, reset);
     this.skipped = this.paint(skippedStyle, reset);
 
-    this.output.isTTY && this.out('');
+    // watching for console output
+
+    this.consoleWasUsed = false;
+    this.consoleLastNewLine = false;
+    this.consoleSkipChecks = false;
+
+    while (this.output.isTTY) {
+      this.out('');
+
+      const isCurrentTTY = this.output === process.stdout || this.output === process.stderr;
+      if (!isCurrentTTY) break;
+
+      const oldStdoutWrite = process.stdout.write;
+      process.stdout.write = process.stderr.write = (chunk, ...args) => {
+        if (!this.consoleSkipChecks && chunk) {
+          this.consoleWasUsed = true;
+          const text = chunk.toString();
+          this.consoleLastNewLine = text[text.length - 1] === '\n';
+        }
+        return oldStdoutWrite.call(process.stdout, chunk, ...args);
+      };
+
+      const oldStderrWrite = process.stderr.write;
+      process.stderr.write = (chunk, ...args) => {
+        if (!this.consoleSkipChecks && chunk) {
+          this.consoleWasUsed = true;
+          const text = chunk.toString();
+          this.consoleLastNewLine = text[text.length - 1] === '\n';
+        }
+        return oldStderrWrite.call(process.stderr, chunk, ...args);
+      };
+
+      break;
+    }
   }
   paint(prefix, suffix = '\x1B[39m') {
     return this.hasColors ? text => join(prefix, text, suffix) : text => text;
@@ -100,9 +133,22 @@ class TTYReporter {
     return this;
   }
   report(event) {
+    this.consoleSkipChecks = true;
+    try {
+      this.reportInternal(event);
+    } finally {
+      this.consoleSkipChecks = false;
+    }
+  }
+  reportInternal(event) {
     if (this.output.isTTY) {
-      this.output.moveCursor(0, -1);
-      this.output.clearLine(0);
+      if (this.consoleWasUsed) {
+        if (!this.consoleLastNewLine) this.output.write('\n');
+        this.consoleWasUsed = this.consoleLastNewLine = false;
+      } else {
+        this.output.moveCursor(0, -1);
+        this.output.clearLine(0);
+      }
     }
     let text;
     switch (event.type) {
