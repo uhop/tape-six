@@ -64,3 +64,32 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
   // resolve patterns
   return resolvePatterns(rootFolder, patterns);
 };
+
+export const runtime = {name: 'unknown', env: null};
+
+if (typeof Deno == 'object' && Deno?.version) {
+  runtime.name = 'deno';
+  runtime.env = Deno.env;
+} else if (typeof Bun == 'object' && Bun?.version) {
+  runtime.name = 'bun';
+  runtime.env = Bun.env;
+} else if (typeof process == 'object' && process?.versions?.node) {
+  runtime.name = 'node';
+  runtime.env = process.env;
+} else if (typeof window == 'object' && window?.document) {
+  runtime.name = 'browser';
+}
+
+export const getReporter = () => {
+  if (!runtime.env) return null;
+  if (runtime.env.TAPE6_REPORTER) return runtime.env.TAPE6_REPORTER;
+  if (runtime.env.TAPE6_JSONL) return 'jsonl';
+  if (runtime.env.TAPE6_TAP) return 'tap';
+  return 'tty';
+};
+
+export const getRunner = () => {
+  if (!runtime.env) return null;
+  if (runtime.env.TAPE6_RUNNER) return runtime.env.TAPE6_RUNNER;
+  return 'thread';
+};
