@@ -11,11 +11,11 @@ if (process.argv.includes('--self')) {
     console.log(self);
   }
 } else {
-  if (typeof Deno == 'object') {
+  if (typeof Deno == 'object' && Deno?.version) {
     await import('./tape6-deno.js');
-  } else if (typeof Bun == 'object') {
+  } else if (typeof Bun == 'object' && Bun?.version) {
     await import('./tape6-bun.js');
-  } else if (typeof process == 'object' && process.versions?.node) {
+  } else if (typeof process == 'object' && process?.versions?.node) {
     await import('./tape6-node.js');
   } else {
     throw new Error('tape6 is not supported in this environment');
