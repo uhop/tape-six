@@ -6,7 +6,6 @@ import {resolveTests, resolvePatterns, getReporter as getReporterType} from '../
 
 import {getReporter, setReporter} from '../src/test.js';
 import State, {StopTest} from '../src/State.js';
-import TapReporter from '../src/TapReporter.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/bun/TestWorker.js';
@@ -97,9 +96,12 @@ const reporters = {
 const init = async () => {
   const currentReporter = getReporter();
   if (!currentReporter) {
-    const reporterFile = reporters[getReporterType()] || reporters.tty,
+    const reporterType = getReporterType(),
+      reporterFile = reporters[reporterType] || reporters.tty,
       CustomReporter = (await import('../src/' + reporterFile)).default,
-      customReporter = new CustomReporter(options);
+      customOptions =
+        reporterType === 'tap' ? {useJson: true, hasColors: !options.monochrome} : options,
+      customReporter = new CustomReporter(customOptions);
     setReporter(customReporter.report.bind(customReporter));
   }
 
