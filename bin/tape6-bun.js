@@ -2,7 +2,7 @@
 
 import {fileURLToPath} from 'node:url';
 
-import {resolveTests, resolvePatterns} from '../src/utils/config.js';
+import {resolveTests, resolvePatterns, getReporter as getReporterType} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import State, {StopTest} from '../src/State.js';
@@ -88,25 +88,19 @@ const config = () => {
   if (!parallel) parallel = globalThis.navigator?.hardwareConcurrency || 1;
 };
 
+const reporters = {
+  jsonl: 'JSONLReporter.js',
+  tap: 'TapReporter.js',
+  tty: 'TTYReporter.js'
+};
+
 const init = async () => {
-  let reporter = getReporter();
-  if (!reporter) {
-    if (Bun.env.TAPE6_JSONL) {
-      const JSONLReporter = (await import('../src/JSONLReporter.js')).default,
-        jsonlReporter = new JSONLReporter(options);
-      reporter = jsonlReporter.report.bind(jsonlReporter);
-    } else if (!Bun.env.TAPE6_TAP) {
-      const TTYReporter = (await import('../src/TTYReporter.js')).default,
-        ttyReporter = new TTYReporter(options);
-      ttyReporter.testCounter = -2;
-      ttyReporter.technicalDepth = 1;
-      reporter = ttyReporter.report.bind(ttyReporter);
-    }
-    if (!reporter) {
-      const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome});
-      reporter = tapReporter.report.bind(tapReporter);
-    }
-    setReporter(reporter);
+  const currentReporter = getReporter();
+  if (!currentReporter) {
+    const reporterFile = reporters[getReporterType()] || reporters.tty,
+      CustomReporter = (await import('../src/' + reporterFile)).default,
+      customReporter = new CustomReporter(options);
+    setReporter(customReporter.report.bind(customReporter));
   }
 
   if (files.length) {
