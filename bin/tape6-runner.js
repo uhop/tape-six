@@ -3,16 +3,17 @@
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-const requestedRuntime = {
+const runtimeFiles = {
   node: 'tape6-node.js',
   deno: 'tape6-deno.js',
   bun: 'tape6-bun.js',
   server: 'tape6-server.js',
   runner: 'tape6-runner.js',
   main: 'tape6.js'
-}[process.argv[2]];
+};
+const requestedRuntime = runtimeFiles[process.argv[2]] || runtimeFiles.main;
 
-const runtime = requestedRuntime || 'tape6.js',
+const runtime = requestedRuntime,
   url = new URL('./' + runtime, import.meta.url),
   fileName = url.protocol === 'file:' ? fileURLToPath(url) : url.href;
 
