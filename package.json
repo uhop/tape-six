@@ -71,8 +71,8 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^22.15.18",
-    "puppeteer": "^24.8.2",
-    "typescript": "^5.8.3"
+    "@types/node": "^25.0.3",
+    "puppeteer": "^24.34.0",
+    "typescript": "^5.9.3"
   }
 }
