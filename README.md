@@ -236,6 +236,7 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 
 The most recent releases:
 
+- 1.1.2 _Updated dependencies._
 - 1.1.1 _Technical re-release with the missing `index.d.ts` file._
 - 1.1.0 _Added TypeScript support._
 - 1.0.4 _Bugfix for platform-specific tests, old platforms, minor updates to accommodate Deno 2, updated dev deps._
