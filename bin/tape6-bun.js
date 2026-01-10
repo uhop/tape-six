@@ -2,7 +2,11 @@
 
 import {fileURLToPath} from 'node:url';
 
-import {resolveTests, resolvePatterns, getReporter as getReporterType} from '../src/utils/config.js';
+import {
+  resolveTests,
+  resolvePatterns,
+  getReporter as getReporterType
+} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import State, {StopTest} from '../src/State.js';
