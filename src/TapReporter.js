@@ -15,7 +15,9 @@ const styles = {
     'font-weight: bold; color: white; background-color: green; padding: 0.5em 1em;',
   'summary-result-failure':
     'font-weight: bold; color: white; background-color: red; padding: 0.5em 1em;',
-  'bail-out': 'color: white; background-color: red; font-weight: bold; padding: 0.5em 1em;'
+  'bail-out': 'color: white; background-color: red; font-weight: bold; padding: 0.5em 1em;',
+  stdout: 'color: gray; font-style: italic;',
+  stderr: 'color: darkred; font-style: italic;'
 };
 
 const logger = (text, style) => {
@@ -62,6 +64,14 @@ class TapReporter {
       case 'comment':
         this.open();
         this.write('# ' + event.name);
+        break;
+      case 'stdout':
+        this.open();
+        this.write('# stdout: ' + event.name, 'stdout');
+        break;
+      case 'stderr':
+        this.open();
+        this.write('# stderr: ' + event.name, 'stderr');
         break;
       case 'end':
         --this.depth;
