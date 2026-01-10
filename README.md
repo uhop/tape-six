@@ -236,6 +236,7 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 
 The most recent releases:
 
+- 1.2.0 _Updated dependencies + added an optional prefix for JSON lines._
 - 1.1.2 _Updated dependencies._
 - 1.1.1 _Technical re-release with the missing `index.d.ts` file._
 - 1.1.0 _Added TypeScript support._
