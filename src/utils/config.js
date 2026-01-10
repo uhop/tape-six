@@ -80,16 +80,20 @@ if (typeof Deno == 'object' && Deno?.version) {
   runtime.name = 'browser';
 }
 
+export const getEnv = (defaultEnv = null) => runtime.env || defaultEnv;
+
 export const getReporter = () => {
-  if (!runtime.env) return null;
-  if (runtime.env.TAPE6_REPORTER) return runtime.env.TAPE6_REPORTER;
-  if (runtime.env.TAPE6_JSONL) return 'jsonl';
-  if (runtime.env.TAPE6_TAP) return 'tap';
+  const env = getEnv();
+  if (!env) return null;
+  if (env.TAPE6_REPORTER) return env.TAPE6_REPORTER;
+  if (env.TAPE6_JSONL) return 'jsonl';
+  if (env.TAPE6_TAP) return 'tap';
   return 'tty';
 };
 
 export const getRunner = () => {
-  if (!runtime.env) return null;
-  if (runtime.env.TAPE6_RUNNER) return runtime.env.TAPE6_RUNNER;
+  const env = getEnv();
+  if (!env) return null;
+  if (env.TAPE6_RUNNER) return env.TAPE6_RUNNER;
   return 'thread';
 };
