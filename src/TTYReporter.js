@@ -90,25 +90,21 @@ class TTYReporter {
       const isCurrentTTY = this.output === process.stdout || this.output === process.stderr;
       if (!isCurrentTTY) break;
 
-      const oldStdoutWrite = process.stdout.write;
-      process.stdout.write = process.stderr.write = (chunk, ...args) => {
-        if (!this.consoleSkipChecks && chunk) {
-          this.consoleWasUsed = true;
-          const text = chunk.toString();
-          this.consoleLastNewLine = text[text.length - 1] === '\n';
+      const console = globalThis.console,
+        self = this;
+      globalThis.console = new Proxy(console, {
+        get(target, property, receiver) {
+          const prop = Reflect.get(target, property, receiver);
+          if (typeof prop !== 'function') return prop;
+          return (...args) => {
+            if (!self.consoleSkipChecks) {
+              self.consoleWasUsed = true;
+              self.consoleLastNewLine = true;
+            }
+            return prop.apply(receiver, args);
+          };
         }
-        return oldStdoutWrite.call(process.stdout, chunk, ...args);
-      };
-
-      const oldStderrWrite = process.stderr.write;
-      process.stderr.write = (chunk, ...args) => {
-        if (!this.consoleSkipChecks && chunk) {
-          this.consoleWasUsed = true;
-          const text = chunk.toString();
-          this.consoleLastNewLine = text[text.length - 1] === '\n';
-        }
-        return oldStderrWrite.call(process.stderr, chunk, ...args);
-      };
+      });
 
       break;
     }
