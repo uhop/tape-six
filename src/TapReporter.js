@@ -38,7 +38,7 @@ const formatValue = value => {
   return JSON.stringify(value);
 };
 
-class TapReporter {
+export class TapReporter {
   constructor({write, useJson = false, renumberAsserts = false, hasColors = true} = {}) {
     this.write = write || (hasColors ? logger : console.log.bind(console));
     this.renumberAsserts = renumberAsserts;
