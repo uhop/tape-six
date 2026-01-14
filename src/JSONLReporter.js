@@ -1,12 +1,13 @@
 import {getEnv} from './utils/config.js';
 
-class JSONLReporter {
-  constructor({renumberAsserts = false} = {}) {
+export class JSONLReporter {
+  constructor({renumberAsserts = false, prefix} = {}) {
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
 
     const env = getEnv({});
-    this.prefix = env.TAPE6_JSONL_PREFIX ? '\n' + env.TAPE6_JSONL_PREFIX : '';
+    prefix ||= env.TAPE6_JSONL_PREFIX;
+    this.prefix = prefix ? '\n' + prefix : '';
   }
   report(event) {
     if (event.type === 'assert' && this.renumberAsserts) {
