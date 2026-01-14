@@ -272,10 +272,20 @@ export class TTYReporter {
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
         break;
       case 'stdout':
-        this.out(this.stdoutPaint('stdout:') + ' ' + event.name, true);
+        {
+          const lines = event.name.split(/\r?\n/);
+          for (const line of lines) {
+            this.out(this.stdoutPaint('stdout:') + ' ' + line, true);
+          }
+        }
         break;
       case 'stderr':
-        this.out(this.stderrPaint('stderr:') + ' ' + event.name, true);
+        {
+          const lines = event.name.split(/\r?\n/);
+          for (const line of lines) {
+            this.out(this.stderrPaint('stderr:') + ' ' + line, true);
+          }
+        }
         break;
       case 'bail-out':
         {
