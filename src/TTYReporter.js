@@ -24,7 +24,7 @@ const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
 
 // main
 
-class TTYReporter {
+export class TTYReporter {
   constructor({
     output = process.stdout,
     renumberAsserts = false,
@@ -75,8 +75,8 @@ class TTYReporter {
     this.success = this.paint(successStyle, reset);
     this.failure = this.paint(failureStyle, reset);
     this.skipped = this.paint(skippedStyle, reset);
-    this.stdout = this.paint('\x1B[90m');
-    this.stderr = this.paint('\x1B[31m');
+    this.stdoutPaint = this.paint('\x1B[90m');
+    this.stderrPaint = this.paint('\x1B[31m');
 
     // watching for console output
 
@@ -121,8 +121,8 @@ class TTYReporter {
     }
     return this.red(this.italic(JSON.stringify(value)));
   }
-  out(text) {
-    if (this.depth < 2 + this.technicalDepth) {
+  out(text, noIndent) {
+    if (this.depth < 2 + this.technicalDepth || noIndent) {
       this.output.write(text + '\n');
     } else {
       this.output.write(stringRep(this.depth - 1 - this.technicalDepth, '  ') + text + '\n');
@@ -272,10 +272,10 @@ class TTYReporter {
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
         break;
       case 'stdout':
-        this.out(this.stdout('stdout:') + ' ' + event.name);
+        this.out(this.stdoutPaint('stdout:') + ' ' + event.name, true);
         break;
       case 'stderr':
-        this.out(this.stderr('stderr:') + ' ' + event.name);
+        this.out(this.stderrPaint('stderr:') + ' ' + event.name, true);
         break;
       case 'bail-out':
         {
