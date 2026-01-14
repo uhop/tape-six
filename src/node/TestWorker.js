@@ -8,9 +8,9 @@ import {Readable} from 'node:stream';
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
-import lines from '../chain/lines.js';
-import parse from '../chain/parse-prefixed-jsonl.js';
-import wrap from '../chain/wrap-lines.js';
+import lines from '../streams/lines.js';
+import parse from '../streams/parse-prefixed-jsonl.js';
+import wrap from '../streams/wrap-lines.js';
 
 const srcName = new URL('../', import.meta.url),
   baseName = pathToFileURL(process.cwd() + sep);
