@@ -273,17 +273,19 @@ export class TTYReporter {
         break;
       case 'stdout':
         {
-          const lines = event.name.split(/\r?\n/);
+          const lines = event.name.split(/\r?\n/),
+            prefix = this.stdoutPaint('stdout:') + ' ';
           for (const line of lines) {
-            this.out(this.stdoutPaint('stdout:') + ' ' + line, true);
+            this.out(prefix + line, true);
           }
         }
         break;
       case 'stderr':
         {
-          const lines = event.name.split(/\r?\n/);
+          const lines = event.name.split(/\r?\n/),
+            prefix = this.stderrPaint('stderr:') + ' ';
           for (const line of lines) {
-            this.out(this.stderrPaint('stderr:') + ' ' + line, true);
+            this.out(prefix + line, true);
           }
         }
         break;
