@@ -3,7 +3,7 @@ import {sep} from 'node:path';
 import {StopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
-const utilName = new URL('../test.js', import.meta.url),
+const srcName = new URL('../', import.meta.url),
   baseName = Bun.pathToFileURL(Bun.cwd + sep);
 
 export default class TestWorker extends EventServer {
@@ -47,7 +47,7 @@ export default class TestWorker extends EventServer {
       });
       this.close(id);
     });
-    worker.postMessage({testName: testName.href, utilName: utilName.href});
+    worker.postMessage({testName: testName.href, srcName: srcName.href});
     return id;
   }
   destroyTask(id) {
