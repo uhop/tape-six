@@ -20,8 +20,6 @@ const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
 const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
   failureStyle = `\x1B[48;5;${buildColor(64, 0, 0)};1;97m`,
   skippedStyle = `\x1B[48;5;${buildColor(0, 0, 64)};1;97m`,
-  stdoutStyle = `\x1B[48;5;8;1;97m`,
-  stderrStyle = `\x1B[48;5;${buildColor(32, 0, 0)};1;97m`,
   reset = '\x1B[0m';
 
 // main
@@ -77,8 +75,8 @@ class TTYReporter {
     this.success = this.paint(successStyle, reset);
     this.failure = this.paint(failureStyle, reset);
     this.skipped = this.paint(skippedStyle, reset);
-    this.stdout = this.paint(stdoutStyle, reset);
-    this.stderr = this.paint(stderrStyle, reset);
+    this.stdout = this.paint('\x1B[90m');
+    this.stderr = this.paint('\x1B[31m');
 
     // watching for console output
 
