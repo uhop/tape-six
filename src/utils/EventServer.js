@@ -11,8 +11,10 @@ export default class EventServer {
     this.passThroughId = null;
     this.backlog = {};
     this.closed = {};
+    this.finalized = {};
   }
   report(id, event) {
+    if (this.finalized[id] === 1) return this.reporter(event);
     if (this.passThroughId === null) this.passThroughId = id;
     if (this.passThroughId === id) return this.reporter(event);
     const events = this.backlog[id];
@@ -24,6 +26,7 @@ export default class EventServer {
   }
   close(id) {
     this.destroyTask(id);
+    this.finalized[id] = 1;
     --this.totalTasks;
     if (this.fileQueue.length) {
       ++this.totalTasks;
@@ -54,7 +57,16 @@ export default class EventServer {
     } else {
       this.closed[id] = 1;
     }
-    !this.totalTasks && this.done && this.done();
+    if (!this.totalTasks) {
+      Object.keys(this.backlog).forEach(id => {
+        this.finalized[id] = 1;
+        const events = this.backlog[id];
+        events.forEach(event => this.reporter(event));
+      });
+      this.closed = {};
+      this.backlog = {};
+      this.done && this.done();
+    }
   }
   createTask(fileName) {
     if (this.totalTasks < this.numberOfTasks) {
