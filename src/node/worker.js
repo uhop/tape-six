@@ -11,31 +11,10 @@ const sanitizeMsg = msg => {
   return {...msg, data: state};
 };
 
-const consoleVerbs = {log: 1, info: 1, warn: 1, error: 1};
-
 parentPort.on('message', async msg => {
   try {
     const {setReporter} = await import(new URL('test.js', msg.srcName));
     setReporter(msg => parentPort.postMessage(sanitizeMsg(msg)));
-
-    if (!msg.options.dontCaptureConsole) {
-      const console = globalThis.console;
-      globalThis.console = new Proxy(console, {
-        get(target, property, receiver) {
-          const prop = Reflect.get(target, property, receiver);
-          if (typeof prop === 'function') {
-            if (consoleVerbs[property] === 1) {
-              const type = 'console-' + property;
-              return (...args) => {
-                parentPort.postMessage({type, name: format(...args)});
-              };
-            }
-          }
-          return prop;
-        }
-      });
-    }
-
     await import(msg.testName);
   } catch (error) {
     parentPort.postMessage({type: 'test', test: 0, time: 0});

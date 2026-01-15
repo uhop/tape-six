@@ -107,6 +107,11 @@ const init = async () => {
     setReporter(reporter);
   }
 
+  if (!options.dontCaptureConsole && (isNode || isBun || isDeno)) {
+    const {captureConsole} = await import(new URL('./src/utils/capture-console.js', import.meta.url));
+    captureConsole();
+  }
+
   return {reporter, options};
 };
 
