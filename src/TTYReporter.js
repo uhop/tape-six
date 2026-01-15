@@ -84,26 +84,21 @@ export class TTYReporter {
     // watching for console output
 
     this.consoleWasUsed = false;
-    this.consoleLastNewLine = false;
     this.consoleSkipChecks = false;
 
-    while (!dontCaptureConsole && this.output.isTTY) {
-      this.out('');
+    this.overrideLastLine = false;
 
+    while (dontCaptureConsole && this.output.isTTY) {
       const isCurrentTTY = this.output === process.stdout || this.output === process.stderr;
       if (!isCurrentTTY) break;
 
-      const console = globalThis.console,
-        self = this;
-      globalThis.console = new Proxy(console, {
+      const self = this;
+      globalThis.console = new Proxy(this.console, {
         get(target, property, receiver) {
           const prop = Reflect.get(target, property, receiver);
           if (typeof prop !== 'function') return prop;
           return (...args) => {
-            if (!self.consoleSkipChecks) {
-              self.consoleWasUsed = true;
-              self.consoleLastNewLine = true;
-            }
+            if (!self.consoleSkipChecks) self.consoleWasUsed = true;
             return prop.apply(receiver, args);
           };
         }
@@ -143,16 +138,13 @@ export class TTYReporter {
   }
   reportInternal(event) {
     if (this.output.isTTY) {
-      if (this.consoleWasUsed) {
-        if (!this.consoleLastNewLine) this.output.write('\n');
-        this.consoleWasUsed = this.consoleLastNewLine = false;
-      } else {
+      if (!this.consoleWasUsed && this.overrideLastLine) {
         this.output.moveCursor(0, -1);
         this.output.clearLine(0);
       }
+      this.consoleWasUsed = this.overrideLastLine = false;
     }
     let text;
-    let showScore = true;
     switch (event.type) {
       case 'test':
         this.depth > this.technicalDepth &&
@@ -161,7 +153,6 @@ export class TTYReporter {
         ++this.depth;
         ++this.testCounter;
         this.testStack.push({name: event.name, lines: this.lines, fail: false});
-        showScore = false;
         break;
       case 'end':
         this.testStack.pop();
@@ -275,7 +266,6 @@ export class TTYReporter {
         return;
       case 'comment':
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
-        showScore = false;
         break;
       case 'console-log':
       case 'console-info':
@@ -283,22 +273,20 @@ export class TTYReporter {
         {
           const lines = event.name.split(/\r?\n/),
             type = /\-(\w+)$/.exec(event.type)[1],
-            prefix = this.stdoutPaint(type + ':') + ' ';
+            prefix = this.stdoutPaint((type + ':').padEnd(7)) + ' ';
           for (const line of lines) {
             this.out(prefix + line, true);
           }
         }
-        showScore = false;
         break;
       case 'console-error':
         {
           const lines = event.name.split(/\r?\n/),
-            prefix = this.stderrPaint('error:') + ' ';
+            prefix = this.stderrPaint('error: ') + ' ';
           for (const line of lines) {
             this.out(prefix + line, true);
           }
         }
-        showScore = false;
         break;
       case 'stdout':
         {
@@ -308,7 +296,6 @@ export class TTYReporter {
             this.out(prefix + line, true);
           }
         }
-        showScore = false;
         break;
       case 'stderr':
         {
@@ -318,7 +305,6 @@ export class TTYReporter {
             this.out(prefix + line, true);
           }
         }
-        showScore = false;
         break;
       case 'bail-out':
         {
@@ -334,7 +320,6 @@ export class TTYReporter {
           box.forEach(s => this.out(this.warning(s)));
           this.depth = currentDepth;
         }
-        showScore = false;
         break;
       case 'assert':
         const lastTest = this.testStack[this.testStack.length - 1],
@@ -392,7 +377,10 @@ export class TTYReporter {
         }
         break;
     }
-    this.output.isTTY && this.showScore();
+    if (this.output.isTTY) {
+      this.showScore();
+      this.overrideLastLine = true;
+    }
   }
   showScore() {
     this.out(
