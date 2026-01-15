@@ -1,11 +1,20 @@
-import {getEnv} from './utils/config.js';
+const getEnv = () => {
+  if (typeof Deno == 'object' && Deno?.version) {
+    return Deno.env;
+  } else if (typeof Bun == 'object' && Bun?.version) {
+    return Bun.env;
+  } else if (typeof process == 'object' && process?.versions?.node) {
+    return process.env;
+  }
+  return {};
+};
 
 export class JSONLReporter {
   constructor({renumberAsserts = false, prefix} = {}) {
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
 
-    const env = getEnv({});
+    const env = getEnv();
     prefix ||= env.TAPE6_JSONL_PREFIX;
     this.prefix = prefix ? '\n' + prefix : '';
   }
