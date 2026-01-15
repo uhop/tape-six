@@ -49,7 +49,7 @@ export default class TestWorker extends EventServer {
       });
       this.close(id);
     });
-    worker.postMessage({testName: testName.href, srcName: srcName.href});
+    worker.postMessage({testName: testName.href, srcName: srcName.href, options: this.options});
     return id;
   }
   destroyTask(id) {

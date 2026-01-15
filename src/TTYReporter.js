@@ -33,7 +33,8 @@ export class TTYReporter {
     showTime = true,
     showData = true,
     showAssertNumber = false,
-    hasColors = true
+    hasColors = true,
+    dontCaptureConsole = false
   } = {}) {
     this.output = output;
     this.hasColors =
@@ -84,7 +85,7 @@ export class TTYReporter {
     this.consoleLastNewLine = false;
     this.consoleSkipChecks = false;
 
-    while (this.output.isTTY) {
+    while (!dontCaptureConsole && this.output.isTTY) {
       this.out('');
 
       const isCurrentTTY = this.output === process.stdout || this.output === process.stderr;

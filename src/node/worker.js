@@ -19,25 +19,27 @@ parentPort.on('message', async msg => {
     const {setReporter} = await import(new URL('test.js', msg.srcName));
     setReporter(msg => parentPort.postMessage(sanitizeMsg(msg)));
 
-    const console = globalThis.console;
-    globalThis.console = new Proxy(console, {
-      get(target, property, receiver) {
-        const prop = Reflect.get(target, property, receiver);
-        if (typeof prop === 'function') {
-          if (consoleStdoutVerbs[property] === 1) {
-            return (...args) => {
-              parentPort.postMessage({type: 'stdout', name: format(...args)});
-            };
+    if (!msg.options.dontCaptureConsole) {
+      const console = globalThis.console;
+      globalThis.console = new Proxy(console, {
+        get(target, property, receiver) {
+          const prop = Reflect.get(target, property, receiver);
+          if (typeof prop === 'function') {
+            if (consoleStdoutVerbs[property] === 1) {
+              return (...args) => {
+                parentPort.postMessage({type: 'stdout', name: format(...args)});
+              };
+            }
+            if (consoleStderrVerbs[property]) {
+              return (...args) => {
+                parentPort.postMessage({type: 'stderr', name: format(...args)});
+              };
+            }
           }
-          if (consoleStderrVerbs[property]) {
-            return (...args) => {
-              parentPort.postMessage({type: 'stderr', name: format(...args)});
-            };
-          }
+          return prop;
         }
-        return prop;
-      }
-    });
+      });
+    }
 
     await import(msg.testName);
   } catch (error) {
