@@ -34,9 +34,11 @@ export class TTYReporter {
     showData = true,
     showAssertNumber = false,
     hasColors = true,
-    dontCaptureConsole = false
+    dontCaptureConsole = false,
+    originalConsole
   } = {}) {
     this.output = output;
+    this.console = originalConsole || console;
     this.hasColors =
       hasColors &&
       this.output.isTTY &&
@@ -150,6 +152,7 @@ export class TTYReporter {
       }
     }
     let text;
+    let showScore = true;
     switch (event.type) {
       case 'test':
         this.depth > this.technicalDepth &&
@@ -158,6 +161,7 @@ export class TTYReporter {
         ++this.depth;
         ++this.testCounter;
         this.testStack.push({name: event.name, lines: this.lines, fail: false});
+        showScore = false;
         break;
       case 'end':
         this.testStack.pop();
@@ -271,6 +275,7 @@ export class TTYReporter {
         return;
       case 'comment':
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
+        showScore = false;
         break;
       case 'console-log':
       case 'console-info':
@@ -283,6 +288,7 @@ export class TTYReporter {
             this.out(prefix + line, true);
           }
         }
+        showScore = false;
         break;
       case 'console-error':
         {
@@ -292,6 +298,7 @@ export class TTYReporter {
             this.out(prefix + line, true);
           }
         }
+        showScore = false;
         break;
       case 'stdout':
         {
@@ -301,6 +308,7 @@ export class TTYReporter {
             this.out(prefix + line, true);
           }
         }
+        showScore = false;
         break;
       case 'stderr':
         {
@@ -310,6 +318,7 @@ export class TTYReporter {
             this.out(prefix + line, true);
           }
         }
+        showScore = false;
         break;
       case 'bail-out':
         {
@@ -325,6 +334,7 @@ export class TTYReporter {
           box.forEach(s => this.out(this.warning(s)));
           this.depth = currentDepth;
         }
+        showScore = false;
         break;
       case 'assert':
         const lastTest = this.testStack[this.testStack.length - 1],

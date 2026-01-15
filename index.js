@@ -55,6 +55,14 @@ const init = async () => {
     if (typeof name == 'string') options[name] = option !== flags[i];
   }
 
+  let originalConsole = null;
+  if (!options.dontCaptureConsole && (isNode || isBun || isDeno)) {
+    const {captureConsole} = await import(
+      new URL('./src/utils/capture-console.js', import.meta.url)
+    );
+    originalConsole = captureConsole();
+  }
+
   let reporter = getReporter();
   if (!reporter) {
     if (isBrowser) {
@@ -65,51 +73,50 @@ const init = async () => {
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
         reporter = event => window.parent.__tape6_reporter(id, event);
       } else if (options.useJsonL) {
-        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
-          jsonlReporter = new JSONLReporter(options);
+        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
+          jsonlReporter = new JSONLReporter({...options, originalConsole});
         reporter = jsonlReporter.report.bind(jsonlReporter);
       }
     } else if (isDeno) {
       if (Deno.env.get('TAPE6_JSONL')) {
-        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
-          jsonlReporter = new JSONLReporter(options);
+        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
+          jsonlReporter = new JSONLReporter({...options, originalConsole});
         reporter = jsonlReporter.report.bind(jsonlReporter);
       } else if (!Deno.env.get('TAPE6_TAP')) {
-        const TTYReporter = (await import('./src/TTYReporter.js')).default,
-          ttyReporter = new TTYReporter(options);
+        const {TTYReporter} = await import('./src/TTYReporter.js'),
+          ttyReporter = new TTYReporter({...options, originalConsole});
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     } else if (isBun) {
       if (Bun.env.TAPE6_JSONL) {
-        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
-          jsonlReporter = new JSONLReporter(options);
+        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
+          jsonlReporter = new JSONLReporter({...options, originalConsole});
         reporter = jsonlReporter.report.bind(jsonlReporter);
       } else if (!Bun.env.TAPE6_TAP) {
-        const TTYReporter = (await import('./src/TTYReporter.js')).default,
-          ttyReporter = new TTYReporter(options);
+        const {TTYReporter} = await import('./src/TTYReporter.js'),
+          ttyReporter = new TTYReporter({...options, originalConsole});
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     } else if (isNode) {
       if (process.env.TAPE6_JSONL) {
-        const JSONLReporter = (await import('./src/JSONLReporter.js')).default,
-          jsonlReporter = new JSONLReporter(options);
+        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
+          jsonlReporter = new JSONLReporter({...options, originalConsole});
         reporter = jsonlReporter.report.bind(jsonlReporter);
       } else if (!process.env.TAPE6_TAP) {
-        const TTYReporter = (await import('./src/TTYReporter.js')).default,
-          ttyReporter = new TTYReporter(options);
+        const {TTYReporter} = await import('./src/TTYReporter.js'),
+          ttyReporter = new TTYReporter({...options, originalConsole});
         reporter = ttyReporter.report.bind(ttyReporter);
       }
     }
     if (!reporter) {
-      const tapReporter = new TapReporter({useJson: true, hasColors: !options.monochrome});
+      const tapReporter = new TapReporter({
+        useJson: true,
+        hasColors: !options.monochrome,
+        originalConsole
+      });
       reporter = tapReporter.report.bind(tapReporter);
     }
     setReporter(reporter);
-  }
-
-  if (!options.dontCaptureConsole && (isNode || isBun || isDeno)) {
-    const {captureConsole} = await import(new URL('./src/utils/capture-console.js', import.meta.url));
-    captureConsole();
   }
 
   return {reporter, options};

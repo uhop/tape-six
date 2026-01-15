@@ -20,15 +20,6 @@ const styles = {
   stderr: 'color: darkred; font-style: italic;'
 };
 
-const logger = (text, style) => {
-  const css = typeof style == 'string' && styles[style];
-  if (css) {
-    console.log('%c' + text, css);
-  } else {
-    console.log(text);
-  }
-};
-
 const formatValue = value => {
   if (typeof value == 'string') return value;
   if (value && value[signature] === signature) {
@@ -39,13 +30,28 @@ const formatValue = value => {
 };
 
 export class TapReporter {
-  constructor({write, useJson = false, renumberAsserts = false, hasColors = true} = {}) {
-    this.write = write || (hasColors ? logger : console.log.bind(console));
+  constructor({
+    write,
+    useJson = false,
+    renumberAsserts = false,
+    hasColors = true,
+    originalConsole
+  } = {}) {
+    this.console = originalConsole || console;
+    this.write = write || (hasColors ? this.logger : this.console.log.bind(this.console));
     this.renumberAsserts = renumberAsserts;
     this.useJson = useJson;
     this.depth = 0;
     this.assertCounter = 0;
     this.opened = false;
+  }
+  logger(text, style) {
+    const css = typeof style == 'string' && styles[style];
+    if (css) {
+      this.console.log('%c' + text, css);
+    } else {
+      this.console.log(text);
+    }
   }
   open() {
     if (!this.opened) {

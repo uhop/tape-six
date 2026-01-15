@@ -10,9 +10,10 @@ const getEnv = () => {
 };
 
 export class JSONLReporter {
-  constructor({renumberAsserts = false, prefix} = {}) {
+  constructor({renumberAsserts = false, prefix, originalConsole} = {}) {
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
+    this.console = originalConsole || console;
 
     const env = getEnv();
     prefix ||= env.TAPE6_JSONL_PREFIX;
@@ -23,7 +24,7 @@ export class JSONLReporter {
       event = {...event, id: ++this.assertCounter};
     }
     const jsonEvent = JSON.stringify(event);
-    console.log(this.prefix ? this.prefix + jsonEvent : jsonEvent);
+    this.console.log(this.prefix ? this.prefix + jsonEvent : jsonEvent);
   }
 }
 

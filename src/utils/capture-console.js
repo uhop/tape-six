@@ -20,6 +20,7 @@ export const captureConsole = () => {
       return prop;
     }
   });
+  return console;
 };
 
 export default captureConsole;
