@@ -272,6 +272,27 @@ export class TTYReporter {
       case 'comment':
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
         break;
+      case 'console-log':
+      case 'console-info':
+      case 'console-warn':
+        {
+          const lines = event.name.split(/\r?\n/),
+            type = /\-(\w+)$/.exec(event.type)[1],
+            prefix = this.stdoutPaint(type + ':') + ' ';
+          for (const line of lines) {
+            this.out(prefix + line, true);
+          }
+        }
+        break;
+      case 'console-error':
+        {
+          const lines = event.name.split(/\r?\n/),
+            prefix = this.stderrPaint('error:') + ' ';
+          for (const line of lines) {
+            this.out(prefix + line, true);
+          }
+        }
+        break;
       case 'stdout':
         {
           const lines = event.name.split(/\r?\n/),

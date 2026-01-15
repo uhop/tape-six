@@ -10,8 +10,7 @@ const sanitizeMsg = msg => {
   return {...msg, data: state};
 };
 
-const consoleStdoutVerbs = {log: 1, info: 1, warn: 1},
-  consoleStderrVerbs = {error: 1};
+const consoleVerbs = {log: 1, info: 1, warn: 1, error: 1};
 
 addEventListener('message', async event => {
   const msg = event.data;
@@ -25,14 +24,10 @@ addEventListener('message', async event => {
         get(target, property, receiver) {
           const prop = Reflect.get(target, property, receiver);
           if (typeof prop === 'function') {
-            if (consoleStdoutVerbs[property] === 1) {
+            if (consoleVerbs[property] === 1) {
+              const type = 'console-' + property;
               return (...args) => {
-                postMessage({type: 'stdout', name: format(...args)});
-              };
-            }
-            if (consoleStderrVerbs[property]) {
-              return (...args) => {
-                postMessage({type: 'stderr', name: format(...args)});
+                postMessage({type, name: format(...args)});
               };
             }
           }

@@ -65,6 +65,16 @@ export class TapReporter {
         this.open();
         this.write('# ' + event.name);
         break;
+      case 'console-log':
+      case 'console-info':
+      case 'console-warn':
+        this.open();
+        this.write('# ' + /\-(\w+)$/.exec(event.type)[1] + ': ' + event.name, 'stdout');
+        break;
+      case 'console-error':
+        this.open();
+        this.write('# error: ' + event.name, 'stderr');
+        break;
       case 'stdout':
         this.open();
         this.write('# stdout: ' + event.name, 'stdout');
