@@ -42,7 +42,8 @@ const config = () => {
     d: 'showData',
     o: 'failOnce',
     n: 'showAssertNumber',
-    m: 'monochrome'
+    m: 'monochrome',
+    c: 'dontCaptureConsole'
   };
 
   let flagIsSet = false,

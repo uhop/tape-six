@@ -22,7 +22,8 @@ const optionNames = {
   o: 'failOnce',
   n: 'showAssertNumber',
   m: 'monochrome',
-  j: 'useJsonL'
+  j: 'useJsonL',
+  c: 'dontCaptureConsole'
 };
 
 const init = async () => {
