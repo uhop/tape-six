@@ -236,6 +236,7 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 
 The most recent releases:
 
+- 1.3.1 _Bugfix for web browser using JSONL reporter._
 - 1.3.0 _Bugfixes, updated dependencies, new feature: proxied console calls._
 - 1.2.0 _Updated dependencies + added an optional prefix for JSON lines._
 - 1.1.2 _Updated dependencies._
