@@ -270,7 +270,7 @@ export class TTYReporter {
       case 'console-log':
       case 'console-info':
       case 'console-warn':
-        {
+        if (!this.failureOnly) {
           const lines = event.name.split(/\r?\n/),
             type = /\-(\w+)$/.exec(event.type)[1],
             prefix = this.stdoutPaint((type + ':').padEnd(7)) + ' ';
@@ -289,7 +289,7 @@ export class TTYReporter {
         }
         break;
       case 'stdout':
-        {
+        if (!this.failureOnly) {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stdoutPaint('stdout:') + ' ';
           for (const line of lines) {
