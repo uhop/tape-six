@@ -23,7 +23,8 @@ const optionNames = {
   n: 'showAssertNumber',
   m: 'monochrome',
   j: 'useJsonL',
-  c: 'dontCaptureConsole'
+  c: 'dontCaptureConsole',
+  h: 'hideStreams'
 };
 
 const init = async () => {

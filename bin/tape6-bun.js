@@ -42,18 +42,17 @@ const config = () => {
     o: 'failOnce',
     n: 'showAssertNumber',
     m: 'monochrome',
-    c: 'dontCaptureConsole'
+    c: 'dontCaptureConsole',
+    h: 'hideStreams'
   };
 
-  let flagIsSet = false,
-    parIsSet = false;
+  let parIsSet = false;
 
   for (let i = 2; i < Bun.argv.length; ++i) {
     const arg = Bun.argv[i];
     if (arg == '-f' || arg == '--flags') {
       if (++i < Bun.argv.length) {
         flags = Bun.argv[i];
-        flagIsSet = true;
       }
       continue;
     }
@@ -71,9 +70,7 @@ const config = () => {
     files.push(arg);
   }
 
-  if (!flagIsSet) {
-    flags = Bun.env.TAPE6_FLAGS || flags;
-  }
+  flags = (Bun.env.TAPE6_FLAGS || '') + flags;
   for (let i = 0; i < flags.length; ++i) {
     const option = flags[i].toLowerCase(),
       name = optionNames[option];

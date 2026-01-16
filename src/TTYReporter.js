@@ -35,6 +35,7 @@ export class TTYReporter {
     showAssertNumber = false,
     hasColors = true,
     dontCaptureConsole = false,
+    hideStreams = false,
     originalConsole
   } = {}) {
     this.output = output;
@@ -49,6 +50,7 @@ export class TTYReporter {
     this.showTime = showTime;
     this.showData = showData;
     this.showAssertNumber = showAssertNumber;
+    this.hideStreams = hideStreams;
 
     this.depth =
       this.assertCounter =
@@ -270,7 +272,7 @@ export class TTYReporter {
       case 'console-log':
       case 'console-info':
       case 'console-warn':
-        if (!this.failureOnly) {
+        if (!this.failureOnly && !this.hideStreams) {
           const lines = event.name.split(/\r?\n/),
             type = /\-(\w+)$/.exec(event.type)[1],
             prefix = this.stdoutPaint((type + ':').padEnd(7)) + ' ';
@@ -280,7 +282,7 @@ export class TTYReporter {
         }
         break;
       case 'console-error':
-        {
+        if (!this.hideStreams) {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stderrPaint('error: ') + ' ';
           for (const line of lines) {
@@ -289,7 +291,7 @@ export class TTYReporter {
         }
         break;
       case 'stdout':
-        if (!this.failureOnly) {
+        if (!this.failureOnly && !this.hideStreams) {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stdoutPaint('stdout:') + ' ';
           for (const line of lines) {
@@ -298,7 +300,7 @@ export class TTYReporter {
         }
         break;
       case 'stderr':
-        {
+        if (!this.hideStreams) {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stderrPaint('stderr:') + ' ';
           for (const line of lines) {

@@ -42,18 +42,17 @@ const config = () => {
     o: 'failOnce',
     n: 'showAssertNumber',
     m: 'monochrome',
-    c: 'dontCaptureConsole'
+    c: 'dontCaptureConsole',
+    h: 'hideStreams'
   };
 
-  let flagIsSet = false,
-    parIsSet = false;
+  let parIsSet = false;
 
   for (let i = 0; i < Deno.args.length; ++i) {
     const arg = Deno.args[i];
     if (arg == '-f' || arg == '--flags') {
       if (++i < Deno.args.length) {
         flags = Deno.args[i];
-        flagIsSet = true;
       }
       continue;
     }
@@ -71,9 +70,7 @@ const config = () => {
     files.push(arg);
   }
 
-  if (!flagIsSet) {
-    flags = Deno.env.get('TAPE6_FLAGS') || flags;
-  }
+  flags = (Deno.env.get('TAPE6_FLAGS') || '') + flags;
   for (let i = 0; i < flags.length; ++i) {
     const option = flags[i].toLowerCase(),
       name = optionNames[option];

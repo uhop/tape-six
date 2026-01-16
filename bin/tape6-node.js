@@ -43,18 +43,17 @@ const config = () => {
     o: 'failOnce',
     n: 'showAssertNumber',
     m: 'monochrome',
-    c: 'dontCaptureConsole'
+    c: 'dontCaptureConsole',
+    h: 'hideStreams'
   };
 
-  let flagIsSet = false,
-    parIsSet = false;
+  let parIsSet = false;
 
   for (let i = 2; i < process.argv.length; ++i) {
     const arg = process.argv[i];
     if (arg == '-f' || arg == '--flags') {
       if (++i < process.argv.length) {
         flags = process.argv[i];
-        flagIsSet = true;
       }
       continue;
     }
@@ -72,9 +71,7 @@ const config = () => {
     files.push(arg);
   }
 
-  if (!flagIsSet) {
-    flags = process.env.TAPE6_FLAGS || flags;
-  }
+  flags = (process.env.TAPE6_FLAGS || '') + flags;
   for (let i = 0; i < flags.length; ++i) {
     const option = flags[i].toLowerCase(),
       name = optionNames[option];
