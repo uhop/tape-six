@@ -609,7 +609,7 @@ export declare interface Test {
    * @param name - The name of the test
    * @param fn - The test function
    */
-  (name: string, fn: (t: Test) => void | Promise<void>): void;
+  (name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test with the given function.
    * @param fn - The test function
@@ -619,59 +619,59 @@ export declare interface Test {
    * Creates a new test with the given options.
    * @param options - The test options
    */
-  (options: TestOptions): void;
+  (options: TestOptions): Promise<void>;
   /**
    * Creates a new test with the given options and function.
    * @param options - The test options
    * @param fn - The test function
    */
-  (options: TestOptions, fn: (t: Test) => void | Promise<void>): void;
+  (options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be skipped.
    * @param name - The name of the test
    * @param fn - The test function
    */
-  skip(name: string, fn: (t: Test) => void | Promise<void>): void;
+  skip(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be skipped.
    * @param fn - The test function
    */
-  skip(fn: (t: Test) => void | Promise<void>): void;
+  skip(fn: (t: Test) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be skipped.
    * @param options - The test options
    */
-  skip(options: TestOptions): void;
+  skip(options: TestOptions): Promise<void>;
   /**
    * Creates a new test that will be skipped.
    * @param options - The test options
    * @param fn - The test function
    */
-  skip(options: TestOptions, fn: (t: Test) => void | Promise<void>): void;
+  skip(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be TODO.
    * @param name - The name of the test
    * @param fn - The test function
    */
-  todo(name: string, fn: (t: Test) => void | Promise<void>): void;
+  todo(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be TODO.
    * @param fn - The test function
    */
-  todo(fn: (t: Test) => void | Promise<void>): void;
+  todo(fn: (t: Test) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be TODO.
    * @param options - The test options
    */
-  todo(options: TestOptions): void;
+  todo(options: TestOptions): Promise<void>;
   /**
    * Creates a new test that will be TODO.
    * @param options - The test options
    * @param fn - The test function
    */
-  todo(options: TestOptions, fn: (t: Test) => void | Promise<void>): void;
+  todo(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be run as a promise.
