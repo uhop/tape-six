@@ -1,5 +1,4 @@
 import {parentPort} from 'node:worker_threads';
-import {format} from 'node:util';
 
 const sanitizeMsg = msg => {
   if (msg.type !== 'end') return msg;
