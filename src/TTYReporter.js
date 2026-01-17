@@ -1,14 +1,8 @@
 import process from 'node:process';
+// import fs from 'node:fs';
 
 import {signature} from './State.js';
-import {
-  stringRep,
-  normalizeBox,
-  padBox,
-  padBoxLeft,
-  drawBox,
-  stackHorizontally
-} from './utils/box.js';
+import {normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './utils/box.js';
 import {formatNumber, formatTime} from './utils/formatters.js';
 
 // colors
@@ -122,10 +116,12 @@ export class TTYReporter {
     return this.red(this.italic(JSON.stringify(value)));
   }
   out(text, noIndent) {
-    if (this.depth < 2 + this.technicalDepth || noIndent) {
+    const ignoreIndent = this.depth < 2 + this.technicalDepth;
+    // fs.appendFileSync('log.txt', `depth: ${this.depth}, ignoreIndent: ${ignoreIndent}\n`);
+    if (noIndent || ignoreIndent) {
       this.output.write(text + '\n');
     } else {
-      this.output.write(stringRep(this.depth - 1 - this.technicalDepth, '  ') + text + '\n');
+      this.output.write('  '.repeat(this.depth - 1 - this.technicalDepth) + text + '\n');
     }
     ++this.lines;
     return this;
@@ -149,14 +145,16 @@ export class TTYReporter {
     let text;
     switch (event.type) {
       case 'test':
+        // fs.appendFileSync('log.txt', `depth: ${this.depth}, test: ${JSON.stringify(event)}\n`);
         this.depth > this.technicalDepth &&
           !this.failureOnly &&
-          this.out('\u25CB ' + (event.name || 'anonymous test'));
+          this.out('\u25CB ' + (event.name || this.italic('anonymous test')));
         ++this.depth;
         ++this.testCounter;
         this.testStack.push({name: event.name, lines: this.lines, fail: false});
         break;
       case 'end':
+        // fs.appendFileSync('log.txt', `depth: ${this.depth}, test: ${JSON.stringify(event)}\n`);
         this.testStack.pop();
         --this.depth;
         if (this.depth > this.technicalDepth) {

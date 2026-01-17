@@ -1,17 +1,3 @@
-export const stringRep = (n, str = ' ') => {
-  n = Math.max(0, Math.floor(n));
-  if (!n) return '';
-  let s = str,
-    buffer = '';
-  for (;;) {
-    n & 1 && (buffer += s);
-    n >>= 1;
-    if (!n) break;
-    s += s;
-  }
-  return buffer;
-};
-
 export const findEscSequence =
   /\x1B(?:\[[\x30-\x3F]*[\x20-\x2F]*[\x40-\x7E]|[\x20-\x2F]*[\x30-\x7E])/g;
 export const getLength = str => String(str).replace(findEscSequence, '').length;
@@ -19,7 +5,7 @@ export const getLength = str => String(str).replace(findEscSequence, '').length;
 export const normalizeBox = (strings, symbol = ' ', align = 'right') => {
   const maxLength = strings.reduce((acc, s) => Math.max(acc, getLength(s)), 0);
   return strings.map(s => {
-    const padding = stringRep(maxLength - getLength(s), symbol);
+    const padding = symbol.repeat(maxLength - getLength(s));
     switch (align) {
       case 'left':
         return padding + s;
@@ -32,17 +18,17 @@ export const normalizeBox = (strings, symbol = ' ', align = 'right') => {
 };
 
 export const padBoxRight = (strings, n, symbol = ' ') => {
-  const padding = stringRep(n, symbol);
+  const padding = symbol.repeat(n);
   return strings.map(s => s + padding);
 };
 
 export const padBoxLeft = (strings, n, symbol = ' ') => {
-  const padding = stringRep(n, symbol);
+  const padding = symbol.repeat(n);
   return strings.map(s => padding + s);
 };
 
 export const padBoxTop = (strings, n, symbol = ' ') => {
-  const string = stringRep(getLength(strings[0]), symbol),
+  const string = symbol.repeat(getLength(strings[0])),
     result = [];
   for (; n > 0; --n) result.push(string);
   strings.forEach(s => result.push(s));
@@ -50,7 +36,7 @@ export const padBoxTop = (strings, n, symbol = ' ') => {
 };
 
 export const padBoxBottom = (strings, n, symbol = ' ') => {
-  const string = stringRep(getLength(strings[strings.length - 1]), symbol),
+  const string = symbol.repeat(getLength(strings[strings.length - 1])),
     result = [...strings];
   for (; n > 0; --n) result.push(string);
   return result;
@@ -78,7 +64,7 @@ export const padBox = (strings, t, r, b, l, symbol) => {
 
 export const drawBox = strings => {
   const maxLength = strings.reduce((acc, s) => Math.max(acc, getLength(s)), 0),
-    line = stringRep(maxLength, '\u2500'),
+    line = '\u2500'.repeat(maxLength),
     result = ['\u256D' + line + '\u256E'];
   strings.forEach(s => result.push('\u2502' + s + '\u2502'));
   result.push('\u2570' + line + '\u256F');
@@ -93,7 +79,7 @@ export const stackHorizontally = (a, b, symbol = ' ') => {
   for (let i = 0; i < n; ++i) result.push(a[i] + b[i]);
   if (a.length < b.length) {
     const maxLength = a.reduce((acc, s) => Math.max(acc, getLength(s)), 0),
-      string = stringRep(maxLength, symbol);
+      string = symbol.repeat(maxLength);
     for (let i = n; i < b.length; ++i) result.push(string + b[i]);
   } else {
     for (let i = n; i < a.length; ++i) result.push(a[i]);
