@@ -1,4 +1,4 @@
-import test from '../index.js';
+import test from '../../index.js';
 
 await test('Simple smoke test', t => {
   t.pass();
