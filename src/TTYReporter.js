@@ -1,5 +1,4 @@
 import process from 'node:process';
-// import fs from 'node:fs';
 
 import {signature} from './State.js';
 import {normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './utils/box.js';
@@ -116,12 +115,11 @@ export class TTYReporter {
     return this.red(this.italic(JSON.stringify(value)));
   }
   out(text, noIndent) {
-    const ignoreIndent = this.depth < 2 + this.technicalDepth;
-    // fs.appendFileSync('log.txt', `depth: ${this.depth}, ignoreIndent: ${ignoreIndent}\n`);
-    if (noIndent || ignoreIndent) {
+    if (noIndent) {
       this.output.write(text + '\n');
     } else {
-      this.output.write('  '.repeat(this.depth - 1 - this.technicalDepth) + text + '\n');
+      const indent = '  '.repeat(this.depth);
+      this.output.write(indent + text + '\n');
     }
     ++this.lines;
     return this;
@@ -145,28 +143,26 @@ export class TTYReporter {
     let text;
     switch (event.type) {
       case 'test':
-        // fs.appendFileSync('log.txt', `depth: ${this.depth}, test: ${JSON.stringify(event)}\n`);
-        this.depth > this.technicalDepth &&
-          !this.failureOnly &&
-          this.out('\u25CB ' + (event.name || this.italic('anonymous test')));
-        ++this.depth;
+        if (event.name || event.test > 0) {
+          !this.failureOnly && this.out('\u25CB ' + (event.name || this.italic('anonymous test')));
+          ++this.depth;
+        }
         ++this.testCounter;
-        this.testStack.push({name: event.name, lines: this.lines, fail: false});
+        this.testStack.push({name: event.name, test: event.test, lines: this.lines, fail: false});
         break;
       case 'end':
-        // fs.appendFileSync('log.txt', `depth: ${this.depth}, test: ${JSON.stringify(event)}\n`);
-        this.testStack.pop();
-        --this.depth;
-        if (this.depth > this.technicalDepth) {
-          if (this.failureOnly) break;
-          text = (event.fail ? '✗' : '✓') + ' ' + (event.name || this.italic('anonymous test'));
-          text = event.fail ? this.brightRed(text) : this.green(text);
-          text += this.makeState(event.data);
-          this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
-          this.out(text);
-          break;
+        const theTest = this.testStack.pop();
+        if (theTest.name || theTest.test > 0) {
+          --this.depth;
+          if (!this.failureOnly || event.fail) {
+            text = (event.fail ? '✗' : '✓') + ' ' + (event.name || this.italic('anonymous test'));
+            text = event.fail ? this.brightRed(text) : this.green(text);
+            text += this.makeState(event.data);
+            this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
+            this.out(text);
+          }
         }
-        if (this.depth) break;
+        if (this.testStack.length) break;
 
         // summary
         {
@@ -314,11 +310,7 @@ export class TTYReporter {
           box = padBox(box, 0, 1);
           box = drawBox(box);
           box = padBox(box, 0, 1);
-
-          const currentDepth = this.depth;
-          this.depth = 0;
-          box.forEach(s => this.out(this.warning(s)));
-          this.depth = currentDepth;
+          box.forEach(s => this.out(this.warning(s), true));
         }
         break;
       case 'assert':
