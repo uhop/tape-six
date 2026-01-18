@@ -85,15 +85,7 @@ export const getEnv = (defaultEnv = null) => runtime.env || defaultEnv;
 export const getReporter = () => {
   const env = getEnv();
   if (!env) return null;
-  if (env.TAPE6_REPORTER) return env.TAPE6_REPORTER;
   if (env.TAPE6_JSONL) return 'jsonl';
   if (env.TAPE6_TAP) return 'tap';
   return 'tty';
-};
-
-export const getRunner = () => {
-  const env = getEnv();
-  if (!env) return null;
-  if (env.TAPE6_RUNNER) return env.TAPE6_RUNNER;
-  return 'thread';
 };
