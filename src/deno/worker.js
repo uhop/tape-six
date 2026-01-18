@@ -1,5 +1,3 @@
-import {format} from 'node:util';
-
 const sanitizeMsg = msg => {
   if (msg.type !== 'end') return msg;
   const state = {};
@@ -14,7 +12,7 @@ const reportToParent = fileName => msg => {
   msg = sanitizeMsg(msg);
   if ((msg.type === 'test' || msg.type === 'end') && !msg.test && !msg.name)
     msg.name = 'FILE: /' + fileName;
-  parentPort.postMessage(msg);
+  postMessage(msg);
 };
 
 addEventListener('message', async event => {
