@@ -65,27 +65,24 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
   return resolvePatterns(rootFolder, patterns);
 };
 
-export const runtime = {name: 'unknown', env: null};
+export const runtime = {name: 'unknown', getEnvVar: () => undefined};
 
 if (typeof Deno == 'object' && Deno?.version) {
   runtime.name = 'deno';
-  runtime.env = Deno.env;
+  runtime.getEnvVar = name => Deno.env.get(name);
 } else if (typeof Bun == 'object' && Bun?.version) {
   runtime.name = 'bun';
-  runtime.env = Bun.env;
+  runtime.getEnvVar = name => Bun.env[name];
 } else if (typeof process == 'object' && process?.versions?.node) {
   runtime.name = 'node';
-  runtime.env = process.env;
+  runtime.getEnvVar = name => process.env[name];
 } else if (typeof window == 'object' && window?.document) {
   runtime.name = 'browser';
 }
 
-export const getEnv = (defaultEnv = null) => runtime.env || defaultEnv;
-
 export const getReporter = () => {
-  const env = getEnv();
-  if (!env) return null;
-  if (env.TAPE6_JSONL) return 'jsonl';
-  if (env.TAPE6_TAP) return 'tap';
+  if (runtime.name === 'browser') return null;
+  if (runtime.getEnvVar('TAPE6_JSONL')) return 'jsonl';
+  if (runtime.getEnvVar('TAPE6_TAP')) return 'tap';
   return 'tty';
 };

@@ -1,12 +1,12 @@
-const getEnv = () => {
+const getEnvVar = name => {
   if (typeof Deno == 'object' && Deno?.version) {
-    return Deno.env;
+    return Deno.env.get(name);
   } else if (typeof Bun == 'object' && Bun?.version) {
-    return Bun.env;
+    return Bun.env[name];
   } else if (typeof process == 'object' && process?.versions?.node) {
-    return process.env;
+    return process.env[name];
   }
-  return {};
+  return undefined;
 };
 
 export class JSONLReporter {
@@ -15,8 +15,7 @@ export class JSONLReporter {
     this.assertCounter = 0;
     this.console = originalConsole || console;
 
-    const env = getEnv();
-    prefix ||= env.TAPE6_JSONL_PREFIX;
+    prefix ||= getEnvVar('TAPE6_JSONL_PREFIX') || '';
     this.prefix = prefix ? '\n' + prefix : '';
   }
   report(event) {
