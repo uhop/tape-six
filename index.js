@@ -120,7 +120,24 @@ const init = async () => {
     setReporter(reporter);
   }
 
-  return {reporter, options};
+  let testFileName = '';
+
+  if (isBrowser) {
+    if (typeof window.__tape6_test_file_name == 'string') {
+      testFileName = window.__tape6_test_file_name;
+    } else if (window.location.search) {
+      testFileName =
+        new URLSearchParams(window.location.search.substring(1)).get('test-file-name') || '';
+    }
+  } else if (isDeno) {
+    testFileName = Deno.env.get('TAPE6_TEST_FILE_NAME') || '';
+  } else if (isBun) {
+    testFileName = Bun.env.TAPE6_TEST_FILE_NAME || '';
+  } else if (isNode) {
+    testFileName = process.env.TAPE6_TEST_FILE_NAME || '';
+  }
+
+  return {reporter, options, testFileName};
 };
 
 let settings = null;
@@ -128,10 +145,15 @@ let settings = null;
 const testCallback = async () => {
   if (!settings) settings = await init();
 
-  const {reporter, options} = settings,
+  const {reporter, options, testFileName} = settings,
     rootState = new State(null, {callback: reporter, failOnce: options.failOnce});
 
-  rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
+  rootState.emit({
+    type: 'test',
+    test: 0,
+    name: testFileName ? 'FILE: /' + testFileName : '',
+    time: rootState.timer.now()
+  });
 
   for (;;) {
     const tests = getTests();
@@ -145,6 +167,7 @@ const testCallback = async () => {
   rootState.emit({
     type: 'end',
     test: 0,
+    name: testFileName ? 'FILE: /' + testFileName : '',
     time: rootState.timer.now(),
     fail: rootState.failed > 0,
     data: rootState
