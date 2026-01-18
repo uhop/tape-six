@@ -236,6 +236,7 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 
 The most recent releases:
 
+- 1.3.3 _Added a way to hide console/streams output, better support for file tests, better TTY formatting._
 - 1.3.2 _Internal refactoring (capture console calls), updated dependencies._
 - 1.3.1 _Bugfix for web browser using JSONL reporter._
 - 1.3.0 _Bugfixes, updated dependencies, new feature: proxied console calls._
