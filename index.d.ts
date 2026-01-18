@@ -711,4 +711,5 @@ export declare interface Test {
 
 declare const test: Test;
 
+export {test};
 export default test;

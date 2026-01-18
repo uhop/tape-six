@@ -191,4 +191,5 @@ if (!getConfiguredFlag()) {
   registerNotifyCallback(testCallback);
 }
 
+export {test};
 export default test;
