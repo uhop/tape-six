@@ -282,6 +282,8 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 - [tape6](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6) &mdash; the main utility of the package to run tests in different environments.
 - [tape6-server](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6-server) &mdash; a custom web server with a web application that helps running tests in browsers.
 
+Test output can be controlled by flags. See [Supported flags](https://github.com/uhop/tape-six/wiki/Supported-flags) for details.
+
 ## Release notes
 
 The most recent releases:
