@@ -15,6 +15,13 @@ const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
   skippedStyle = `\x1B[48;5;${buildColor(0, 0, 64)};1;97m`,
   reset = '\x1B[0m';
 
+const consoleDict = {
+  log: 'log',
+  info: 'inf',
+  warn: 'wrn',
+  error: 'err'
+};
+
 // main
 
 export class TTYReporter {
@@ -281,18 +288,18 @@ export class TTYReporter {
         if (!this.failureOnly && !this.hideStreams) {
           const lines = event.name.split(/\r?\n/),
             type = /\-(\w+)$/.exec(event.type)[1],
-            prefix = this.stdoutPaint((type + ':').padEnd(7)) + ' ';
+            prefix = this.stdoutPaint(consoleDict[type] + ':') + ' ';
           for (const line of lines) {
-            this.out(prefix + line, true);
+            this.out(prefix + line);
           }
         }
         break;
       case 'console-error':
         if (!this.hideStreams) {
           const lines = event.name.split(/\r?\n/),
-            prefix = this.stderrPaint('error: ') + ' ';
+            prefix = this.stderrPaint(consoleDict.error + ':') + ' ';
           for (const line of lines) {
-            this.out(prefix + line, true);
+            this.out(prefix + line);
           }
         }
         break;
@@ -301,7 +308,7 @@ export class TTYReporter {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stdoutPaint('stdout:') + ' ';
           for (const line of lines) {
-            this.out(prefix + line, true);
+            this.out(prefix + line);
           }
         }
         break;
@@ -310,7 +317,7 @@ export class TTYReporter {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stderrPaint('stderr:') + ' ';
           for (const line of lines) {
-            this.out(prefix + line, true);
+            this.out(prefix + line);
           }
         }
         break;
