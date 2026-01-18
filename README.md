@@ -275,6 +275,30 @@ If you want to run tests in separate processes, check out [tape-six-proc](https:
 
 ### Configuring test runners
 
+TLDR version &mdash; add to your `package.json`:
+
+```jsonc
+{
+  // ...
+  "scripts": {
+    "test": "tape6 --flags FO",
+    "start": "tape6-server --trace"
+  }
+  // ...
+  "tape6": {
+    "tests": ["/tests/test-*.*js"],
+    "importmap": {
+      "imports": {
+        "tape-six": "/node_modules/tape-six/index.js",
+        "tape-six/": "/node_modules/tape-six/src/",
+        "my-package": "/index.js",
+        "my-package/": "/src/"
+      }
+    }
+  }
+}
+```
+
 See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for details.
 
 ### Command-line utilities
