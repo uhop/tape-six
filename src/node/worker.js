@@ -10,10 +10,17 @@ const sanitizeMsg = msg => {
   return {...msg, data: state};
 };
 
+const reportToParent = fileName => msg => {
+  msg = sanitizeMsg(msg);
+  if ((msg.type === 'test' || msg.type === 'end') && !msg.test && !msg.name)
+    msg.name = 'FILE: /' + fileName;
+  parentPort.postMessage(msg);
+};
+
 parentPort.on('message', async msg => {
   try {
     const {setReporter} = await import(new URL('test.js', msg.srcName));
-    setReporter(msg => parentPort.postMessage(sanitizeMsg(msg)));
+    setReporter(reportToParent(msg.fileName));
     await import(msg.testName);
   } catch (error) {
     parentPort.postMessage({type: 'test', test: 0, time: 0});

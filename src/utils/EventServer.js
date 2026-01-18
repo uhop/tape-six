@@ -31,10 +31,7 @@ export default class EventServer {
     if (this.fileQueue.length) {
       ++this.totalTasks;
       const nextFile = this.fileQueue.shift();
-      defer(() => {
-        const id = this.makeTask(nextFile);
-        this.report(id, {type: 'comment', name: 'FILE: /' + nextFile, test: 0});
-      });
+      defer(() => this.makeTask(nextFile));
     }
     if (this.passThroughId === id) {
       this.passThroughId = null;
@@ -71,8 +68,7 @@ export default class EventServer {
   createTask(fileName) {
     if (this.totalTasks < this.numberOfTasks) {
       ++this.totalTasks;
-      const id = this.makeTask(fileName);
-      this.report(id, {type: 'comment', name: 'FILE: /' + fileName, test: 0});
+      this.makeTask(fileName);
     } else {
       this.fileQueue.push(fileName);
     }
