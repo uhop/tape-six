@@ -22,7 +22,6 @@ class DomReporter {
     switch (event.type) {
       case 'test':
         this.stack.push(this.current);
-        if (this.stack.length <= 1) break;
         this.current = document.createElement('div');
         this.current.className = 'test running';
         {

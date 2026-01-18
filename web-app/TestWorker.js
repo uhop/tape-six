@@ -22,7 +22,9 @@ export default class TestWorker extends EventServer {
     iframe.id = 'test-iframe-' + id;
     iframe.className = 'test-iframe';
     if (/\.html?$/i.test(fileName)) {
-      iframe.src = '/' + fileName + '?id=' + id + (this.options.failOnce ? '&flags=F' : '');
+      const search = new URLSearchParams({id, 'test-file-name': fileName});
+      if (this.options.failOnce) search.set('flags', 'F');
+      iframe.src = '/' + fileName + '?' + search.toString();
       iframe.onerror = error => window.__tape6_error(id, error);
       document.body.append(iframe);
     } else {
@@ -42,6 +44,7 @@ export default class TestWorker extends EventServer {
             }
             <script type="module">
               window.__tape6_id = ${JSON.stringify(id)};
+              window.__tape6_test_file_name = ${JSON.stringify(fileName)};
               window.__tape6_flags = "${this.options.failOnce ? 'F' : ''}";
               const s = document.createElement('script');
               s.setAttribute('type', 'module');
