@@ -312,6 +312,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.3.5 _Minor improvements, better docs._
 - 1.3.4 _Minor bugfixes and improvements._
 - 1.3.3 _Added a way to hide console/streams output, better support for file tests, better TTY formatting._
 - 1.3.2 _Internal refactoring (capture console calls), updated dependencies._
@@ -326,18 +327,5 @@ The most recent releases:
 - 1.0.2 _Bugfix for Deno using the JSONL reporter._
 - 1.0.1 _Technical release: added more links._
 - 1.0.0 _The first official release._
-- 0.12.3 _Technical release: exposed internal classes for external utilities._
-- 0.12.2 _Fixed a minor serialization issue._
-- 0.12.1 _Minor Deno-related refactoring, fixed the way tests are triggered._
-- 0.12.0 _Removed data to avoid serializing non-serializable objects._
-- 0.11.0 _Minor improvements to the server: temporary redirects, a hyperlink to the web app._
-- 0.10.0 _Refactored test runners, refactored stopping tests on failure, added JSONL reporter, fixed bugs._
-- 0.9.6 _Updated deps._
-- 0.9.5 _Updated the lock file._
-- 0.9.4 _Updated deps. Added test runners for Bun and Deno._
-- 0.9.3 _Made TTY reporter work with non-TTY streams._
-- 0.9.2 _Fixed Windows runner._
-- 0.9.1 _More updates related to renaming `tape6` &rArr; `tape-six`._
-- 0.9.0 _Initial release._
 
 For more info consult full [release notes](https://github.com/uhop/tape-six/wiki/Release-notes).
