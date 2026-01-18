@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-env --ext=js
+#!/usr/bin/env -S deno run --allow-all --ext=js
 
 import {fileURLToPath} from 'node:url';
 
