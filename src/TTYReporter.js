@@ -144,7 +144,13 @@ export class TTYReporter {
     switch (event.type) {
       case 'test':
         if (event.name || event.test > 0) {
-          !this.failureOnly && this.out('\u25CB ' + (event.name || this.italic('anonymous test')));
+          if (!this.failureOnly) {
+            if (event.test) {
+              this.out('\u25CB ' + (event.name || this.italic('anonymous test')));
+            } else {
+              this.out('\u25CB ' + this.blue(this.italic(event.name)));
+            }
+          }
           ++this.depth;
         }
         ++this.testCounter;
@@ -155,7 +161,13 @@ export class TTYReporter {
         if (theTest.name || theTest.test > 0) {
           --this.depth;
           if (!this.failureOnly || event.fail) {
-            text = (event.fail ? '✗' : '✓') + ' ' + (event.name || this.italic('anonymous test'));
+            let name = '';
+            if (event.test) {
+              name = event.name || this.italic('anonymous test');
+            } else {
+              name = this.italic(event.name);
+            }
+            text = (event.fail ? '✗' : '✓') + ' ' + name;
             text = event.fail ? this.brightRed(text) : this.green(text);
             text += this.makeState(event.data);
             this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
