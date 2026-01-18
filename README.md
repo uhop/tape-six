@@ -4,8 +4,13 @@
 [npm-url]: https://npmjs.org/package/tape-six
 
 `tape-six` is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
-It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/),
-[Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
+It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
+
+It runs ES modules (`import`-based code) natively and supports CommonJS modules transparently using built-in [ESM](https://nodejs.org/api/esm.html).
+
+It can run TypeScript code with modern versions of Node, Bun and Deno without transpilation. Obviously TS bindings are included.
+
+Individual test files can be executed directly with `node`, `deno`, `bun` without a need for a special test runner utility. It facilitates debugging and improves testing.
 
 Why `tape-six`? It was supposed to be named `tape6` but `npm` does not allow names "similar"
 to existing packages. Instead of eliminating name-squatting they force to use unintuitive and
@@ -16,7 +21,7 @@ unmemorable names. That's why all internal names, environment variables, and pub
 Why another library? Working on projects written in modern JS (with modules) I found several problems
 with existing unit test libraries:
 
-- In my opinion unit test files should be directly executable with `node`, `deno`, `bun`, browsers
+- In my opinion unit test files should be directly executable with Node, Bun, Deno, browsers
   (with a trivial HTML file to load a test file) without a need for a special test runner utility,
   which wraps and changes my beautiful code.
   - Debugging my tests should be trivial. It should not be different from debugging any regular file.
@@ -24,11 +29,11 @@ with existing unit test libraries:
   - I want to debug my code, not dependencies I've never heard about.
   - I want to see where a problem happens, not some guts of a test harness.
 - Tests should work with ES modules natively.
-  - What if I want to debug some CommonJS code with Node? Fret not! Modules can import CommonJS files directly.
-    But not the other way around (yet). And it helps to test how module users can use your beautiful
-    CommonJS package.
+  - What if I want to debug some CommonJS code with Node? No problem, it just works.
+- Tests should work with TypeScript natively.
+  - It just workss: modern runtimes (Node, Deno, Bun) support running TypeScript natively without transpilation by ignoring type information and running the code directly.
 - The [DX](https://en.wikipedia.org/wiki/User_experience#Developer_experience) in browsers are usually abysmal.
-  - Both console-based debugging and a UI to navigate results should be properly supported.
+  - Both console-based debugging and a UI to navigate results are properly supported.
 
 ## Docs
 
@@ -43,6 +48,11 @@ The whole API is based on two objects: `test` and `Tester`.
 
 ```js
 import test from 'tape-six';
+// import {test} from 'tape-six';
+
+// CommonJS:
+// const {test} = require('tape-six');
+// const {default: test} = require('tape-six');
 ```
 
 This function registers a test suite. Available options:
@@ -50,13 +60,14 @@ This function registers a test suite. Available options:
 - `async test(name, options, testFn)` &mdash; registers a test suite to be executed asynchronously.
   The returned promise is resolved when the test suite is finished.
   - In most cases no need to wait for the returned promise.
-  - The test function has the following signature: `testFn(tester)`
-- `test.skip(name, options, testFn)` &mdash; registers a test suite to be skipped.
+  - The test function has the following signature: `async testFn(tester)`
+    - The function can be synchronous or asynchronous.
+- `async test.skip(name, options, testFn)` &mdash; registers a test suite to be skipped.
   - It is used to mark a test suite to be skipped. It will not be executed.
-- `test.todo(name, options, testFn)` &mdash; registers a test suite that is marked as work in progress.
+- `async test.todo(name, options, testFn)` &mdash; registers a test suite that is marked as work in progress.
   - Tests in this suite will be executed, errors will be reported but not counted as failures.
   - It is used to mark tests for incomplete features under development.
-- `test.asPromise(name, options, testPromiseFn)` &mdash; registers a test suite to be executed asynchronously
+- `async test.asPromise(name, options, testPromiseFn)` &mdash; registers a test suite to be executed asynchronously
   using the callback-style API to notify that the test suite is finished.
   - The test function has a different signature: `testPromiseFn(tester, resolve, reject)`.
 
@@ -68,19 +79,22 @@ The arguments mentioned above are:
   - `todo` &mdash; if `true`, the test suite will be marked as work in progress.
   - `name` &mdash; the optional name of the test suite. If not provided, it will be set to the name of the test function or `'(anonymous)'`.
     - Can be overridden by the `name` argument.
-  - `testFn` &mdash; the optional test function to be executed.
-    - Can be overridden by the `testFn` argument.
   - `timeout` &mdash; the optional timeout in milliseconds. It is used for asynchronous tests.
     - If the timeout is exceeded, the test suite will be marked as failed.
     - **Important:** JavaScript does not provide a generic way to cancel asynchronous operations.
       When the timeout is exceeded, `tape6` will stop waiting for the test to finish,
       but it will continue running in the background.
     - The default: no timeout.
-  - `testFn` &mdash; the test function to be executed. It will be called with the `tester` object.
-    The result will be ignored.
-    - This function can be an asynchronous one or return a promise.
-  - `testPromiseFn` &mdash; the test function to be executed. It will be called with the `tester` object
-    and two callbacks: `resolve` and `reject` modeled on the [Promise API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise).
+  - `testFn` &mdash; the optional test function to be executed (see below).
+    - Can be overridden by the `testFn` argument.
+  - `testPromiseFn` &mdash; the optional callback-based test function to be executed.
+    - Can be overridden by the `testPromiseFn` argument.
+- `testFn` &mdash; a test function to be executed. It will be called with the `tester` object.
+  The result will be ignored.
+  - This function can be synchronous or asynchronous.
+- `testPromiseFn` &mdash; a callback-based test function to be executed (see below). It will be called with the `tester` object and two callbacks: `resolve` and `reject` modeled on the [Promise API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise).
+  - Value supplied to `resolve()` will be ignored.
+  - Value supplied to `reject()` will be used as the error message.
 
 Given all that `test` and its helpers can be called like this:
 
@@ -108,6 +122,32 @@ test({
   testFn: t => {
     t.ok(1 < 2);
   }
+});
+```
+
+Examples of callback-based tests:
+
+```js
+test.asPromise(name, options, testPromiseFn);
+test.asPromise(name, testPromiseFn);
+test.asPromise(testPromiseFn);
+test.asPromise(name, options);
+test.asPromise(options, testPromiseFn);
+test.asPromise(options);
+
+// examples:
+test.asPromise('foo', (t, resolve, reject) => {
+  t.pass();
+  const result = someAsyncOperationAsPromise();
+  result.then(resolve).catch(reject);
+});
+
+test.asPromise('bar', async (t, resolve, reject) => {
+  const nodeStream = fs.createWriteStream('bar.txt');
+  nodeStream.on('error', reject);
+  nodeStream.on('finish', resolve);
+  nodeStream.write('hello');
+  nodeStream.end();
 });
 ```
 
@@ -216,12 +256,22 @@ It is super easy to run tests:
 2. Write a test. For example, you named it `test.js`.
 3. Run the test: `node test.js`
    1. Or: `bun run test.js`
-   2. Or: `deno run -A test.js`
+   2. Or: `deno run -A test.js` (you can use appropriate permissions).
    3. Or you can run them in a browser!
 4. Profit!
 
 If you have a lot of tests, you can organize them using multiple files and directories.
 `tape-six` provides multiple test runners that can run them in different environments.
+
+Tests can run in parallel using multiple threads to speed up the whole process.
+
+```bash
+tape6         # run tests in parallel using all available threads
+tape6 --par 4 # run tests in parallel using 4 threads
+tape6 --par 1 # run one test at a time
+```
+
+If you want to run tests in separate processes, check out [tape-six-proc](https://www.npmjs.com/package/tape-six-proc). Why do you want to do that? When tests have to modify globals or use single-threaded binary extensions.
 
 ### Configuring test runners
 
