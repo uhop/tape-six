@@ -230,6 +230,10 @@ The following methods are available (all `msg` arguments are optional):
   - `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
   - `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
   - `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness.
+- Evaluators:
+  - `OK(condition, msg, options)` &mdash; a high-level helper for evaluating simple expressions.
+    - _Available since 1.4.0._
+    - See [Tester](https://github.com/uhop/tape-six/wiki/Tester) for description and examples.
 
 In all cases, the `msg` message is optional. If it is not provided, some suitable generic message will be used.
 
@@ -312,6 +316,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.4.0 _Added a high-level helper `OK()` for evaluating simple expressions._
 - 1.3.5 _Minor improvements, better docs._
 - 1.3.4 _Minor bugfixes and improvements._
 - 1.3.3 _Added a way to hide console/streams output, better support for file tests, better TTY formatting._
