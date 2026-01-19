@@ -1,10 +1,12 @@
 import {selectTimer} from './utils/timer.js';
 import State, {StopTest} from './State.js';
-import Tester from './Tester.js';
 import getDeferred from './utils/getDeferred.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
 import defer from './utils/defer.js';
+
+import Tester from './Tester.js';
+import './OK.js';
 
 let tests = [],
   reporter = null,

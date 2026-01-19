@@ -9,7 +9,7 @@ const throwHelper = fn => {
   return null;
 };
 
-class Tester {
+export class Tester {
   constructor(state, testNumber) {
     this.state = state;
     this.testNumber = testNumber;
@@ -400,7 +400,7 @@ class Tester {
 }
 Tester.prototype.any = Tester.prototype._ = any;
 
-const setAliases = (source, aliases) =>
+export const setAliases = (source, aliases) =>
   aliases.split(', ').forEach(alias => (Tester.prototype[alias] = Tester.prototype[source]));
 
 setAliases('ok', 'true, assert');
