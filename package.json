@@ -61,7 +61,17 @@
   ],
   "tape6": {
     "tests": [
-      "/tests/test-*.*js"
+      "/tests/test-*.js",
+      "/tests/test-*.mjs"
+    ],
+    "node": [
+      "/tests/test-*.cjs"
+    ],
+    "bun": [
+      "/tests/test-*.cjs"
+    ],
+    "deno": [
+      "/tests/test-*.cjs"
     ],
     "importmap": {
       "imports": {
