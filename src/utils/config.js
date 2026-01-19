@@ -37,7 +37,7 @@ export const getConfig = async (rootFolder, traceFn) => {
   }
 
   // check well-known files
-  if (!cfg) cfg = {tests: ['/tests/test-*.*js']};
+  if (!cfg) cfg = {tests: ['/tests/test-*.js', '/tests/test-*.mjs'], cli: ['/tests/test-*.cjs']};
 
   return cfg;
 };
@@ -52,6 +52,14 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
       patterns = patterns.concat(cfg[type]);
     } else if (typeof cfg[type] == 'string') {
       patterns.push(cfg[type]);
+    }
+  }
+
+  if (type !== 'browser') {
+    if (Array.isArray(cfg.cli)) {
+      patterns = patterns.concat(cfg.cli);
+    } else if (typeof cfg.cli == 'string') {
+      patterns.push(cfg.cli);
     }
   }
 

@@ -64,14 +64,11 @@
       "/tests/test-*.js",
       "/tests/test-*.mjs"
     ],
-    "node": [
+    "cli": [
       "/tests/test-*.cjs"
     ],
-    "bun": [
-      "/tests/test-*.cjs"
-    ],
-    "deno": [
-      "/tests/test-*.cjs"
+    "browser": [
+      "/tests/web/test-*.html"
     ],
     "importmap": {
       "imports": {
