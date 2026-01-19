@@ -28,7 +28,8 @@
     "test": "node ./bin/tape6.js --flags FO",
     "test:bun": "bun run ./bin/tape6-bun.js --flags FO",
     "test:deno": "deno run -A ./bin/tape6-deno.js --flags FO",
-    "test:chrome": "node tests/puppeteer-chrome.js",
+    "test:puppeteer": "node tests/puppeteer-chrome.js",
+    "test:playwright": "node tests/playwright-chrome.js",
     "ts-check": "tsc --noEmit",
     "ts-test": "node ./bin/tape6.js --flags FO '/ts-tests/test-*.ts'",
     "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO '/ts-tests/test-*.ts'",
@@ -79,6 +80,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.9",
+    "playwright": "^1.57.0",
     "puppeteer": "^24.35.0",
     "typescript": "^5.9.3"
   }
