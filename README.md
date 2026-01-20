@@ -34,6 +34,8 @@ with existing unit test libraries:
   - It just workss: modern runtimes (Node, Deno, Bun) support running TypeScript natively without transpilation by ignoring type information and running the code directly.
 - The [DX](https://en.wikipedia.org/wiki/User_experience#Developer_experience) in browsers are usually abysmal.
   - Both console-based debugging and a UI to navigate results are properly supported.
+  - Integration with browser automation tools is supported for automated testing.
+    - Examples for such tools are [Playwright](https://playwright.dev/) and [Puppeteer](https://pptr.dev/) are provided.
 
 ## Docs
 
@@ -316,6 +318,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.4.1 _Added browser automation support._
 - 1.4.0 _Added a high-level helper `OK()` for evaluating simple expressions._
 - 1.3.5 _Minor improvements, better docs._
 - 1.3.4 _Minor bugfixes and improvements._
