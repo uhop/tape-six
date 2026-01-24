@@ -87,6 +87,14 @@ $ npx tape6 tests/test-console.js tests/test-eval.js
   ♥️   tests: 5, asserts: 8, passed: 8, failed: 0, skipped: 0, todo: 0, time: 108.8ms
 ```
 
+More colorful versions:
+
+<img width="240" height="195" alt="image" src="https://github.com/user-attachments/assets/e10c631b-5035-4acb-b411-6af0e9b4041f" />
+
+And:
+
+<img width="240" height="329" alt="image" src="https://github.com/user-attachments/assets/f3d8ac65-9e6a-499d-837f-0271146da1de" />
+
 ## Docs
 
 The documentation can be found in the [wiki](https://github.com/uhop/tape-six/wiki).
