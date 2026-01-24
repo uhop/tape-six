@@ -37,6 +37,56 @@ with existing unit test libraries:
   - Integration with browser automation tools is supported for automated testing.
     - Examples for such tools are [Playwright](https://playwright.dev/) and [Puppeteer](https://pptr.dev/) are provided.
 
+## How it looks
+
+Running a test file directly:
+
+```txt
+$ node tests/test-console.js
+○ console test
+  log: log #1
+  ✓ pass - 1.542ms
+  log: log #2
+  err: error #1
+  log: log #2a
+  ✓ should be truthy - 1.725ms
+  log: log #3
+  err: error #2
+✓ console test  2  0  - 4.747ms
+  ♥️   tests: 1, asserts: 2, passed: 2, failed: 0, skipped: 0, todo: 0, time: 6.474ms
+```
+
+Running a test suite:
+
+```txt
+$ npx tape6 tests/test-console.js tests/test-eval.js
+○ FILE: /tests/test-console.js
+  ○ console test
+    log: log #1
+    ✓ pass - 0.338ms
+    log: log #2
+    err: error #1
+    log: log #2a
+    ✓ should be truthy - 0.146ms
+    log: log #3
+    err: error #2
+  ✓ console test  2  0  - 1.286ms
+✓ FILE: /tests/test-console.js  2  0  - 7.411ms
+○ FILE: /tests/test-eval.js
+  ○ OK test
+    ✓ 1 < 2 - 1.28ms
+    ✓ a < b - 0.17ms
+    ✓ a + b + c == "3three" - 0.13ms
+    ✓ d.a < d.b - 0.105ms
+  ✓ OK test  4  0  - 2.695ms
+  ○ OK test with self
+    ✓ internal check - 0.178ms
+    ✓ 1 < 2 - 0.115ms
+  ✓ OK test with self  2  0  - 0.55ms
+✓ FILE: /tests/test-eval.js  6  0  - 5.756ms
+  ♥️   tests: 5, asserts: 8, passed: 8, failed: 0, skipped: 0, todo: 0, time: 108.8ms
+```
+
 ## Docs
 
 The documentation can be found in the [wiki](https://github.com/uhop/tape-six/wiki).
