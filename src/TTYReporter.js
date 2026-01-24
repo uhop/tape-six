@@ -397,7 +397,8 @@ export class TTYReporter {
     this.out(
       this.success('  ' + this.successfulAsserts + '  ') +
         this.failure('  ' + this.failedAsserts + '  ') +
-        (this.skippedAsserts ? this.skipped('  ' + this.skippedAsserts + '  ') : '', true)
+        (this.skippedAsserts ? this.skipped('  ' + this.skippedAsserts + '  ') : ''),
+      true
     );
   }
   makeState(state) {
