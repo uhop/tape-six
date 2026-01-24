@@ -348,21 +348,16 @@ export declare interface Test {
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
    * @param condition - The JS condition to check as a string
-   * @param message - Message to display if the assertion fails
+   * @param message - Optional message to display if the assertion fails
    * @param options - Optional options object. `self` is the name of the tester argument, which should be used in the code. Default: `"t"`.
    */
-  OK(condition: string, message: string, options?: {self?: string}): string;
+  OK(condition: string, message?: string, options?: {self?: string}): string;
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
    * @param condition - The JS condition to check as a string
    * @param options - Optional options object. `self` is the name of the tester argument, which should be used in the code. Default: `"t"`.
    */
   OK(condition: string, options: {self?: string}): string;
-  /**
-   * Returns a code as a string for evaluation that checks if the condition is truthy.
-   * @param condition - The JS condition to check as a string
-   */
-  OK(condition: string): string;
 
   // aliases
 
@@ -624,40 +619,30 @@ export declare interface Test {
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
    * @param condition - The JS condition to check as a string
-   * @param message - Message to display if the assertion fails
+   * @param message - Optional message to display if the assertion fails
    * @param options - Optional options object. `self` is the name of the tester argument, which should be used in the code. Default: `"t"`.
    */
-  TRUE(condition: string, message: string, options?: {self?: string}): string;
+  TRUE(condition: string, message?: string, options?: {self?: string}): string;
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
    * @param condition - The JS condition to check as a string
    * @param options - Optional options object. `self` is the name of the tester argument, which should be used in the code. Default: `"t"`.
    */
   TRUE(condition: string, options: {self?: string}): string;
-  /**
-   * Returns a code as a string for evaluation that checks if the condition is truthy.
-   * @param condition - The JS condition to check as a string
-   */
-  TRUE(condition: string): string;
 
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
    * @param condition - The JS condition to check as a string
-   * @param message - Message to display if the assertion fails
+   * @param message - Optional message to display if the assertion fails
    * @param options - Optional options object. `self` is the name of the tester argument, which should be used in the code. Default: `"t"`.
    */
-  ASSERT(condition: string, message: string, options?: {self?: string}): string;
+  ASSERT(condition: string, message?: string, options?: {self?: string}): string;
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
    * @param condition - The JS condition to check as a string
    * @param options - Optional options object. `self` is the name of the tester argument, which should be used in the code. Default: `"t"`.
    */
   ASSERT(condition: string, options: {self?: string}): string;
-  /**
-   * Returns a code as a string for evaluation that checks if the condition is truthy.
-   * @param condition - The JS condition to check as a string
-   */
-  ASSERT(condition: string): string;
 }
 
 export declare interface Test {
