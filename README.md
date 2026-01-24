@@ -16,6 +16,8 @@ Why `tape-six`? It was supposed to be named `tape6` but `npm` does not allow nam
 to existing packages. Instead of eliminating name-squatting they force to use unintuitive and
 unmemorable names. That's why all internal names, environment variables, and public names still use `tape6`.
 
+See [examples in the wiki](https://github.com/uhop/tape-six/wiki/Examples).
+
 ## Rationale
 
 Why another library? Working on projects written in modern JS (with modules) I found several problems
