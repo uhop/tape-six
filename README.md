@@ -380,6 +380,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.4.2 _Improved documentation._
 - 1.4.1 _Added browser automation support._
 - 1.4.0 _Added a high-level helper `OK()` for evaluating simple expressions._
 - 1.3.5 _Minor improvements, better docs._
