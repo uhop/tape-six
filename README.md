@@ -39,6 +39,8 @@ with existing unit test libraries:
 
 ## How it looks
 
+_(The examples below show actual output of test functions. In real life, successful tests are usually hidden and only the final results are shown. Usually failed tests are shown with details and stack traces and the first fail stops testing to speed up the fail-fix cycle. All those deatails can be configured with settings.)_
+
 Running a test file directly:
 
 ```txt
@@ -87,7 +89,7 @@ $ npx tape6 tests/test-console.js tests/test-eval.js
   ♥️   tests: 5, asserts: 8, passed: 8, failed: 0, skipped: 0, todo: 0, time: 108.8ms
 ```
 
-More colorful versions:
+More colorful versions (click to see the original screenshots):
 
 <img width="240" height="195" alt="image" src="https://github.com/user-attachments/assets/e10c631b-5035-4acb-b411-6af0e9b4041f" />
 
