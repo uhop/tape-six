@@ -380,6 +380,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.4.4 _Refreshed the lock file._
 - 1.4.3 _Updated dev dependencies + a minor bugfix._
 - 1.4.2 _Improved documentation._
 - 1.4.1 _Added browser automation support._
