@@ -39,7 +39,7 @@ with existing unit test libraries:
 
 ## How it looks
 
-_(The examples below show actual output of test functions. In real life, successful tests are usually hidden and only the final results are shown. Usually failed tests are shown with details and stack traces and the first fail stops testing to speed up the fail-fix cycle. All those deatails can be configured with settings.)_
+_(The examples below show actual output of test functions. In real life, successful tests are usually hidden and only the final results are shown. Usually failed tests are shown with details and stack traces and the first fail stops testing to speed up the fail-fix cycle. All those details can be configured with settings.)_
 
 Running a test file directly:
 
