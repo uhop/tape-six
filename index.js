@@ -55,6 +55,7 @@ const init = async () => {
       name = optionNames[option];
     if (typeof name == 'string') options[name] = option !== flags[i];
   }
+  options.flags = flags;
 
   let originalConsole = null;
   if (!options.dontCaptureConsole && (isNode || isBun || isDeno)) {

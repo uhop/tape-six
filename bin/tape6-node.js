@@ -77,6 +77,7 @@ const config = () => {
       name = optionNames[option];
     if (typeof name == 'string') options[name] = option !== flags[i];
   }
+  options.flags = flags;
 
   if (!parIsSet) {
     parallel = process.env.TAPE6_PAR || parallel;

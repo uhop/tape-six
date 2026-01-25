@@ -76,6 +76,7 @@ const config = () => {
       name = optionNames[option];
     if (typeof name == 'string') options[name] = option !== flags[i];
   }
+  options.flags = flags;
 
   if (!parIsSet) {
     parallel = Bun.env.TAPE6_PAR || parallel;
