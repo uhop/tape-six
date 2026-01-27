@@ -1,5 +1,5 @@
 import {selectTimer} from './utils/timer.js';
-import State, {StopTest} from './State.js';
+import {StopTest} from './State.js';
 import getDeferred from './utils/getDeferred.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
@@ -81,90 +81,89 @@ export const clearTests = () => (tests = []);
 export const getReporter = () => reporter;
 export const setReporter = newReporter => (reporter = newReporter);
 
-export const runTests = async (rootState, tests) => {
+export const runTests = async tests => {
+  const reporter = getReporter();
   for (let i = 0; i < tests.length; ++i) {
-    if (rootState.stopTest) return false;
+    if (reporter.state?.stopTest) return false;
     const {options, deferred} = tests[i],
       testNumber = ++testCounter,
-      state = new State(rootState, options),
-      tester = new Tester(state, testNumber);
-    if (state.skip) {
+      tester = new Tester(testNumber, reporter);
+    if (tester.state?.skip || options.skip) {
       tester.comment('SKIP test: ' + options.name);
-    } else {
-      try {
-        state.emit({type: 'test', name: options.name, test: testNumber, time: state.timer.now()});
-        if (options.skip) {
-          state.emit({
-            type: 'comment',
-            name: 'SKIP test: ' + options.name,
-            test: testNumber,
-            time: state.timer.now()
-          });
-        } else if (options.testFn) {
-          if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
-            const result = options.testFn(tester);
-            if (result && typeof result == 'object' && typeof result.then == 'function') {
-              const timedOut = await Promise.race([
-                result.then(() => false),
-                timeout(options.timeout).then(() => true)
-              ]);
-              if (timedOut) {
-                state.emit({
-                  type: 'comment',
-                  name:
-                    'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
-                  test: testNumber,
-                  time: state.timer.now()
-                });
-                await result;
-              }
+      deferred && deferred.resolve(tester.state);
+      return;
+    }
+    try {
+      tester.reporter.report({
+        type: 'test',
+        name: options.name,
+        test: testNumber,
+        skip: options.skip,
+        todo: options.todo,
+        time: tester.timer.now()
+      });
+      if (options.testFn) {
+        if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
+          const result = options.testFn(tester);
+          if (result && typeof result == 'object' && typeof result.then == 'function') {
+            const timedOut = await Promise.race([
+              result.then(() => false),
+              timeout(options.timeout).then(() => true)
+            ]);
+            if (timedOut) {
+              tester.reporter.report({
+                type: 'comment',
+                name:
+                  'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
+                test: testNumber,
+                time: tester.timer.now()
+              });
+              await result;
             }
-          } else {
-            await options.testFn(tester);
           }
+        } else {
+          await options.testFn(tester);
         }
-      } catch (error) {
-        if (error instanceof StopTest) {
-          state.emit({
+      }
+    } catch (error) {
+      if (error instanceof StopTest) {
+        tester.reporter.report({
+          type: 'comment',
+          name: 'Stop tests: ' + String(error),
+          test: testNumber,
+          marker: new Error(),
+          time: tester.timer.now()
+        });
+      } else {
+        tester.reporter.report({
+          name: 'UNEXPECTED EXCEPTION: ' + String(error),
+          test: testNumber,
+          marker: new Error(),
+          time: tester.timer.now(),
+          operator: 'exception',
+          fail: true,
+          data: {
+            actual: error
+          }
+        });
+        tester.state?.failOnce &&
+          tester.reporter.report({
             type: 'comment',
             name: 'Stop tests: ' + String(error),
             test: testNumber,
             marker: new Error(),
-            time: state.timer.now()
+            time: tester.timer.now()
           });
-        } else {
-          state.emit({
-            name: 'UNEXPECTED EXCEPTION: ' + String(error),
-            test: testNumber,
-            marker: new Error(),
-            time: state.timer.now(),
-            operator: 'exception',
-            fail: true,
-            data: {
-              actual: error
-            }
-          });
-          state.failOnce &&
-            state.emit({
-              type: 'comment',
-              name: 'Stop tests: ' + String(error),
-              test: testNumber,
-              marker: new Error(),
-              time: state.timer.now()
-            });
-        }
       }
-      state.emit({
-        type: 'end',
-        name: options.name,
-        test: testNumber,
-        time: state.timer.now(),
-        fail: state.failed > 0,
-        data: state
-      });
-      state.updateParent();
     }
-    deferred && deferred.resolve(state);
+    tester.reporter.report({
+      type: 'end',
+      name: options.name,
+      test: testNumber,
+      time: tester.timer.now(),
+      fail: tester.state && tester.state.failed > 0
+    });
+    deferred && deferred.resolve(tester.state);
   }
   return true;
 };
@@ -199,10 +198,10 @@ test.asPromise = function asPromise(name, options, testFn) {
 
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (this.state.skip) {
+  if (this.reporter.state?.skip) {
     this.comment('SKIP test: ' + options.name);
   } else {
-    await runTests(this.state, [{options}]);
+    await runTests([{options}]);
   }
 };
 
@@ -213,11 +212,11 @@ Tester.prototype.skip = async function skip(name, options, testFn) {
 
 Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (this.state.skip) {
+  if (this.reporter.state?.skip) {
     this.comment('SKIP test: ' + options.name);
     return;
   }
-  await runTests(this.state, [{options: {...options, todo: true}}]);
+  await runTests([{options: {...options, todo: true}}]);
 };
 
 Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
@@ -233,7 +232,7 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
         }
       });
   }
-  await runTests(this.state, [{options}]);
+  await runTests([{options}]);
 };
 
 export default test;

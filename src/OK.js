@@ -6,7 +6,7 @@ const listVariables = (code, self) => {
   const vars =
     code
       .replace(
-        /(?:\b[A-Z]|\.[a-zA-Z_$])[a-zA-Z_$\d]*\b|\b[a-zA-Z_$][a-zA-Z_$\d]*:|\b(?:function|return|if|else|switch|case|while|for|do|break|continue|var|try|catch|finally|throw|with|debugger|default|this|true|false|null|undefined|typeof|instanceof|in|delete|new|void|arguments|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|escape|eval|isFinite|isNaN|parseFloat|parseInt|unescape|window|document)\b|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g,
+        /(?:\b[A-Z]|\.[a-zA-Z_$])[a-zA-Z_$\d]*\b|\b[a-zA-Z_$][a-zA-Z_$\d]*:|\b(?:function|return|if|else|switch|case|while|for|do|break|continue|var|try|catch|finally|throw|with|debugger|default|this|true|false|null|undefined|typeof|instanceof|in|delete|new|void|arguments|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|escape|eval|isFinite|isNaN|parseFloat|parseInt|unescape|window|document|const|let|async|await)\b|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g,
         ''
       )
       .match(/(\b[a-z_$][a-z_$\d]*\b)/gi) || [];
@@ -31,11 +31,11 @@ Tester.prototype.OK = function OK(condition, msg, options) {
     msg = undefined;
   }
   const {self = 't'} = options || {};
-  return `(${self}.state.emit({
+  return `(${self}.reporter.report({
   name: ${JSON.stringify(msg || condition)},
   test: ${self}.testNumber,
   marker: new Error(),
-  time: ${self}.state.timer.now(),
+  time: ${self}.timer.now(),
   operator: 'ok',
   fail: !(${condition}),
   data: {

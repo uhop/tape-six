@@ -1,8 +1,9 @@
 import process from 'node:process';
 
-import {State, signature} from './State.js';
-import {normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from './utils/box.js';
-import {formatNumber, formatTime} from './utils/formatters.js';
+import Reporter from './Reporter.js';
+import {signature} from '../State.js';
+import {normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from '../utils/box.js';
+import {formatNumber, formatTime} from '../utils/formatters.js';
 
 // colors
 
@@ -24,10 +25,11 @@ const consoleDict = {
 
 // main
 
-export class TTYReporter {
+export class TTYReporter extends Reporter {
   constructor({
     output = process.stdout,
     renumberAsserts = false,
+    failOnce = false,
     failureOnly = false,
     showBanner = output.isTTY,
     showTime = true,
@@ -38,7 +40,7 @@ export class TTYReporter {
     hideStreams = false,
     originalConsole
   } = {}) {
-    this.state = null;
+    super({failOnce});
     this.output = output;
     this.console = originalConsole || console;
     this.hasColors =
@@ -53,14 +55,14 @@ export class TTYReporter {
     this.showAssertNumber = showAssertNumber;
     this.hideStreams = hideStreams;
 
-    this.depth =
+    this.visibleDepth =
       this.assertCounter =
       this.failedAsserts =
       this.successfulAsserts =
       this.skippedAsserts =
       this.todoAsserts =
         0;
-    this.testCounter = -1;
+    this.testCounter = 0;
     this.technicalDepth = 0;
 
     this.lines = 0;
@@ -126,7 +128,7 @@ export class TTYReporter {
     if (noIndent) {
       this.output.write(text + '\n');
     } else {
-      const indent = '  '.repeat(this.depth);
+      const indent = '  '.repeat(this.visibleDepth);
       this.output.write(indent + text + '\n');
     }
     ++this.lines;
@@ -148,10 +150,12 @@ export class TTYReporter {
       }
       this.consoleWasUsed = this.overrideLastLine = false;
     }
+    event = this.state?.preprocess(event) || event;
+    // this.out(JSON.stringify(event));
     let text;
     switch (event.type) {
       case 'test':
-        this.state = new State(this.state, {name: event.name, test: event.test, skip: event.data?.skip, todo: event.data?.todo, failOnce: this.failureOnly});
+        event = this.onTest(event);
         if (event.name || event.test > 0) {
           if (!this.failureOnly) {
             if (event.test) {
@@ -160,15 +164,14 @@ export class TTYReporter {
               this.out('\u25CB ' + this.blue(this.italic(event.name)));
             }
           }
-          ++this.depth;
+          ++this.visibleDepth;
           ++this.testCounter;
         }
         break;
       case 'end':
-        const theTest = this.state;
-        this.state = theTest.parent;
+        const theTest = this.onEnd(event);
         if (theTest.name || theTest.test > 0) {
-          --this.depth;
+          --this.visibleDepth;
           if (!this.failureOnly || theTest.failed) {
             let name = '';
             if (theTest.test) {
@@ -185,6 +188,9 @@ export class TTYReporter {
         }
         if (this.state) break;
         return this.showSummary(theTest, event.diffTime);
+      case 'terminated':
+        this.onTerminated(event, 'reportInternal');
+        break;
       case 'comment':
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
         break;
@@ -263,9 +269,9 @@ export class TTYReporter {
         event.fail && event.at && (text += this.lowWhite(' - ' + event.at));
         if (this.failureOnly && !lastTest.fail) {
           lastTest.fail = true;
-          --this.depth;
+          --this.visibleDepth;
           this.out(this.brightRed('✗ ' + (lastTest.name || 'anonymous test')));
-          ++this.depth;
+          ++this.visibleDepth;
         }
         this.out(text);
 
@@ -297,6 +303,7 @@ export class TTYReporter {
       this.showScore();
       this.overrideLastLine = true;
     }
+    this.state?.postprocess(event);
   }
   showScore() {
     this.out(
@@ -355,9 +362,7 @@ export class TTYReporter {
         ...box1,
         '',
         'Passed: ' +
-          (state.failed
-            ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%'
-            : '100%')
+          (state.failed ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%' : '100%')
       ],
       ' ',
       'center'

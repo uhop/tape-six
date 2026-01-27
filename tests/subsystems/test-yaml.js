@@ -1,4 +1,4 @@
-import yamlFormatter from '../../src/yamlFormatter.js';
+import yamlFormatter from '../../src/utils/yamlFormatter.js';
 
 const format = value => {
   console.log('---');

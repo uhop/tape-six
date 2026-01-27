@@ -13,7 +13,7 @@ export const captureConsole = () => {
           const type = 'console-' + property;
           return (...args) => {
             const reporter = getReporter();
-            reporter({type, name: format(...args)});
+            reporter.report({type, name: format(...args)});
           };
         }
       }

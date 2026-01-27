@@ -11,8 +11,7 @@ import {
   registerNotifyCallback
 } from './src/test.js';
 import defer from './src/utils/defer.js';
-import State from './src/State.js';
-import TapReporter from './src/TapReporter.js';
+import TapReporter from './src/reporters/TapReporter.js';
 
 const optionNames = {
   f: 'failureOnly',
@@ -75,48 +74,40 @@ const init = async () => {
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
         reporter = event => window.parent.__tape6_reporter(id, event);
       } else if (options.useJsonL) {
-        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
-          jsonlReporter = new JSONLReporter({...options, originalConsole});
-        reporter = jsonlReporter.report.bind(jsonlReporter);
+        const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
+        reporter = new JSONLReporter({...options, originalConsole});
       }
     } else if (isDeno) {
       if (Deno.env.get('TAPE6_JSONL')) {
-        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
-          jsonlReporter = new JSONLReporter({...options, originalConsole});
-        reporter = jsonlReporter.report.bind(jsonlReporter);
+        const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
+        reporter = new JSONLReporter({...options, originalConsole});
       } else if (!Deno.env.get('TAPE6_TAP')) {
-        const {TTYReporter} = await import('./src/TTYReporter.js'),
-          ttyReporter = new TTYReporter({...options, originalConsole});
-        reporter = ttyReporter.report.bind(ttyReporter);
+        const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
+        reporter = new TTYReporter({...options, originalConsole});
       }
     } else if (isBun) {
       if (Bun.env.TAPE6_JSONL) {
-        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
-          jsonlReporter = new JSONLReporter({...options, originalConsole});
-        reporter = jsonlReporter.report.bind(jsonlReporter);
+        const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
+        reporter = new JSONLReporter({...options, originalConsole});
       } else if (!Bun.env.TAPE6_TAP) {
-        const {TTYReporter} = await import('./src/TTYReporter.js'),
-          ttyReporter = new TTYReporter({...options, originalConsole});
-        reporter = ttyReporter.report.bind(ttyReporter);
+        const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
+        reporter = new TTYReporter({...options, originalConsole});
       }
     } else if (isNode) {
       if (process.env.TAPE6_JSONL) {
-        const {JSONLReporter} = await import('./src/JSONLReporter.js'),
-          jsonlReporter = new JSONLReporter({...options, originalConsole});
-        reporter = jsonlReporter.report.bind(jsonlReporter);
+        const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
+        reporter = new JSONLReporter({...options, originalConsole});
       } else if (!process.env.TAPE6_TAP) {
-        const {TTYReporter} = await import('./src/TTYReporter.js'),
-          ttyReporter = new TTYReporter({...options, originalConsole});
-        reporter = ttyReporter.report.bind(ttyReporter);
+        const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
+        reporter = new TTYReporter({...options, originalConsole});
       }
     }
     if (!reporter) {
-      const tapReporter = new TapReporter({
+      reporter = new TapReporter({
         useJson: true,
         hasColors: !options.monochrome,
         originalConsole
       });
-      reporter = tapReporter.report.bind(tapReporter);
     }
     setReporter(reporter);
   }
@@ -146,42 +137,40 @@ let settings = null;
 const testCallback = async () => {
   if (!settings) settings = await init();
 
-  const {reporter, options, testFileName} = settings,
-    rootState = new State(null, {callback: reporter, failOnce: options.failOnce});
+  const {reporter, options, testFileName} = settings;
 
-  rootState.emit({
+  reporter.report({
     type: 'test',
     test: 0,
-    name: testFileName ? 'FILE: /' + testFileName : '',
-    time: rootState.timer.now()
+    name: testFileName ? 'FILE: /' + testFileName : ''
   });
 
   for (;;) {
     const tests = getTests();
     if (!tests.length) break;
     clearTests();
-    const canContinue = await runTests(rootState, tests);
+    const canContinue = await runTests(tests);
     if (!canContinue) break;
     await new Promise(resolve => defer(resolve));
   }
 
-  rootState.emit({
+  const runHasFailed = reporter.state && reporter.state.failed > 0;
+
+  reporter.report({
     type: 'end',
     test: 0,
     name: testFileName ? 'FILE: /' + testFileName : '',
-    time: rootState.timer.now(),
-    fail: rootState.failed > 0,
-    data: rootState
+    fail: runHasFailed
   });
 
   if (typeof Deno == 'object') {
-    rootState.failed > 0 && Deno.exit(1);
+    runHasFailed && Deno.exit(1);
   } else if (typeof Bun == 'object') {
-    rootState.failed > 0 && process.exit(1);
+    runHasFailed && process.exit(1);
   } else if (typeof process == 'object' && process.versions?.node) {
-    rootState.failed > 0 && process.exit(1);
+    runHasFailed && process.exit(1);
   } else if (typeof __tape6_reportResults == 'function') {
-    __tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
+    __tape6_reportResults(runHasFailed ? 'failure' : 'success');
   }
 
   registerNotifyCallback(testCallback); // register self again

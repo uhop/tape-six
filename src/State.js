@@ -56,19 +56,20 @@ const serialize = object => {
   });
 };
 
-class State {
-  constructor(parent, {callback, skip, todo, failOnce}) {
+export class State {
+  constructor(parent, {name, test, time, skip, todo, failOnce, timer}) {
     this.parent = parent;
+    this.name = name || '';
+    this.test = test || 0;
     parent = parent || {};
-    this.callback = callback || parent.callback;
     this.skip = skip || parent.skip;
     this.todo = todo || parent.todo;
     this.failOnce = failOnce || parent.failOnce;
     this.offset = parent.asserts || 0;
-    this.timer = parent.timer || getTimer();
     this.asserts = this.skipped = this.failed = 0;
     this.stopTest = false;
-    this.startTime = this.time = this.timer.now();
+    this.timer = timer || parent.timer || getTimer();
+    this.startTime = this.time = time || this.timer.now();
   }
 
   updateParent() {
@@ -78,23 +79,27 @@ class State {
     this.parent.failed += this.failed;
   }
 
-  emit(event) {
+  preprocess(event) {
     event = {...event, skip: event.skip || this.skip, todo: event.todo || this.todo};
     !event.type && (event.type = 'assert');
 
+    if (typeof event.time !== 'number') {
+      event.time = this.timer.now();
+      delete event.diffTime;
+    }
+
+    if (event.type === 'test') return event;
+
     const isFailed = event.fail && !event.todo && !event.skip;
 
-    switch (event.type) {
-      case 'assert':
-        ++this.asserts;
-        event.skip && ++this.skipped;
-        isFailed && ++this.failed;
-        event.id = this.asserts + this.offset;
-        !event.hasOwnProperty('diffTime') && (event.diffTime = event.time - this.time);
-        break;
-      case 'end':
-        !event.hasOwnProperty('diffTime') && (event.diffTime = event.time - this.startTime);
-        break;
+    if (event.type === 'assert') {
+      ++this.asserts;
+      event.skip && ++this.skipped;
+      isFailed && ++this.failed;
+      event.id = this.asserts + this.offset;
+      typeof event.diffTime !== 'number' && (event.diffTime = event.time - this.time);
+    } else {
+      typeof event.diffTime !== 'number' && (event.diffTime = event.time - this.startTime);
     }
 
     if (
@@ -141,8 +146,10 @@ class State {
       event.stopTest = true;
     }
 
-    this.callback(event);
+    return event;
+  }
 
+  postprocess(event) {
     switch (event.type) {
       case 'assert':
         if (event.stopTest && event.operator !== 'exception')

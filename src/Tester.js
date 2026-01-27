@@ -1,4 +1,5 @@
 import {equal, match, any} from './deep6/index.js';
+import {getTimer} from './utils/timer.js';
 
 const throwHelper = fn => {
   try {
@@ -10,22 +11,23 @@ const throwHelper = fn => {
 };
 
 export class Tester {
-  constructor(state, testNumber) {
-    this.state = state;
+  constructor(testNumber, reporter) {
     this.testNumber = testNumber;
+    this.reporter = reporter;
+    this.timer = reporter.timer || getTimer();
   }
 
   plan(_n) {
-    // this.state.setPlan(_n);
+    // nothing to do
   }
 
   comment(msg) {
-    this.state.emit({
+    this.reporter.report({
       type: 'comment',
       name: msg || 'comment',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now()
+      time: this.timer.now()
     });
   }
 
@@ -37,23 +39,23 @@ export class Tester {
         break;
       }
     }
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'skipped test',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       skip: true,
       operator: 'skip'
     });
   }
 
   bailOut(msg) {
-    this.state.emit({
+    this.reporter.report({
       type: 'bail-out',
       name: msg || 'bail out',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'bailOut'
     });
   }
@@ -61,22 +63,22 @@ export class Tester {
   // asserts
 
   pass(msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'pass',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'pass',
       data: {expected: true, actual: true}
     });
   }
 
   fail(msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'fail',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'fail',
       fail: true,
       data: {expected: true, actual: false}
@@ -84,11 +86,11 @@ export class Tester {
   }
 
   ok(value, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should be truthy',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'ok',
       fail: !value,
       data: {
@@ -99,11 +101,11 @@ export class Tester {
   }
 
   notOk(value, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should be falsy',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'notOk',
       fail: !!value,
       data: {
@@ -114,11 +116,11 @@ export class Tester {
   }
 
   error(error, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || String(error),
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'error',
       fail: !!error,
       data: {
@@ -129,11 +131,11 @@ export class Tester {
   }
 
   strictEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should be strictly equal',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'equal',
       fail: typeof a == 'object' ? a !== b : !equal(a, b),
       data: {
@@ -144,11 +146,11 @@ export class Tester {
   }
 
   notStrictEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not be strictly equal',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'notEqual',
       fail: typeof a == 'object' ? a === b : equal(a, b),
       data: {
@@ -159,11 +161,11 @@ export class Tester {
   }
 
   looseEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should be loosely equal',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'looseEqual',
       fail: a != b,
       data: {
@@ -174,11 +176,11 @@ export class Tester {
   }
 
   notLooseEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not be loosely equal',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'notLooseEqual',
       fail: a == b,
       data: {
@@ -189,11 +191,11 @@ export class Tester {
   }
 
   deepEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should be deeply equivalent',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'deepEqual',
       fail: !equal(a, b),
       data: {
@@ -204,11 +206,11 @@ export class Tester {
   }
 
   notDeepEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not be deeply equivalent',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'notDeepEqual',
       fail: equal(a, b),
       data: {
@@ -219,11 +221,11 @@ export class Tester {
   }
 
   deepLooseEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should be loosely equal',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'deepLooseEqual',
       fail: !equal(a, b, {circular: true, loose: true}),
       data: {
@@ -234,11 +236,11 @@ export class Tester {
   }
 
   notDeepLooseEqual(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not be loosely equal',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'notDeepLooseEqual',
       fail: equal(a, b, {circular: true, loose: true}),
       data: {
@@ -251,11 +253,11 @@ export class Tester {
   throws(fn, msg) {
     if (typeof fn != 'function') throw new TypeError('the first argument should be a function');
     const result = throwHelper(fn);
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should throw',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'throws',
       fail: !result,
       data: {
@@ -268,11 +270,11 @@ export class Tester {
   doesNotThrow(fn, msg) {
     if (typeof fn != 'function') throw new TypeError('the first argument should be a function');
     const result = throwHelper(fn);
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not throw',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'doesNotThrow',
       fail: !!result,
       data: {
@@ -286,11 +288,11 @@ export class Tester {
     if (typeof string != 'string') throw new TypeError('the first argument should be a string');
     if (!regexp || typeof regexp != 'object' || typeof regexp.test != 'function')
       throw new TypeError('the second argument should be a regular expression object');
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should match regular expression',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'matchString',
       fail: !regexp.test(string),
       data: {
@@ -304,11 +306,11 @@ export class Tester {
     if (typeof string != 'string') throw new TypeError('the first argument should be a string');
     if (!regexp || typeof regexp != 'object' || typeof regexp.test != 'function')
       throw new TypeError('the second argument should be a regular expression object');
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not match regular expression',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'doesNotMatch',
       fail: regexp.test(string),
       data: {
@@ -319,11 +321,11 @@ export class Tester {
   }
 
   match(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should match object',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'match',
       fail: !match(a, b),
       data: {
@@ -334,11 +336,11 @@ export class Tester {
   }
 
   doesNotMatch(a, b, msg) {
-    this.state.emit({
+    this.reporter.report({
       name: msg || 'should not match object',
       test: this.testNumber,
       marker: new Error(),
-      time: this.state.timer.now(),
+      time: this.timer.now(),
       operator: 'doesNotMatchObject',
       fail: match(a, b),
       data: {
@@ -357,11 +359,11 @@ export class Tester {
         error => error
       )
       .then(result => {
-        this.state.emit({
+        this.reporter.report({
           name: msg || 'should be rejected',
           test: this.testNumber,
           marker: new Error(),
-          time: this.state.timer.now(),
+          time: this.timer.now(),
           operator: 'rejects',
           fail: !result,
           data: {
@@ -381,11 +383,11 @@ export class Tester {
         error => error
       )
       .then(result => {
-        this.state.emit({
+        this.reporter.report({
           name: msg || 'should not be rejected',
           test: this.testNumber,
           marker: new Error(),
-          time: this.state.timer.now(),
+          time: this.timer.now(),
           operator: 'resolves',
           fail: !!result,
           data: {
