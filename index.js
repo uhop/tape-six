@@ -70,9 +70,13 @@ const init = async () => {
       const id =
         window.__tape6_id || new URLSearchParams(window.location.search.substring(1)).get('id');
       if (typeof window.__tape6_reporter == 'function') {
-        reporter = event => window.__tape6_reporter(id, event);
+        const reportTo = event => window.__tape6_reporter(id, event),
+          {ProxyReporter} = await import('./src/reporters/ProxyReporter.js');
+        reporter = new ProxyReporter({...options, reportTo});
       } else if (window.parent && typeof window.parent.__tape6_reporter == 'function') {
-        reporter = event => window.parent.__tape6_reporter(id, event);
+        const reportTo = event => window.parent.__tape6_reporter(id, event),
+          {ProxyReporter} = await import('./src/reporters/ProxyReporter.js');
+        reporter = new ProxyReporter({...options, reportTo});
       } else if (options.useJsonL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
         reporter = new JSONLReporter({...options, originalConsole});
@@ -102,13 +106,11 @@ const init = async () => {
         reporter = new TTYReporter({...options, originalConsole});
       }
     }
-    if (!reporter) {
-      reporter = new TapReporter({
-        useJson: true,
-        hasColors: !options.monochrome,
-        originalConsole
-      });
-    }
+    reporter ||= new TapReporter({
+      useJson: true,
+      hasColors: !options.monochrome,
+      originalConsole
+    });
     setReporter(reporter);
   }
 
@@ -137,7 +139,7 @@ let settings = null;
 const testCallback = async () => {
   if (!settings) settings = await init();
 
-  const {reporter, options, testFileName} = settings;
+  const {reporter, testFileName} = settings;
 
   reporter.report({
     type: 'test',
