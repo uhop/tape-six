@@ -1,6 +1,7 @@
 const reportToParent = fileName => msg => {
-  if ((msg.type === 'test' || msg.type === 'end') && !msg.test && !msg.name)
+  if ((msg.type === 'test' || msg.type === 'end') && !msg.test && !msg.name) {
     msg.name = 'FILE: /' + fileName;
+  }
   postMessage(msg);
 };
 
