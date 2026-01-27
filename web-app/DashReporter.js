@@ -19,7 +19,7 @@ export class DashReporter extends Reporter {
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
     this.depth = this.assertCounter = this.failureCounter = this.skipCounter = this.todoCounter = 0;
-    this.testCounter = -1;
+    this.testCounter = 0;
     this.currentTest = this.lastAssert = '';
     this.scoreNode = document.querySelector('.tape6 .score');
     this.donutNode = this.scoreNode && this.scoreNode.querySelector('tape6-donut');
