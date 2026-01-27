@@ -28,18 +28,23 @@ export class Reporter {
 
   onEnd() {
     const theState = this.state;
-    theState.updateParent();
-    this.state = this.state.parent;
-    --this.depth;
+    if (theState) {
+      theState.updateParent();
+      this.state = theState.parent;
+      --this.depth;
+    }
     return theState;
   }
 
   onTerminated(event, reportingMethod = 'report') {
-    while (this.state) {
+    while (this.state && (this.state.name || this.state.test)) {
       const theState = this.state;
-      this.state = this.state.parent;
-      reportingMethod &&
+      if (reportingMethod) {
         this[reportingMethod]({type: 'end', test: theState.test, name: theState.name});
+      } else {
+        theState.updateParent();
+        this.state = theState.parent;
+      }
       if (theState.test === event.test && theState.name === event.name) break;
     }
   }
