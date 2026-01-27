@@ -85,7 +85,7 @@ export class State {
     event = {...event, skip: event.skip || this.skip, todo: event.todo || this.todo};
     !event.type && (event.type = 'assert');
 
-    if (typeof event.time !== 'number') {
+    if (typeof event.time !== 'number' || !event.time) {
       event.time = this.timer.now();
       delete event.diffTime;
     }
