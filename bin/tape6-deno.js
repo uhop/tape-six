@@ -9,7 +9,6 @@ import {
 } from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
-import State, {StopTest} from '../src/State.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/deno/TestWorker.js';
@@ -52,7 +51,7 @@ const config = () => {
     const arg = Deno.args[i];
     if (arg == '-f' || arg == '--flags') {
       if (++i < Deno.args.length) {
-        flags = Deno.args[i];
+        flags += Deno.args[i];
       }
       continue;
     }
@@ -101,11 +100,11 @@ const init = async () => {
   if (!currentReporter) {
     const reporterType = getReporterType(),
       reporterFile = reporters[reporterType] || reporters.tty,
-      CustomReporter = (await import('../src/' + reporterFile)).default,
+      CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
       customOptions =
         reporterType === 'tap' ? {useJson: true, hasColors: !options.monochrome} : options,
       customReporter = new CustomReporter(customOptions);
-    setReporter(customReporter.report.bind(customReporter));
+    setReporter(customReporter);
   }
 
   if (files.length) {
@@ -133,25 +132,26 @@ const main = async () => {
     event.preventDefault();
   });
 
-  const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
-    worker = new TestWorker(safeEmit(rootState), parallel, options);
+  const reporter = getReporter(),
+    worker = new TestWorker(reporter, parallel, options);
 
-  rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
+  reporter.report({type: 'test', test: 0});
 
   await new Promise(resolve => {
     worker.done = () => resolve();
     worker.execute(files);
   });
 
-  rootState.emit({
+  const hasFailed = reporter.state && reporter.state.failed > 0;
+
+  reporter.report({
     type: 'end',
     test: 0,
-    time: rootState.timer.now(),
-    fail: rootState.failed > 0,
-    data: rootState
+    fail: hasFailed
   });
 
-  Deno.exit(rootState.failed > 0 ? 1 : 0);
+
+  Deno.exit(hasFailed ? 1 : 0);
 };
 
 main().catch(error => console.error('ERROR:', error));
