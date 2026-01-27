@@ -16,11 +16,22 @@ const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
   skippedStyle = `\x1B[48;5;${buildColor(0, 0, 64)};1;97m`,
   reset = '\x1B[0m';
 
+// misc
+
 const consoleDict = {
   log: 'log',
   info: 'inf',
   warn: 'wrn',
   error: 'err'
+};
+
+const getType = value => {
+  const type = typeof value;
+  let className = '';
+  if (type === 'object') {
+    className = value?.constructor?.name;
+  }
+  return className ? type + '/' + className : type;
 };
 
 // main
@@ -116,13 +127,15 @@ export class TTYReporter extends Reporter {
     return this.hasColors ? text => join(prefix, text, suffix) : text => text;
   }
   formatValue(value) {
-    if (typeof value == 'string') return value;
+    if (typeof value == 'string') return value + this.lowWhite(' - (' + getType(value) + ')');
     if (value && value[signature] === signature) {
       value = {...value};
       delete value[signature];
-      return this.blue(JSON.stringify(value));
+      return this.blue(JSON.stringify(value)) + this.lowWhite(' - (' + getType(value) + ')');
     }
-    return this.red(this.italic(JSON.stringify(value)));
+    return this.red(
+      this.italic(JSON.stringify(value)) + this.lowWhite(' - (' + getType(value) + ')')
+    );
   }
   out(text, noIndent) {
     if (noIndent) {

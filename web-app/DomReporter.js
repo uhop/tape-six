@@ -10,6 +10,15 @@ const formatValue = value => {
   return JSON.stringify(value);
 };
 
+const getType = value => {
+  const type = typeof value;
+  let className = '';
+  if (type === 'object') {
+    className = value?.constructor?.name;
+  }
+  return className ? type + '/' + className : type;
+};
+
 class DomReporter extends Reporter {
   constructor({root, failOnce = false, renumberAsserts = false} = {}) {
     super({failOnce});
@@ -123,7 +132,7 @@ class DomReporter extends Reporter {
             value.className = 'value';
             value.appendChild(document.createTextNode(formatValue(expected)));
             type.className = 'type';
-            type.appendChild(document.createTextNode('- (' + typeof expected + ')'));
+            type.appendChild(document.createTextNode('- (' + getType(expected) + ')'));
             row.appendChild(name);
             row.appendChild(value);
             row.appendChild(type);
@@ -141,7 +150,7 @@ class DomReporter extends Reporter {
             value.className = 'value';
             value.appendChild(document.createTextNode(formatValue(actual)));
             type.className = 'type';
-            type.appendChild(document.createTextNode('- (' + typeof actual + ')'));
+            type.appendChild(document.createTextNode('- (' + getType(actual) + ')'));
             row.appendChild(name);
             row.appendChild(value);
             row.appendChild(type);
