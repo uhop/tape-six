@@ -10,7 +10,6 @@ import {
 } from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
-import State, {StopTest} from '../src/State.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/node/TestWorker.js';
