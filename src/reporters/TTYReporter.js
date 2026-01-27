@@ -151,7 +151,6 @@ export class TTYReporter extends Reporter {
       this.consoleWasUsed = this.overrideLastLine = false;
     }
     event = this.state?.preprocess(event) || event;
-    // this.out(JSON.stringify(event));
     let text;
     switch (event.type) {
       case 'test':
