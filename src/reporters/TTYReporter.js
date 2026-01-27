@@ -182,7 +182,7 @@ export class TTYReporter extends Reporter {
         break;
       case 'end':
         const theTest = this.onEnd(event);
-        if (theTest.name || theTest.test > 0) {
+        if (theTest && (theTest.name || theTest.test > 0)) {
           --this.visibleDepth;
           if (!this.failureOnly || theTest.failed) {
             let name = '';
