@@ -53,7 +53,7 @@ const config = () => {
     const arg = process.argv[i];
     if (arg == '-f' || arg == '--flags') {
       if (++i < process.argv.length) {
-        flags = process.argv[i];
+        flags += process.argv[i];
       }
       continue;
     }
@@ -102,25 +102,17 @@ const init = async () => {
   if (!currentReporter) {
     const reporterType = getReporterType(),
       reporterFile = reporters[reporterType] || reporters.tty,
-      CustomReporter = (await import('../src/' + reporterFile)).default,
+      CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
       customOptions =
         reporterType === 'tap' ? {useJson: true, hasColors: !options.monochrome} : options,
       customReporter = new CustomReporter(customOptions);
-    setReporter(customReporter.report.bind(customReporter));
+    setReporter(customReporter);
   }
 
   if (files.length) {
     files = await resolvePatterns(rootFolder, files);
   } else {
     files = await resolveTests(rootFolder, 'node');
-  }
-};
-
-const safeEmit = rootState => event => {
-  try {
-    rootState.emit(event);
-  } catch (error) {
-    if (!(error instanceof StopTest)) throw error;
   }
 };
 
@@ -133,25 +125,25 @@ const main = async () => {
     console.error('UNHANDLED ERROR:', origin, error)
   );
 
-  const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
-    worker = new TestWorker(safeEmit(rootState), parallel, options);
+  const reporter = getReporter(),
+    worker = new TestWorker(reporter, parallel, options);
 
-  rootState.emit({type: 'test', test: 0, time: rootState.timer.now()});
+  reporter.report({type: 'test', test: 0});
 
   await new Promise(resolve => {
     worker.done = () => resolve();
     worker.execute(files);
   });
 
-  rootState.emit({
+  const hasFailed = reporter.state && reporter.state.failed > 0;
+
+  reporter.report({
     type: 'end',
     test: 0,
-    time: rootState.timer.now(),
-    fail: rootState.failed > 0,
-    data: rootState
+    fail: hasFailed
   });
 
-  process.exit(rootState.failed > 0 ? 1 : 0);
+  process.exit(hasFailed ? 1 : 0);
 };
 
 main().catch(error => console.error('ERROR:', error));
