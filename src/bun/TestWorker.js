@@ -34,7 +34,7 @@ export default class TestWorker extends EventServer {
     worker.addEventListener('error', error => {
       this.report(id, {
         type: 'comment',
-        name: 'fail to load: ' + (error.message || 'Worker error`'),
+        name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
       });
       this.close(id);
@@ -42,7 +42,7 @@ export default class TestWorker extends EventServer {
     worker.addEventListener('messageerror', error => {
       this.report(id, {
         type: 'comment',
-        name: 'fail to load: ' + (error.message || 'Worker error`'),
+        name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
       });
       this.close(id);
