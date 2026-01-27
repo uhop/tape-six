@@ -128,7 +128,7 @@ export class TTYReporter extends Reporter {
     if (noIndent) {
       this.output.write(text + '\n');
     } else {
-      const indent = '  '.repeat(this.visibleDepth);
+      const indent = '  '.repeat(Math.max(0, this.visibleDepth));
       this.output.write(indent + text + '\n');
     }
     ++this.lines;
@@ -267,10 +267,9 @@ export class TTYReporter extends Reporter {
         }
         this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
         event.fail && event.at && (text += this.lowWhite(' - ' + event.at));
-        if (this.failureOnly && !lastTest.fail) {
-          lastTest.fail = true;
+        if (this.failureOnly) {
           --this.visibleDepth;
-          this.out(this.brightRed('✗ ' + (lastTest.name || 'anonymous test')));
+          this.out(this.brightRed('✗ ' + (this.state?.name || 'anonymous test')));
           ++this.visibleDepth;
         }
         this.out(text);
@@ -292,7 +291,7 @@ export class TTYReporter extends Reporter {
         const stack =
           actual?.type === 'Error' && typeof actual.stack == 'string'
             ? actual.stack
-            : event.marker.stack;
+            : event.marker?.stack;
         if (typeof stack == 'string') {
           this.out(this.lowWhite('  stack: |-'));
           stack.split('\n').forEach(line => this.out(this.lowWhite('    ' + line)));
