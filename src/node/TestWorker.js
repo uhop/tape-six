@@ -43,7 +43,6 @@ export default class TestWorker extends EventServer {
         name: String(error),
         test: 0,
         marker: new Error(),
-        time: 0,
         operator: 'error',
         fail: true,
         data: {
@@ -62,7 +61,6 @@ export default class TestWorker extends EventServer {
         name: String(error),
         test: 0,
         marker: new Error(),
-        time: 0,
         operator: 'error',
         fail: true,
         data: {

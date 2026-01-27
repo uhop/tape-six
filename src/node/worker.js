@@ -16,19 +16,18 @@ parentPort.on('message', async msg => {
     setReporter(new ProxyReporter({...msg.options, reportTo: reportToParent(msg.fileName)}));
     await import(msg.testName);
   } catch (error) {
-    parentPort.postMessage({type: 'test', test: 0, time: 0});
+    parentPort.postMessage({type: 'test', test: 0});
     parentPort.postMessage({type: 'comment', name: 'fail to load: ' + error.message, test: 0});
     parentPort.postMessage({
       name: String(error),
       test: 0,
       marker: new Error(),
-      time: 0,
       operator: 'error',
       fail: true,
       data: {
         actual: error
       }
     });
-    parentPort.postMessage({type: 'end', test: 0, time: 0, fail: true});
+    parentPort.postMessage({type: 'end', test: 0, fail: true});
   }
 });
