@@ -14,9 +14,9 @@ export default class EventServer {
     this.finalized = {};
   }
   report(id, event) {
-    if (this.finalized[id] === 1) return this.reporter(event);
+    if (this.finalized[id] === 1) return this.reporter.report(event);
     if (this.passThroughId === null) this.passThroughId = id;
-    if (this.passThroughId === id) return this.reporter(event);
+    if (this.passThroughId === id) return this.reporter.report(event);
     const events = this.backlog[id];
     if (Array.isArray(events)) {
       events.push(event);
@@ -38,7 +38,7 @@ export default class EventServer {
       Object.keys(this.closed).forEach(id => {
         const events = this.backlog[id];
         if (!events) return;
-        events.forEach(event => this.reporter(event));
+        events.forEach(event => this.reporter.report(event));
         delete this.backlog[id];
       });
       this.closed = {};
@@ -47,7 +47,7 @@ export default class EventServer {
         const id = (this.passThroughId = ids[0]),
           events = this.backlog[id];
         if (events) {
-          events.forEach(event => this.reporter(event));
+          events.forEach(event => this.reporter.report(event));
           delete this.backlog[id];
         }
       }
@@ -58,7 +58,7 @@ export default class EventServer {
       Object.keys(this.backlog).forEach(id => {
         this.finalized[id] = 1;
         const events = this.backlog[id];
-        events.forEach(event => this.reporter(event));
+        events.forEach(event => this.reporter.report(event));
       });
       this.closed = {};
       this.backlog = {};
