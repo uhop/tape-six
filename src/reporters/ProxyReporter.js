@@ -18,7 +18,7 @@ export class ProxyReporter extends Reporter {
   }
   report(event) {
     event = this.state?.preprocess(event) || event;
-    switch(event.type) {
+    switch (event.type) {
       case 'test':
         event = this.onTest(event);
         break;

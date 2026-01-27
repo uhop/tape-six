@@ -142,7 +142,6 @@ const main = async () => {
     fail: hasFailed
   });
 
-
   Deno.exit(hasFailed ? 1 : 0);
 };
 

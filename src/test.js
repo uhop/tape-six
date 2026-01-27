@@ -113,8 +113,7 @@ export const runTests = async tests => {
             if (timedOut) {
               tester.reporter.report({
                 type: 'comment',
-                name:
-                  'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
+                name: 'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
                 test: testNumber,
                 time: tester.timer.now()
               });

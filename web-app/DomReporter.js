@@ -123,7 +123,7 @@ class DomReporter extends Reporter {
             value.className = 'value';
             value.appendChild(document.createTextNode(formatValue(expected)));
             type.className = 'type';
-            type.appendChild(document.createTextNode('- (' + (typeof expected) + ')'));
+            type.appendChild(document.createTextNode('- (' + typeof expected + ')'));
             row.appendChild(name);
             row.appendChild(value);
             row.appendChild(type);
@@ -141,7 +141,7 @@ class DomReporter extends Reporter {
             value.className = 'value';
             value.appendChild(document.createTextNode(formatValue(actual)));
             type.className = 'type';
-            type.appendChild(document.createTextNode('- (' + (typeof actual) + ')'));
+            type.appendChild(document.createTextNode('- (' + typeof actual + ')'));
             row.appendChild(name);
             row.appendChild(value);
             row.appendChild(type);

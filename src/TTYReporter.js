@@ -151,7 +151,13 @@ export class TTYReporter {
     let text;
     switch (event.type) {
       case 'test':
-        this.state = new State(this.state, {name: event.name, test: event.test, skip: event.data?.skip, todo: event.data?.todo, failOnce: this.failureOnly});
+        this.state = new State(this.state, {
+          name: event.name,
+          test: event.test,
+          skip: event.data?.skip,
+          todo: event.data?.todo,
+          failOnce: this.failureOnly
+        });
         if (event.name || event.test > 0) {
           if (!this.failureOnly) {
             if (event.test) {
@@ -355,9 +361,7 @@ export class TTYReporter {
         ...box1,
         '',
         'Passed: ' +
-          (state.failed
-            ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%'
-            : '100%')
+          (state.failed ? formatNumber((total > 0 ? success / total : 1) * 100, 1) + '%' : '100%')
       ],
       ' ',
       'center'

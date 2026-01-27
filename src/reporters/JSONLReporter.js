@@ -26,7 +26,7 @@ export class JSONLReporter extends Reporter {
     if (event.type === 'assert' && this.renumberAsserts) {
       event = {...event, id: ++this.assertCounter};
     }
-    switch(event.type) {
+    switch (event.type) {
       case 'test':
         event = this.onTest(event);
         break;
