@@ -1,7 +1,7 @@
 import {pathToFileURL} from 'node:url';
 import {sep} from 'node:path';
 
-import {StopTest} from '../State.js';
+import {isStopTest} from '../State.js';
 import EventServer from '../utils/EventServer.js';
 
 const srcName = new URL('../', import.meta.url),
@@ -26,7 +26,7 @@ export default class TestWorker extends EventServer {
       try {
         this.report(id, msg);
       } catch (error) {
-        if (!(error instanceof StopTest)) throw error;
+        if (!isStopTest(error)) throw error;
       }
       if (msg.type === 'end' && msg.test === 0) {
         this.close(id);

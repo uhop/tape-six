@@ -1,5 +1,5 @@
 import {selectTimer} from './utils/timer.js';
-import {StopTest} from './State.js';
+import {isStopTest} from './State.js';
 import getDeferred from './utils/getDeferred.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
@@ -126,7 +126,7 @@ export const runTests = async tests => {
         }
       }
     } catch (error) {
-      if (error instanceof StopTest) {
+      if (isStopTest(error)) {
         tester.reporter.report({
           type: 'comment',
           name: 'Stop tests: ' + String(error),
