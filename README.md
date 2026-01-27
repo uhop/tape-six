@@ -380,6 +380,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.5.0 _Internal refactoring (moved state to reporters), added type identification of values in the DOM and TTY reporters, multiple minor fixes._
 - 1.4.5 _Internal: added flags support for custom test runners._
 - 1.4.4 _Refreshed the lock file._
 - 1.4.3 _Updated dev dependencies + a minor bugfix._
