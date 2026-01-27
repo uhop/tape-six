@@ -1,3 +1,4 @@
+import Reporter from '../src/reporters/Reporter.js';
 import {signature} from '../src/State.js';
 
 const formatValue = value => {
@@ -9,8 +10,9 @@ const formatValue = value => {
   return JSON.stringify(value);
 };
 
-class DomReporter {
-  constructor({root, renumberAsserts = false} = {}) {
+class DomReporter extends Reporter {
+  constructor({root, failOnce = false, renumberAsserts = false} = {}) {
+    super({failOnce});
     this.root = root;
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
@@ -18,9 +20,12 @@ class DomReporter {
     this.current = null; // the current test node
   }
   report(event) {
+    event = this.state?.preprocess(event) || event;
     let text;
     switch (event.type) {
       case 'test':
+        event = this.onTest(event);
+        if (!event.name && !event.test) break;
         this.stack.push(this.current);
         this.current = document.createElement('div');
         this.current.className = 'test running';
@@ -42,11 +47,16 @@ class DomReporter {
         );
         break;
       case 'end':
+        const theState = this.onEnd(event);
+        if (!theState.name && !theState.test) break;
         if (this.current) {
           this.current.classList.remove('running');
           this.current.classList.add(event.fail ? 'failed' : 'passed');
         }
         this.current = this.stack.pop();
+        break;
+      case 'terminated':
+        this.onTerminated(event);
         break;
       case 'comment':
         {
@@ -59,7 +69,6 @@ class DomReporter {
       case 'bail-out':
         text = 'Bail out!';
         event.name && (text += ' ' + event.name);
-        this.write(text, 'bail-out');
         {
           const bailOut = document.createElement('div');
           bailOut.className = 'bail-out';
@@ -168,6 +177,7 @@ class DomReporter {
         }
         break;
     }
+    this.state?.postprocess(event);
   }
 }
 

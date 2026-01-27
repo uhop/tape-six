@@ -1,9 +1,10 @@
 import {selectTimer} from '../src/utils/timer.js';
 import {getReporter, setReporter, setConfiguredFlag} from '../src/test.js';
 import defer from '../src/utils/defer.js';
-import State, {StopTest} from '../src/State.js';
-import TapReporter from '../src/TapReporter.js';
-import JSONLReporter from '../src/JSONLReporter.js';
+import {isStopTest} from '../src/State.js';
+import TapReporter from '../src/reporters/TapReporter.js';
+import JSONLReporter from '../src/reporters/JSONLReporter.js';
+import ProxyReporter from '../src/reporters/ProxyReporter.js';
 import DomReporter from './DomReporter.js';
 import DashReporter from './DashReporter.js';
 import TestWorker from './TestWorker.js';
@@ -30,7 +31,7 @@ let flags = '',
 
 if (window.location.search) {
   const searchParams = new URLSearchParams(window.location.search.substring(1));
-  flags = searchParams.get('flags') || '';
+  flags = searchParams.getAll('flags').join('') || '';
   parallel = searchParams.get('par') || '';
   if (parallel && !isNaN(parallel)) {
     parallel = +parallel;
@@ -74,23 +75,33 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  const dashReporter = new DashReporter(),
-    domReporter = new DomReporter({root: document.querySelector('.tape6 .report')});
+  const dashReporter = new DashReporter(options),
+    domReporter = new DomReporter({...options, root: document.querySelector('.tape6 .report')});
 
   let textReporter = null;
   if (options.showLog) {
     textReporter = options.useJsonL
-      ? new JSONLReporter()
-      : new TapReporter({useJson: true, hasColors: !options.monochrome});
+      ? new JSONLReporter(options)
+      : new TapReporter({...options, useJson: true, hasColors: !options.monochrome});
   }
 
-  setReporter(
-    event => (
-      textReporter && textReporter.report(event),
-      domReporter.report(event),
-      dashReporter.report(event)
-    )
-  );
+  const reportTo = event => {
+    if (textReporter) {
+      try {
+        textReporter.report(event);
+      } catch (error) {
+        if (!isStopTest(error)) throw error;
+      }
+    }
+    try {
+      dashReporter.report(event);
+    } catch (error) {
+      if (!isStopTest(error)) throw error;
+    }
+    domReporter.report(event);
+  };
+
+  setReporter(new ProxyReporter({...options, reportTo}));
 
   const donut = document.querySelector('tape6-donut');
   donut.show([{value: 0, className: 'nothing'}], {
@@ -101,14 +112,6 @@ window.addEventListener('DOMContentLoaded', () => {
     startAngle: Math.PI / 2,
     emptyClass: 'nothing'
   });
-
-  const safeEmit = rootState => event => {
-    try {
-      rootState.emit(event);
-    } catch (error) {
-      if (!(error instanceof StopTest)) throw error;
-    }
-  };
 
   defer(async () => {
     await selectTimer();
@@ -137,16 +140,31 @@ window.addEventListener('DOMContentLoaded', () => {
     );
     if (importmap) options.importmap = importmap;
 
-    const rootState = new State(null, {callback: getReporter(), failOnce: options.failOnce}),
-      worker = new TestWorker(safeEmit(rootState), parallel, options);
+    const reporter = getReporter(),
+      worker = new TestWorker(reporter, parallel, options);
+
+    reporter.report({
+      type: 'test',
+      test: 0,
+      name: ''
+    });
 
     await new Promise(resolve => {
       worker.done = () => resolve();
       worker.execute(files);
     });
 
+    const runHasFailed = reporter.state && reporter.state.failed > 0;
+
+    reporter.report({
+      type: 'end',
+      test: 0,
+      name: '',
+      fail: runHasFailed
+    });
+
     if (typeof window.__tape6_reportResults == 'function') {
-      await window.__tape6_reportResults(rootState.failed > 0 ? 'failure' : 'success');
+      await window.__tape6_reportResults(runHasFailed ? 'failure' : 'success');
     }
   });
 });

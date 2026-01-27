@@ -1,3 +1,4 @@
+import Reporter from '../src/reporters/Reporter.js';
 import {formatNumber} from '../src/utils/formatters.js';
 
 const tagsToReplace = {'&': '&amp;', '<': '&lt;', '>': '&gt;'};
@@ -12,8 +13,9 @@ const formatName = event =>
   escapeHtml(event.name || '') +
   '</span>';
 
-class DashReporter {
-  constructor({renumberAsserts = false} = {}) {
+export class DashReporter extends Reporter {
+  constructor({failOnce = false, renumberAsserts = false} = {}) {
+    super({failOnce});
     this.renumberAsserts = renumberAsserts;
     this.assertCounter = 0;
     this.depth = this.assertCounter = this.failureCounter = this.skipCounter = this.todoCounter = 0;
@@ -26,18 +28,25 @@ class DashReporter {
     this.running = true;
   }
   report(event) {
+    event = this.state?.preprocess(event) || event;
     switch (event.type) {
       case 'test':
-        ++this.depth;
-        ++this.testCounter;
+        event = this.onTest(event);
+        if (event.name || event.test > 0) {
+          ++this.testCounter;
+        }
         this.currentTest = formatName(event);
         this.updateDashboard();
         break;
       case 'end':
-        if (!--this.depth) {
+        this.onEnd(event);
+        if (!this.state) {
           this.running = false;
           this.updateDashboard();
         }
+        break;
+      case 'terminated':
+        this.onTerminated(event);
         break;
       case 'assert':
         ++this.assertCounter;
@@ -48,6 +57,7 @@ class DashReporter {
         this.updateDashboard();
         break;
     }
+    this.state?.postprocess(event);
   }
   updateDashboard() {
     this.updateDonut();

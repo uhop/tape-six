@@ -9,10 +9,29 @@ export default class TestWorker extends EventServer {
 
     window.__tape6_reporter = (id, event) => {
       this.report(id, event);
-      if (event.type === 'end' && event.test === 0) this.close(id);
+      if ((event.type === 'end' && event.test === 0) || event.type === 'terminated') {
+        this.close(id);
+      }
     };
     window.__tape6_error = (id, error) => {
-      error && this.report(id, {type: 'comment', name: 'fail to load: ' + error.message, test: 0});
+      if (error) {
+        this.report(id, {
+          type: 'comment',
+          name: 'fail to load: ' + (error.message || 'Worker error'),
+          test: 0
+        });
+        this.report(id, {
+          name: String(error),
+          test: 0,
+          marker: new Error(),
+          time: 0,
+          operator: 'error',
+          fail: true,
+          data: {
+            actual: error
+          }
+        });
+      }
       this.close(id);
     };
   }
