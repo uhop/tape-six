@@ -10,6 +10,7 @@ import {
   getConfiguredFlag,
   registerNotifyCallback
 } from './src/test.js';
+import {selectTimer} from './src/utils/timer.js';
 import defer from './src/utils/defer.js';
 import TapReporter from './src/reporters/TapReporter.js';
 
@@ -137,6 +138,7 @@ const init = async () => {
 let settings = null;
 
 const testCallback = async () => {
+  await selectTimer();
   if (!settings) settings = await init();
 
   const {reporter, testFileName} = settings;
