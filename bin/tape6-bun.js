@@ -51,7 +51,7 @@ const config = () => {
     const arg = Bun.argv[i];
     if (arg == '-f' || arg == '--flags') {
       if (++i < Bun.argv.length) {
-        flags = Bun.argv[i];
+        flags += Bun.argv[i];
       }
       continue;
     }
