@@ -36,16 +36,38 @@ export default class TestWorker extends EventServer {
     worker.on('error', error => {
       this.report(id, {
         type: 'comment',
-        name: 'fail to load: ' + (error.message || 'Worker error`'),
+        name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
+      });
+      this.report(id, {
+        name: String(error),
+        test: 0,
+        marker: new Error(),
+        time: 0,
+        operator: 'error',
+        fail: true,
+        data: {
+          actual: error
+        }
       });
       this.close(id);
     });
     worker.on('messageerror', error => {
       this.report(id, {
         type: 'comment',
-        name: 'fail to load: ' + (error.message || 'Worker error`'),
+        name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
+      });
+      this.report(id, {
+        name: String(error),
+        test: 0,
+        marker: new Error(),
+        time: 0,
+        operator: 'error',
+        fail: true,
+        data: {
+          actual: error
+        }
       });
       this.close(id);
     });
