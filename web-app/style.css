@@ -97,6 +97,14 @@ body.tape6 {
   font-style: italic;
 }
 
+.tape6 .bail-out {
+  color: yellow;
+  background-color: darkred;
+  font-weight: bold;
+  padding: 0.2em 0.4em;
+  border-radius: 0.2em;
+}
+
 .tape6 iframe.test-iframe {
   width: 1px;
   height: 1px;
