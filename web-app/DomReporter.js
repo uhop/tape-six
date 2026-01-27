@@ -115,28 +115,36 @@ class DomReporter extends Reporter {
           if (event.hasOwnProperty('expected')) {
             const row = document.createElement('div'),
               name = document.createElement('span'),
-              value = document.createElement('code');
+              value = document.createElement('code'),
+              type = document.createElement('code');
             row.className = 'data';
             name.className = 'name';
             name.appendChild(document.createTextNode('expected:'));
             value.className = 'value';
             value.appendChild(document.createTextNode(formatValue(expected)));
+            type.className = 'type';
+            type.appendChild(document.createTextNode('- (' + (typeof expected) + ')'));
             row.appendChild(name);
             row.appendChild(value);
+            row.appendChild(type);
             assert.appendChild(row);
           }
           const actual = event.actual && JSON.parse(event.actual);
           if (event.hasOwnProperty('actual')) {
             const row = document.createElement('div'),
               name = document.createElement('span'),
-              value = document.createElement('code');
+              value = document.createElement('code'),
+              type = document.createElement('code');
             row.className = 'data';
             name.className = 'name';
             name.appendChild(document.createTextNode('actual:'));
             value.className = 'value';
             value.appendChild(document.createTextNode(formatValue(actual)));
+            type.className = 'type';
+            type.appendChild(document.createTextNode('- (' + (typeof actual) + ')'));
             row.appendChild(name);
             row.appendChild(value);
+            row.appendChild(type);
             assert.appendChild(row);
           }
           if (event.at) {

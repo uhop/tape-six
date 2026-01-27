@@ -237,3 +237,12 @@ tape6-spinner {
   margin-top: 0;
   margin-left: 1em;
 }
+
+.tape6 .report .assert .data .value::before,
+.tape6 .report .assert .data .type::before {
+  content: ' ';
+}
+
+.tape6 .report .assert .data .type {
+  color: darkgray;
+}
