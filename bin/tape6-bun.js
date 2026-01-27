@@ -114,14 +114,6 @@ const init = async () => {
   }
 };
 
-const safeEmit = rootState => event => {
-  try {
-    rootState.emit(event);
-  } catch (error) {
-    if (!(error instanceof StopTest)) throw error;
-  }
-};
-
 const main = async () => {
   config();
   await init();
