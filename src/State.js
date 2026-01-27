@@ -4,6 +4,8 @@ export class StopTest extends Error {}
 
 export const signature = 'tape6-!@#$%^&*';
 
+export const isStopTest = error => error instanceof StopTest || error[signature] === signature;
+
 const replacer =
   (seen = new Set()) =>
   (_, value) => {
@@ -152,12 +154,17 @@ export class State {
   postprocess(event) {
     switch (event.type) {
       case 'assert':
-        if (event.stopTest && event.operator !== 'exception')
-          throw new StopTest('failOnce is activated');
+        if (event.stopTest && event.operator !== 'exception') {
+          const stopTest = new StopTest('failOnce is activated');
+          stopTest[signature] = signature;
+          throw stopTest;
+        }
         this.time = this.timer.now();
         break;
       case 'bail-out':
-        throw new StopTest('bailOut is activated');
+        const stopTest = new StopTest('bailOut is activated');
+        stopTest[signature] = signature;
+        throw stopTest;
     }
   }
 
