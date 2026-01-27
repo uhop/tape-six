@@ -38,7 +38,7 @@ export class Reporter {
     while (this.state) {
       const theState = this.state;
       this.state = this.state.parent;
-      this[reportingMethod]({type: 'end', test: theState.test, name: theState.name});
+      reportingMethod && this[reportingMethod]({type: 'end', test: theState.test, name: theState.name});
       if (theState.test === event.test && theState.name === event.name) break;
     }
   }

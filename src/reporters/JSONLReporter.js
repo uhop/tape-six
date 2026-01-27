@@ -33,6 +33,9 @@ export class JSONLReporter extends Reporter {
       case 'end':
         this.onEnd(event);
         break;
+      case 'terminated':
+        this.onTerminated(event, '');
+        break;
     }
     const jsonEvent = JSON.stringify(event);
     this.console.log(this.prefix ? this.prefix + jsonEvent : jsonEvent);
