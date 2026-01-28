@@ -29,9 +29,13 @@ export default class EventServer {
     this.finalized[id] = 1;
     --this.totalTasks;
     if (this.fileQueue.length) {
-      ++this.totalTasks;
-      const nextFile = this.fileQueue.shift();
-      defer(() => this.makeTask(nextFile));
+      if (this.reporter.state?.stopTest) {
+        this.fileQueue = [];
+      } else {
+        ++this.totalTasks;
+        const nextFile = this.fileQueue.shift();
+        defer(() => this.makeTask(nextFile));
+      }
     }
     if (this.passThroughId === id) {
       this.passThroughId = null;
@@ -66,6 +70,7 @@ export default class EventServer {
     }
   }
   createTask(fileName) {
+    if (this.reporter.state?.stopTest) return;
     if (this.totalTasks < this.numberOfTasks) {
       ++this.totalTasks;
       this.makeTask(fileName);
