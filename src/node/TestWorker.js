@@ -39,16 +39,20 @@ export default class TestWorker extends EventServer {
         name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
       });
-      this.report(id, {
-        name: String(error),
-        test: 0,
-        marker: new Error(),
-        operator: 'error',
-        fail: true,
-        data: {
-          actual: error
-        }
-      });
+      try {
+        this.report(id, {
+          name: String(error),
+          test: 0,
+          marker: new Error(),
+          operator: 'error',
+          fail: true,
+          data: {
+            actual: error
+          }
+        });
+      } catch (error) {
+        if (!isStopTest(error)) throw error;
+      }
       this.close(id);
     });
     worker.on('messageerror', error => {
@@ -57,16 +61,20 @@ export default class TestWorker extends EventServer {
         name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
       });
-      this.report(id, {
-        name: String(error),
-        test: 0,
-        marker: new Error(),
-        operator: 'error',
-        fail: true,
-        data: {
-          actual: error
-        }
-      });
+      try {
+        this.report(id, {
+          name: String(error),
+          test: 0,
+          marker: new Error(),
+          operator: 'error',
+          fail: true,
+          data: {
+            actual: error
+          }
+        });
+      } catch (error) {
+        if (!isStopTest(error)) throw error;
+      }
       this.close(id);
     });
     worker.postMessage({
