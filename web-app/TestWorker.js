@@ -1,4 +1,5 @@
 import EventServer from '../src/utils/EventServer.js';
+import {isStopTest} from '../src/State.js';
 
 export default class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks, options) {
@@ -20,16 +21,20 @@ export default class TestWorker extends EventServer {
           name: 'fail to load: ' + (error.message || 'Worker error'),
           test: 0
         });
-        this.report(id, {
-          name: String(error),
-          test: 0,
-          marker: new Error(),
-          operator: 'error',
-          fail: true,
-          data: {
-            actual: error
-          }
-        });
+        try {
+          this.report(id, {
+            name: String(error),
+            test: 0,
+            marker: new Error(),
+            operator: 'error',
+            fail: true,
+            data: {
+              actual: error
+            }
+          });
+        } catch (error) {
+          if (!isStopTest(error)) throw error;
+        }
       }
       this.close(id);
     };
