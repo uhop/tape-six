@@ -156,6 +156,7 @@ export const runTests = async tests => {
           });
       }
     }
+    await tester.dispose();
     tester.reporter.report({
       type: 'end',
       name: options.name,
@@ -201,7 +202,9 @@ Tester.prototype.test = async function test(name, options, testFn) {
   if (this.reporter.state?.skip) {
     this.comment('SKIP test: ' + options.name);
   } else {
-    await runTests([{options}]);
+    const promise = runTests([{options}]);
+    this.embeddedTests.push(promise);
+    return promise;
   }
 };
 
@@ -216,7 +219,9 @@ Tester.prototype.todo = async function todo(name, options, testFn) {
     this.comment('SKIP test: ' + options.name);
     return;
   }
-  await runTests([{options: {...options, todo: true}}]);
+  const promise = runTests([{options: {...options, todo: true}}]);
+  this.embeddedTests.push(promise);
+  return promise;
 };
 
 Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
@@ -232,7 +237,9 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
         }
       });
   }
-  await runTests([{options}]);
+  const promise = runTests([{options}]);
+  this.embeddedTests.push(promise);
+  return promise;
 };
 
 export default test;

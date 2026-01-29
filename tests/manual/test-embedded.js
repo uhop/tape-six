@@ -19,3 +19,27 @@ test('Natural embedded (outer)', async t => {
   });
   t.pass('Outer pass #2');
 });
+
+test('Embedded tests (waiting)', async t => {
+  t.pass('before');
+  await t.test('Embedded #1', async t => {
+    t.pass('Embedded #1 before pass');
+    await t.test('Embedded #2', t => {
+      t.pass('Embedded #2 pass');
+    });
+    t.pass('Embedded #1 after pass');
+  });
+  t.pass('after');
+});
+
+test('Embedded tests (no waiting)', t => {
+  t.pass('before');
+  t.test('Embedded #1', t => {
+    t.pass('Embedded #1 before pass');
+    t.test('Embedded #2', t => {
+      t.pass('Embedded #2 pass');
+    });
+    t.pass('Embedded #1 after pass');
+  });
+  t.pass('after');
+});
