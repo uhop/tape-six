@@ -117,6 +117,7 @@ export const runTests = async tests => {
                 test: testNumber,
                 time: tester.timer.now()
               });
+              tester.reporter.abort();
               await result;
             }
           }

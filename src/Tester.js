@@ -17,6 +17,10 @@ export class Tester {
     this.timer = reporter.timer || getTimer();
   }
 
+  get signal() {
+    return this.reporter.signal;
+  }
+
   plan(_n) {
     // nothing to do
   }

@@ -9,6 +9,14 @@ export class Reporter {
     this.timer = timer || getTimer();
   }
 
+  get signal() {
+    return this.state?.signal;
+  }
+
+  abort() {
+    this.state?.abort();
+  }
+
   onTest(event) {
     this.state = new State(this.state, {
       name: event.name,
@@ -31,6 +39,7 @@ export class Reporter {
     if (theState) {
       theState.updateParent();
       this.state = theState.parent;
+      theState.dispose();
       --this.depth;
     }
     return theState;
@@ -42,8 +51,7 @@ export class Reporter {
       if (reportingMethod) {
         this[reportingMethod]({type: 'end', test: theState.test, name: theState.name});
       } else {
-        theState.updateParent();
-        this.state = theState.parent;
+        this.onEnd();
       }
       if (theState.test === event.test && theState.name === event.name) break;
     }

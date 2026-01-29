@@ -72,6 +72,20 @@ export class State {
     this.stopTest = false;
     this.timer = timer || parent.timer || getTimer();
     this.startTime = this.time = time || this.timer.now();
+    this.abortController = new AbortController();
+  }
+
+  get signal() {
+    return this.abortController.signal;
+  }
+
+  abort() {
+    if (this.abortController.signal.aborted) return;
+    this.abortController.abort();
+  }
+
+  dispose() {
+    this.abort();
   }
 
   updateParent() {
