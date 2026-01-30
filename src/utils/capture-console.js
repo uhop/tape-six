@@ -9,11 +9,16 @@ export const captureConsole = () => {
     get(target, property, receiver) {
       const prop = Reflect.get(target, property, receiver);
       if (typeof prop === 'function') {
-        if (consoleVerbs[property] === 1) {
-          const type = 'console-' + property;
+        if (property === 'assert') {
+          return (assertion, ...args) => {
+            if (assertion) return;
+            const reporter = getReporter();
+            reporter.report({type: 'console', name: format(...args), data: {method: property}});
+          };
+        } else if (consoleVerbs[property] === 1) {
           return (...args) => {
             const reporter = getReporter();
-            reporter.report({type, name: format(...args)});
+            reporter.report({type: 'console', name: format(...args), data: {method: property}});
           };
         }
       }

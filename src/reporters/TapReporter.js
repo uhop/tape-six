@@ -87,15 +87,25 @@ export class TapReporter extends Reporter {
         this.open();
         this.write('# ' + event.name);
         break;
-      case 'console-log':
-      case 'console-info':
-      case 'console-warn':
+      case 'console':
         this.open();
-        this.write('# ' + /\-(\w+)$/.exec(event.type)[1] + ': ' + event.name, 'stdout');
-        break;
-      case 'console-error':
-        this.open();
-        this.write('# error: ' + event.name, 'stderr');
+        switch (event.data?.method) {
+          case 'log':
+            this.write('# log: ' + event.name, 'stdout');
+            break;
+          case 'info':
+            this.write('# info: ' + event.name, 'stdout');
+            break;
+          case 'warn':
+            this.write('# warn: ' + event.name, 'stdout');
+            break;
+          case 'error':
+            this.write('# error: ' + event.name, 'stderr');
+            break;
+          case 'assert':
+            this.write('# assert: ' + event.name, 'stdout');
+            break;
+        }
         break;
       case 'stdout':
         this.open();

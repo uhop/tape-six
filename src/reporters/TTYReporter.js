@@ -22,7 +22,8 @@ const consoleDict = {
   log: 'log',
   info: 'inf',
   warn: 'wrn',
-  error: 'err'
+  error: 'err',
+  assert: 'srt'
 };
 
 const getType = value => {
@@ -206,24 +207,17 @@ export class TTYReporter extends Reporter {
       case 'comment':
         !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
         break;
-      case 'console-log':
-      case 'console-info':
-      case 'console-warn':
-        if (!this.failureOnly && !this.hideStreams) {
-          const lines = event.name.split(/\r?\n/),
-            type = /\-(\w+)$/.exec(event.type)[1],
-            prefix = this.stdoutPaint(consoleDict[type] + ':') + ' ';
-          for (const line of lines) {
-            this.out(prefix + line);
-          }
-        }
-        break;
-      case 'console-error':
-        if (!this.hideStreams) {
-          const lines = event.name.split(/\r?\n/),
-            prefix = this.stderrPaint(consoleDict.error + ':') + ' ';
-          for (const line of lines) {
-            this.out(prefix + line);
+      case 'console':
+        {
+          const method = event.data?.method,
+            isShown = method === 'error' || method === 'assert' || !this.failureOnly;
+          if (isShown && !this.hideStreams) {
+            const lines = event.name.split(/\r?\n/),
+              paint = method === 'error' || method === 'assert' ? 'stderrPaint' : 'stdoutPaint',
+              prefix = this[paint](consoleDict[method] + ':') + ' ';
+            for (const line of lines) {
+              this.out(prefix + line);
+            }
           }
         }
         break;

@@ -72,10 +72,7 @@ export class Reporter {
     terminated: 'onTerminated',
     assert: 'onAssert',
     comment: 'onComment',
-    'console-log': 'onConsoleLog',
-    'console-info': 'onConsoleInfo',
-    'console-warn': 'onConsoleWarn',
-    'console-error': 'onConsoleError',
+    console: 'onConsole',
     stdout: 'onStdout',
     stderr: 'onStderr',
     bailOut: 'onBailOut'
