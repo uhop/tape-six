@@ -25,6 +25,11 @@ export const registerNotifyCallback = callback => {
   }
 };
 
+const testers = [];
+
+export const getTesters = () => testers;
+export const getTester = () => (testers.length ? testers[testers.length - 1] : null);
+
 const processArgs = (name, options, testFn) => {
   // normalize arguments
   if (typeof name == 'function') {
@@ -61,6 +66,11 @@ const processArgs = (name, options, testFn) => {
 
 let isTimerSet = false;
 export const test = async (name, options, testFn) => {
+  const currentTester = getTester();
+  if (currentTester) {
+    return currentTester.test(name, options, testFn);
+  }
+
   options = processArgs(name, options, testFn);
   if (!isTimerSet) {
     await selectTimer();
@@ -93,6 +103,7 @@ export const runTests = async tests => {
       deferred && deferred.resolve(tester.state);
       return;
     }
+    testers.push(tester);
     try {
       tester.reporter.report({
         type: 'test',
@@ -157,6 +168,7 @@ export const runTests = async tests => {
       }
     }
     await tester.dispose();
+    testers.pop();
     tester.reporter.report({
       type: 'end',
       name: options.name,
@@ -170,16 +182,28 @@ export const runTests = async tests => {
 };
 
 test.skip = function skip(name, options, testFn) {
+  const currentTester = getTester();
+  if (currentTester) {
+    return currentTester.skip(name, options, testFn);
+  }
   options = processArgs(name, options, testFn);
   return test({...options, skip: true});
 };
 
 test.todo = function todo(name, options, testFn) {
+  const currentTester = getTester();
+  if (currentTester) {
+    return currentTester.todo(name, options, testFn);
+  }
   options = processArgs(name, options, testFn);
   return test({...options, todo: true});
 };
 
 test.asPromise = function asPromise(name, options, testFn) {
+  const currentTester = getTester();
+  if (currentTester) {
+    return currentTester.asPromise(name, options, testFn);
+  }
   options = processArgs(name, options, testFn);
   if (options.testFn) {
     const testFn = options.testFn;

@@ -11,11 +11,26 @@ test('Simple smoke test', async t => {
   t.fail('fail after');
 });
 
-test('Natural embedded (outer)', async t => {
+test('Natural embedded (outer with waiting)', async t => {
   t.pass('Outer pass #1');
-  await t.test('Natural embedded (inner)', t => {
-    // should be `await test(...);
+  await test('Natural embedded (inner)', async t => {
     t.pass('Inner pass #1');
+    await test('Natural embedded (inner-inner)', t => {
+      t.pass('Inner-inner pass #1');
+    });
+    t.pass('Inner pass #2');
+  });
+  t.pass('Outer pass #2');
+});
+
+test('Natural embedded (outer with no waiting)', t => {
+  t.pass('Outer pass #1');
+  test('Natural embedded (inner)', t => {
+    t.pass('Inner pass #1');
+    test('Natural embedded (inner-inner)', t => {
+      t.pass('Inner-inner pass #1');
+    });
+    t.pass('Inner pass #2');
   });
   t.pass('Outer pass #2');
 });
