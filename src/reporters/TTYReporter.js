@@ -251,56 +251,107 @@ export class TTYReporter extends Reporter {
         }
         break;
       case 'assert':
-        const isFailed = event.fail && !event.skip && !event.todo;
-        isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
-        event.skip && ++this.skippedAsserts;
-        event.todo && ++this.todoAsserts;
-        if (!isFailed && this.failureOnly) break;
-        text = event.fail ? '✗' : '✓';
-        if (this.showAssertNumber) {
-          text += ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
-        }
-        if (event.skip) {
-          text += ' SKIP';
-        } else if (event.todo) {
-          text += ' ' + this.brightYellow('TODO');
-        }
-        event.name && (text += ' ' + event.name);
-        if (event.skip) {
-          text = this.blue(text);
-        } else {
-          text = isFailed ? this.red(text) : this.green(text);
-        }
-        this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
-        event.fail && event.at && (text += this.lowWhite(' - ' + event.at));
-        if (this.failureOnly) {
-          --this.visibleDepth;
-          this.out(this.brightRed('✗ ' + (this.state?.name || 'anonymous test')));
-          ++this.visibleDepth;
-        }
-        this.out(text);
+        {
+          const isFailed = event.fail && !event.skip && !event.todo,
+            nameLines = event.name ? event.name.split(/\r?\n/g) : [];
+          isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
+          event.skip && ++this.skippedAsserts;
+          event.todo && ++this.todoAsserts;
+          if (!isFailed && this.failureOnly) break;
+          text = event.fail ? '✗' : '✓';
+          if (this.showAssertNumber) {
+            text += ' ' + (this.renumberAsserts ? ++this.assertCounter : event.id);
+          }
+          if (event.skip) {
+            text += ' SKIP';
+          } else if (event.todo) {
+            text += ' ' + this.brightYellow('TODO');
+          }
+          nameLines[0] && (text += ' ' + nameLines[0]);
+          if (event.skip) {
+            text = this.blue(text);
+          } else {
+            text = isFailed ? this.red(text) : this.green(text);
+          }
+          this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
+          event.fail && event.at && (text += this.lowWhite(' - ' + event.at));
+          if (this.failureOnly) {
+            --this.visibleDepth;
+            this.out(this.brightRed('✗ ' + (this.state?.name || 'anonymous test')));
+            ++this.visibleDepth;
+          }
+          this.out(text);
 
-        if (!event.fail || event.skip || !this.showData) break;
+          if (!event.fail || event.skip || !this.showData) break;
 
-        this.out(this.lowWhite('  operator: ') + event.operator);
+          this.out(this.lowWhite('  operator: ') + event.operator);
 
-        const expected = event.expected && JSON.parse(event.expected);
-        if (event.hasOwnProperty('expected')) {
-          this.out(this.lowWhite('  expected: ') + this.formatValue(expected));
-        }
+          if (nameLines.length > 1) {
+            this.out(
+              this.lowWhite(
+                '  message:  |-' + (event.generatedMessage ? ' ' + this.italic('(generated)') : '')
+              )
+            );
+            nameLines.forEach(line => this.out('    ' + line));
+          }
 
-        const actual = event.actual && JSON.parse(event.actual);
-        if (event.hasOwnProperty('actual')) {
-          this.out(this.lowWhite('  actual:   ') + this.formatValue(actual));
-        }
+          const expected = event.expected && JSON.parse(event.expected);
+          if (event.hasOwnProperty('expected')) {
+            this.out(this.lowWhite('  expected: ') + this.formatValue(expected));
+          }
 
-        const stack =
-          actual?.type === 'Error' && typeof actual.stack == 'string'
-            ? actual.stack
-            : event.marker?.stack;
-        if (typeof stack == 'string') {
+          const actual = event.actual && JSON.parse(event.actual);
+          if (event.hasOwnProperty('actual')) {
+            this.out(this.lowWhite('  actual:   ') + this.formatValue(actual));
+          }
+
           this.out(this.lowWhite('  stack: |-'));
-          stack.split('\n').forEach(line => this.out(this.lowWhite('    ' + line)));
+          event.stackList.forEach(line => this.out(this.lowWhite('    at ' + line)));
+        }
+        break;
+      case 'assert-error':
+        {
+          const isFailed = event.fail,
+            nameLines = event.name ? event.name.split(/\r?\n/g) : [];
+          isFailed ? ++this.failedAsserts : ++this.successfulAsserts;
+          if (!isFailed && this.failureOnly) break;
+          text = event.fail ? '✗' : '✓';
+          nameLines[0] && (text += ' ' + nameLines[0]);
+          text = isFailed ? this.red(text) : this.green(text);
+          this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
+          event.fail && event.at && (text += this.lowWhite(' - ' + event.at));
+          if (this.failureOnly) {
+            --this.visibleDepth;
+            this.out(this.brightRed('✗ ' + (this.state?.name || 'anonymous test')));
+            ++this.visibleDepth;
+          }
+          this.out(text);
+
+          if (!event.fail || !this.showData) break;
+
+          this.out(this.lowWhite('  operator: ') + event.operator);
+
+          if (nameLines.length > 1) {
+            this.out(
+              this.lowWhite(
+                '  message:  |-' + (event.generatedMessage ? ' ' + this.italic('(generated)') : '')
+              )
+            );
+            nameLines.forEach(line => this.out('    ' + line));
+          }
+
+          const expected = event.expected && JSON.parse(event.expected);
+          if (event.hasOwnProperty('expected')) {
+            this.out(this.lowWhite('  expected: ') + this.formatValue(expected));
+          }
+
+          const actual = event.actual && JSON.parse(event.actual);
+          if (event.hasOwnProperty('actual')) {
+            this.out(this.lowWhite('  actual:   ') + this.formatValue(actual));
+          }
+
+          this.out(this.lowWhite('  stack: |-'));
+          event.stackList.forEach(line => this.out(this.lowWhite('    at ' + line)));
         }
         break;
     }
