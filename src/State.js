@@ -6,6 +6,22 @@ export const signature = 'tape6-!@#$%^&*';
 
 export const isStopTest = error => error instanceof StopTest || error[signature] === signature;
 
+export const isAssertError = error =>
+  error.name === 'AssertionError' &&
+  error.code === 'ERR_ASSERTION' &&
+  typeof error.message == 'string' &&
+  typeof error.operator == 'string' &&
+  typeof error.generatedMessage == 'boolean';
+
+export const getStackList = error => {
+  const stackList = [];
+  for (const line of error.stack.split('\n')) {
+    const result = /^\s+at\s+(.*)$/.exec(line);
+    if (result) stackList.push(result[1].trimEnd());
+  }
+  return stackList;
+};
+
 const replacer =
   (seen = new Set()) =>
   (_, value) => {
@@ -121,20 +137,29 @@ export class State {
     if (
       event.type === 'assert' &&
       (event.operator === 'error' || event.operator === 'exception') &&
-      event.data &&
-      event.data.actual &&
-      typeof event.data.actual.stack == 'string'
+      typeof event.data?.actual?.stack == 'string'
     ) {
-      const lines = event.data.actual.stack.split('\n');
-      event.at = lines[Math.min(2, lines.length) - 1].trim().replace(/^at\s+/i, '');
+      event.stackList = getStackList(event.data.actual);
+      event.at = event.stackList[0];
     }
 
-    if (!event.at && event.marker && typeof event.marker.stack == 'string') {
-      const lines = event.marker.stack.split('\n');
-      event.at = lines[Math.min(3, lines.length) - 1].trim().replace(/^at\s+/i, '');
+    if (event.type === 'assert-error' && typeof event.data?.error?.stack == 'string') {
+      event.stackList = getStackList(event.data.error);
+      event.at = event.stackList[0];
     }
 
-    if (event.type === 'assert' && event.data) {
+    if (!event.at && typeof event.marker?.stack == 'string') {
+      event.stackList = getStackList(event.marker);
+      event.at =
+        event.stackList[
+          Math.min(
+            typeof event.markerIndex == 'number' ? event.markerIndex : 1,
+            event.stackList.length
+          )
+        ];
+    }
+
+    if ((event.type === 'assert' || event.type === 'assert-error') && event.data) {
       if (typeof event.expected != 'string' && event.data.hasOwnProperty('expected')) {
         event.expected = serialize(event.data.expected);
       }
@@ -143,6 +168,10 @@ export class State {
         event.actual = serialize(event.data.actual);
       }
       if (typeof event.actual == 'string') delete event.data.actual;
+      if (typeof event.error != 'string' && event.data.hasOwnProperty('error')) {
+        event.error = serialize(event.data.error);
+      }
+      if (typeof event.error == 'string') delete event.data.error;
     }
 
     switch (event.type) {
