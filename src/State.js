@@ -1,17 +1,33 @@
 import {getTimer} from './utils/timer.js';
 
-export class StopTest extends Error {}
-
 export const signature = 'tape6-!@#$%^&*';
 
-export const isStopTest = error => error instanceof StopTest || error[signature] === signature;
+export class StopTest extends Error {
+  constructor(...args) {
+    super(...args);
+
+    if (Error.captureStackTrace) Error.captureStackTrace(this, CustomError);
+
+    this.name = 'StopTest';
+    if (!this.message) this.message = 'Test stopped';
+    this[signature] = signature;
+  }
+}
+
+export const isStopTest = error =>
+  error instanceof StopTest ||
+  (error &&
+    typeof error == 'object' &&
+    error[signature] === signature &&
+    error.name === 'StopTest' &&
+    typeof error.message == 'string');
 
 export const isAssertError = error =>
+  error &&
+  typeof error == 'object' &&
   error.name === 'AssertionError' &&
-  error.code === 'ERR_ASSERTION' &&
   typeof error.message == 'string' &&
-  typeof error.operator == 'string' &&
-  typeof error.generatedMessage == 'boolean';
+  typeof error.operator == 'string';
 
 export const getStackList = error => {
   const stackList = [];
