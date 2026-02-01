@@ -124,7 +124,7 @@ export class State {
 
     const isFailed = event.fail && !event.todo && !event.skip;
 
-    if (event.type === 'assert') {
+    if (event.type === 'assert' || event.type === 'assert-error') {
       ++this.asserts;
       event.skip && ++this.skipped;
       isFailed && ++this.failed;
