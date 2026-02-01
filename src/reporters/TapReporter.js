@@ -85,35 +85,54 @@ export class TapReporter extends Reporter {
         break;
       case 'comment':
         this.open();
-        this.write('# ' + event.name);
+        {
+          const message = event.name || 'empty comment';
+          for (const line of message.split(/\r?\n/)) {
+            this.write('# ' + line);
+          }
+        }
         break;
       case 'console':
         this.open();
         switch (event.data?.method) {
           case 'log':
-            this.write('# log: ' + event.name, 'stdout');
+            for (const line of event.name.split(/\r?\n/)) {
+              this.write('# log: ' + line, 'stdout');
+            }
             break;
           case 'info':
-            this.write('# info: ' + event.name, 'stdout');
+            for (const line of event.name.split(/\r?\n/)) {
+              this.write('# info: ' + line, 'stdout');
+            }
             break;
           case 'warn':
-            this.write('# warn: ' + event.name, 'stdout');
+            for (const line of event.name.split(/\r?\n/)) {
+              this.write('# warn: ' + line, 'stdout');
+            }
             break;
           case 'error':
-            this.write('# error: ' + event.name, 'stderr');
+            for (const line of event.name.split(/\r?\n/)) {
+              this.write('# error: ' + line, 'stderr');
+            }
             break;
           case 'assert':
-            this.write('# assert: ' + event.name, 'stdout');
+            for (const line of event.name.split(/\r?\n/)) {
+              this.write('# assert: ' + line, 'stdout');
+            }
             break;
         }
         break;
       case 'stdout':
         this.open();
-        this.write('# stdout: ' + event.name, 'stdout');
+        for (const line of event.name.split(/\r?\n/)) {
+          this.write('# stdout: ' + line, 'stdout');
+        }
         break;
       case 'stderr':
         this.open();
-        this.write('# stderr: ' + event.name, 'stderr');
+        for (const line of event.name.split(/\r?\n/)) {
+          this.write('# stderr: ' + line, 'stderr');
+        }
         break;
       case 'bail-out':
         this.open();
@@ -122,55 +141,54 @@ export class TapReporter extends Reporter {
         this.write(text, 'bail-out');
         break;
       case 'assert':
+      case 'assert-error':
         this.open();
-        text =
-          (event.fail ? 'not ok' : 'ok') +
-          ' ' +
-          (this.renumberAsserts ? ++this.assertCounter : event.id);
-        if (event.skip) {
-          text += ' # SKIP';
-        } else if (event.todo) {
-          text += ' # TODO';
-        }
-        event.name && (text += ' ' + event.name);
-        text += ' # time=' + event.diffTime.toFixed(3) + 'ms';
-        this.write(text, event.fail ? 'failure' : 'success');
-        if (event.fail) {
-          this.write('  ---', 'yaml');
-          if (this.useJson) {
-            this.write('  operator: ' + event.operator, 'yaml');
-            if (event.hasOwnProperty('expected')) {
-              this.write('  expected: ' + formatValue(event.expected), 'yaml');
-            }
-            if (event.hasOwnProperty('actual')) {
-              this.write('  actual:   ' + formatValue(event.actual), 'yaml');
-            }
-            event.at && this.write('  at: ' + event.at, 'yaml');
-          } else {
-            yamlFormatter({operator: event.operator}, formatterOptions).forEach(line =>
-              this.write(line, 'yaml')
-            );
-            yamlFormatter(
-              {
-                expected: event.expected && JSON.parse(event.expected),
-                actual: event.actual && JSON.parse(event.actual)
-              },
-              formatterOptions
-            ).forEach(line => this.write(line, 'yaml'));
-            yamlFormatter({at: event.at}, formatterOptions).forEach(line =>
-              this.write(line, 'yaml')
-            );
+        {
+          const nameLines = event.name ? event.name.split(/\r?\n/g) : [];
+          text =
+            (event.fail ? 'not ok' : 'ok') +
+            ' ' +
+            (this.renumberAsserts ? ++this.assertCounter : event.id);
+          if (event.skip) {
+            text += ' # SKIP';
+          } else if (event.todo) {
+            text += ' # TODO';
           }
-          const actual = event.actual && JSON.parse(event.actual),
-            stack =
-              actual?.type === 'Error' && typeof actual.stack == 'string'
-                ? actual.stack
-                : event.marker.stack;
-          if (typeof stack == 'string') {
+          nameLines[0] && (text += ' ' + nameLines[0]);
+          text += ' # time=' + event.diffTime.toFixed(3) + 'ms';
+          this.write(text, event.fail ? 'failure' : 'success');
+          if (event.fail) {
+            this.write('  ---', 'yaml');
+            if (this.useJson) {
+              this.write('  operator: ' + event.operator, 'yaml');
+              this.write('  message:  ' + formatValue(nameLines), 'yaml');
+              if (event.hasOwnProperty('expected')) {
+                this.write('  expected: ' + formatValue(event.expected), 'yaml');
+              }
+              if (event.hasOwnProperty('actual')) {
+                this.write('  actual:   ' + formatValue(event.actual), 'yaml');
+              }
+              event.at && this.write('  at: ' + event.at, 'yaml');
+            } else {
+              yamlFormatter(
+                {operator: event.operator, message: nameLines},
+                formatterOptions
+              ).forEach(line => this.write(line, 'yaml'));
+              yamlFormatter(
+                {
+                  expected: event.expected && JSON.parse(event.expected),
+                  actual: event.actual && JSON.parse(event.actual)
+                },
+                formatterOptions
+              ).forEach(line => this.write(line, 'yaml'));
+              yamlFormatter({at: event.at}, formatterOptions).forEach(line =>
+                this.write(line, 'yaml')
+              );
+            }
             this.write('  stack: |-', 'yaml');
-            stack.split('\n').forEach(line => this.write('    ' + line, 'yaml'));
+            event.stackList.forEach(line => this.write('    at ' + line, 'yaml'));
+            this.write('  ...', 'yaml');
           }
-          this.write('  ...', 'yaml');
         }
         break;
     }
