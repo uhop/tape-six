@@ -74,7 +74,8 @@
     "importmap": {
       "imports": {
         "tape-six": "../index.js",
-        "tape-six/": "../src/"
+        "tape-six/": "../src/",
+        "chai": "../node_modules/chai/index.js"
       }
     }
   },
