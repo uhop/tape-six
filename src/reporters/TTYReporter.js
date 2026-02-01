@@ -205,7 +205,12 @@ export class TTYReporter extends Reporter {
         this.onTerminated(event, 'reportInternal');
         break;
       case 'comment':
-        !this.failureOnly && this.out(this.blue(this.italic(event.name || 'empty comment')));
+        if (!this.failureOnly) {
+          const message = event.name || 'empty comment';
+          for (const line of message.split(/\r?\n/)) {
+            this.out(this.blue(this.italic(line)));
+          }
+        }
         break;
       case 'console':
         {
