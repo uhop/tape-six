@@ -95,6 +95,25 @@ export const clearTests = () => (tests = []);
 export const getReporter = () => reporter;
 export const setReporter = newReporter => (reporter = newReporter);
 
+const hooks = {
+  beforeAll: [],
+  afterAll: [],
+  beforeEach: [],
+  afterEach: []
+};
+
+export const getBeforeAll = () => hooks.beforeAll;
+export const clearBeforeAll = () => (hooks.beforeAll = []);
+
+export const getAfterAll = () => hooks.afterAll;
+export const clearAfterAll = () => (hooks.afterAll = []);
+
+export const getBeforeEach = () => hooks.beforeEach;
+export const clearBeforeEach = () => (hooks.beforeEach = []);
+
+export const getAfterEach = () => hooks.afterEach;
+export const clearAfterEach = () => (hooks.afterEach = []);
+
 export const runTests = async tests => {
   const reporter = getReporter();
   for (let i = 0; i < tests.length; ++i) {
@@ -286,4 +305,29 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
   return promise;
 };
 
+// before/after hooks
+
+const addToHook = name => fn => {
+  if (testers.length) {
+    const tester = testers[testers.length - 1];
+    if (tester.state) {
+      tester.state[name].push(fn);
+      return;
+    }
+  }
+  hooks[name].push(fn);
+};
+
+export const beforeAll = addToHook('beforeAll');
+export const afterAll = addToHook('afterAll');
+
+export const beforeEach = addToHook('beforeEach');
+export const afterEach = addToHook('afterEach');
+
+test.before = test.beforeAll = beforeAll;
+test.after = test.afterAll = afterAll;
+test.beforeEach = beforeEach;
+test.afterEach = afterEach;
+
+export {beforeAll as before, afterAll as after};
 export default test;
