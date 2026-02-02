@@ -22,7 +22,7 @@ export const isStopTest = error =>
     error.name === 'StopTest' &&
     typeof error.message == 'string');
 
-export const isAssertError = error =>
+export const isAssertionError = error =>
   error &&
   typeof error == 'object' &&
   error.name === 'AssertionError' &&
@@ -140,7 +140,7 @@ export class State {
 
     const isFailed = event.fail && !event.todo && !event.skip;
 
-    if (event.type === 'assert' || event.type === 'assert-error') {
+    if (event.type === 'assert' || event.type === 'assertion-error') {
       ++this.asserts;
       event.skip && ++this.skipped;
       isFailed && ++this.failed;
@@ -159,7 +159,7 @@ export class State {
       event.at = event.stackList[0];
     }
 
-    if (event.type === 'assert-error' && typeof event.data?.error?.stack == 'string') {
+    if (event.type === 'assertion-error' && typeof event.data?.error?.stack == 'string') {
       event.stackList = getStackList(event.data.error);
       event.at = event.stackList[0];
     }
@@ -175,7 +175,7 @@ export class State {
         ];
     }
 
-    if ((event.type === 'assert' || event.type === 'assert-error') && event.data) {
+    if ((event.type === 'assert' || event.type === 'assertion-error') && event.data) {
       if (typeof event.expected != 'string' && event.data.hasOwnProperty('expected')) {
         event.expected = serialize(event.data.expected);
       }

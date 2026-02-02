@@ -1,5 +1,5 @@
 import {selectTimer} from './utils/timer.js';
-import {isAssertError, isStopTest} from './State.js';
+import {isAssertionError, isStopTest} from './State.js';
 import getDeferred from './utils/getDeferred.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
@@ -145,9 +145,9 @@ export const runTests = async tests => {
           marker: new Error(),
           time: tester.timer.now()
         });
-      } else if (isAssertError(error)) {
+      } else if (isAssertionError(error)) {
         tester.reporter.report({
-          type: 'assert-error',
+          type: 'assertion-error',
           name: String(error),
           test: testNumber,
           marker: new Error(),

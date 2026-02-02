@@ -256,7 +256,7 @@ export class TTYReporter extends Reporter {
         }
         break;
       case 'assert':
-      case 'assert-error':
+      case 'assertion-error':
         {
           const isFailed = event.fail && !event.skip && !event.todo,
             nameLines = event.name ? event.name.split(/\r?\n/g) : [];

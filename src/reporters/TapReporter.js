@@ -141,7 +141,7 @@ export class TapReporter extends Reporter {
         this.write(text, 'bail-out');
         break;
       case 'assert':
-      case 'assert-error':
+      case 'assertion-error':
         this.open();
         {
           const nameLines = event.name ? event.name.split(/\r?\n/g) : [];

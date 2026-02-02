@@ -71,7 +71,7 @@ export class Reporter {
     end: 'onEnd',
     terminated: 'onTerminated',
     assert: 'onAssert',
-    assertError: 'onAssertError',
+    'assertion-error': 'onAssertionError',
     comment: 'onComment',
     console: 'onConsole',
     stdout: 'onStdout',
