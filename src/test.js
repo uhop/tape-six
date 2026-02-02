@@ -32,18 +32,19 @@ export const getTester = () => (testers.length ? testers[testers.length - 1] : n
 
 const processArgs = (name, options, testFn) => {
   // normalize arguments
-  if (typeof name == 'function') {
-    testFn = name;
-    options = null;
-    name = '';
-  } else if (typeof name == 'object') {
-    testFn = options;
-    options = name;
-    name = null;
+  if (typeof name == 'string') {
+    // nothing
+  } else if (typeof options == 'string') {
+    [name, options] = [options, name];
+  } else if (typeof testFn == 'string') {
+    [name, testFn] = [testFn, name];
+  } else {
+    [name, options, testFn] = [null, name, options];
   }
-  if (typeof options == 'function') {
-    testFn = options;
-    options = null;
+  if (typeof options == 'object') {
+    // nothing
+  } else {
+    [options, testFn] = [testFn, options];
   }
 
   // normalize options
@@ -51,7 +52,7 @@ const processArgs = (name, options, testFn) => {
   if (name && typeof name == 'string') {
     options.name = name;
   }
-  if (testFn && typeof testFn == 'function') {
+  if (typeof testFn == 'function') {
     options.testFn = testFn;
   }
   if (!options.name && typeof options.testFn == 'function' && options.testFn.name) {
@@ -59,6 +60,9 @@ const processArgs = (name, options, testFn) => {
   }
   if (!options.name) {
     options.name = '(anonymous)';
+  }
+  if (typeof options.testFn != 'function') {
+    options.testFn = null;
   }
 
   return options;
