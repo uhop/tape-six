@@ -105,6 +105,11 @@ export class State {
     this.timer = timer || parent.timer || getTimer();
     this.startTime = this.time = time || this.timer.now();
     this.abortController = new AbortController();
+
+    this.beforeAll = [];
+    this.afterAll = [];
+    this.beforeEach = [];
+    this.afterEach = [];
   }
 
   get signal() {
@@ -125,6 +130,32 @@ export class State {
     this.parent.asserts += this.asserts;
     this.parent.skipped += this.skipped;
     this.parent.failed += this.failed;
+  }
+
+  async runBeforeAll() {
+    for (const fn of this.beforeAll) {
+      await fn();
+    }
+    // beforeAll hooks run only once
+    this.beforeAll = [];
+  }
+
+  async runAfterAll() {
+    for (let i = this.afterAll.length - 1; i >= 0; --i) {
+      await this.afterAll[i]();
+    }
+  }
+
+  async runBeforeEach() {
+    for (const fn of this.beforeEach) {
+      await fn();
+    }
+  }
+
+  async runAfterEach() {
+    for (let i = this.afterEach.length - 1; i >= 0; --i) {
+      await this.afterEach[i]();
+    }
   }
 
   preprocess(event) {
