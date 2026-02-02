@@ -380,6 +380,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.6.0 _New features: support for `AssertionError` and 3rd-party assertion libraries based on it like `node:assert` and `chai`, support for `console.assert()`, support for `signal` to cancel asynchronous operations, tests wait for embedded tests, improved reporting of errors, updated dev dependencies._
 - 1.5.1 _Better support for stopping parallel tests, better support for "failed to load" errors._
 - 1.5.0 _Internal refactoring (moved state to reporters), added type identification of values in the DOM and TTY reporters, multiple minor fixes._
 - 1.4.5 _Internal: added flags support for custom test runners._
