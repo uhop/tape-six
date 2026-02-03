@@ -73,115 +73,254 @@ export declare interface Tester {
    * Creates a new embedded test with the given name and function.
    * @param name - The name of the test
    * @param fn - The test function
+   * @param options - The test options
    */
-  test(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  test(name: string, fn: (t: Tester) => void | Promise<void>, options?: TestOptions): Promise<void>;
 
   /**
-   * Creates a new embedded test with the given function.
-   * @param fn - The test function
-   */
-  test(fn: (t: Tester) => void | Promise<void>): Promise<void>;
-
-  /**
-   * Creates a new embedded test with the given options.
-   */
-  test(options: TestOptions): Promise<void>;
-
-  /**
-   * Creates a new embedded test with the given options and function.
+   * Creates a new embedded test with the given name and function.
+   * @param name - The name of the test
    * @param options - The test options
    * @param fn - The test function
    */
-  test(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  test(
+    name: string,
+    options?: TestOptions,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
+   */
+  test(fn: (t: Tester) => void | Promise<void>, options: TestOptions, name?: string): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  test(fn: (t: Tester) => void | Promise<void>, name: string, options?: TestOptions): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * @param options - The test options
+   * @param fn - The test function
+   * @param name - The name of the test
+   */
+  test(options: TestOptions, fn: (t: Tester) => void | Promise<void>, name?: string): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * @param options - The test options
+   * @param name - The name of the test
+   * @param fn - The test function
+   */
+  test(
+    options: TestOptions,
+    name?: string,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
    * @param name - The name of the test
    * @param fn - The test function
+   * @param options - The test options
    */
-  skip(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  skip(name: string, fn: (t: Tester) => void | Promise<void>, options?: TestOptions): Promise<void>;
+
+  /**
+   * Skips the test. The test will not be run.
+   * @param name - The name of the test
+   * @param options - The test options
+   * @param fn - The test function
+   */
+  skip(
+    name: string,
+    options?: TestOptions,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
    * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
    */
-  skip(fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  skip(fn: (t: Tester) => void | Promise<void>, options: TestOptions, name: string): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
+   * @param fn - The test function
+   * @param name - The name of the test
    * @param options - The test options
    */
-  skip(options: TestOptions): Promise<void>;
+  skip(
+    fn: (t: Tester) => void | Promise<void>,
+    name?: string,
+    options?: TestOptions
+  ): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
    * @param options - The test options
    * @param fn - The test function
+   * @param name - The name of the test
    */
-  skip(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  skip(options: TestOptions, fn: (t: Tester) => void | Promise<void>, name?: string): Promise<void>;
+
+  /**
+   * Skips the test. The test will not be run.
+   * @param options - The test options
+   * @param name - The name of the test
+   * @param fn - The test function
+   */
+  skip(
+    options: TestOptions,
+    name?: string,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
 
   /**
    * Creates a new embedded test with the given name and function.
    * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
    * @param name - The name of the test
    * @param fn - The test function
-   */
-  todo(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
-
-  /**
-   * Creates a new embedded test with the given function.
-   * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
-   * @param fn - The test function
-   */
-  todo(fn: (t: Tester) => void | Promise<void>): Promise<void>;
-
-  /**
-   * Creates a new embedded test with the given options.
-   * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
    * @param options - The test options
    */
-  todo(options: TestOptions): Promise<void>;
+  todo(name: string, fn: (t: Tester) => void | Promise<void>, options?: TestOptions): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
+   * @param name - The name of the test
+   * @param options - The test options
+   * @param fn - The test function
+   */
+  todo(
+    name: string,
+    options?: TestOptions,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
+   * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
+   */
+  todo(fn: (t: Tester) => void | Promise<void>, options: TestOptions, name?: string): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  todo(
+    fn: (t: Tester) => void | Promise<void>,
+    name?: string,
+    options?: TestOptions
+  ): Promise<void>;
 
   /**
    * Creates a new embedded test with the given name and function.
    * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
    * @param options - The test options
    * @param fn - The test function
+   * @param name - The name of the test
    */
-  todo(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  todo(options: TestOptions, fn: (t: Tester) => void | Promise<void>, name?: string): Promise<void>;
+
+  /**
+   * Creates a new embedded test with the given name and function.
+   * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
+   * @param options - The test options
+   * @param name - The name of the test
+   * @param fn - The test function
+   */
+  todo(
+    options: TestOptions,
+    name?: string,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
 
   /**
    * Runs non-asynchronous callback-based test.
    * @param name - The name of the test
+   * @param fn - The test function
+   * @param options - The test options
+   */
+  asPromise(
+    name: string,
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    options?: TestOptions
+  ): Promise<void>;
+
+  /**
+   * Runs non-asynchronous callback-based test.
+   * @param name - The name of the test
+   * @param options - The test options
    * @param fn - The test function
    */
   asPromise(
     name: string,
-    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
+    options?: TestOptions,
+    fn?: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 
   /**
    * Runs non-asynchronous callback-based test.
    * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
    */
   asPromise(
-    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    options: TestOptions,
+    name?: string
+  ): Promise<void>;
+
+  /**
+   * Runs non-asynchronous callback-based test.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  asPromise(
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    name?: string,
+    options?: TestOptions
   ): Promise<void>;
 
   /**
    * Runs non-asynchronous callback-based test.
    * @param options - The test options
+   * @param fn - The test function
+   * @param name - The name of the test
    */
-  asPromise(options: TestOptions): Promise<void>;
+  asPromise(
+    options: TestOptions,
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    name?: string
+  ): Promise<void>;
 
   /**
    * Runs non-asynchronous callback-based test.
    * @param options - The test options
+   * @param name - The name of the test
    * @param fn - The test function
    */
   asPromise(
     options: TestOptions,
-    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
+    name?: string,
+    fn?: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 
   // asserts
