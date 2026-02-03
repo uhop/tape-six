@@ -101,7 +101,8 @@ const init = async () => {
       hasColors = !(
         options.monochrome ||
         Deno.env.get('NO_COLOR') ||
-        Deno.env.get('NODE_DISABLE_COLORS')
+        Deno.env.get('NODE_DISABLE_COLORS') ||
+        Deno.env.get('FORCE_COLOR') === '0'
       );
       if (Deno.env.get('TAPE6_JSONL')) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
@@ -111,7 +112,12 @@ const init = async () => {
         reporter = new TTYReporter({...options, originalConsole, hasColors});
       }
     } else if (isBun) {
-      hasColors = !(options.monochrome || Bun.env.NO_COLOR || Bun.env.NODE_DISABLE_COLORS);
+      hasColors = !(
+        options.monochrome ||
+        Bun.env.NO_COLOR ||
+        Bun.env.NODE_DISABLE_COLORS ||
+        Bun.env.FORCE_COLOR === '0'
+      );
       if (Bun.env.TAPE6_JSONL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
         reporter = new JSONLReporter({...options, originalConsole, hasColors});
@@ -120,7 +126,12 @@ const init = async () => {
         reporter = new TTYReporter({...options, originalConsole, hasColors});
       }
     } else if (isNode) {
-      hasColors = !(options.monochrome || process.env.NO_COLOR || process.env.NODE_DISABLE_COLORS);
+      hasColors = !(
+        options.monochrome ||
+        process.env.NO_COLOR ||
+        process.env.NODE_DISABLE_COLORS ||
+        process.env.FORCE_COLOR === '0'
+      );
       if (process.env.TAPE6_JSONL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
         reporter = new JSONLReporter({...options, originalConsole, hasColors});

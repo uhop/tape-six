@@ -101,7 +101,12 @@ const init = async () => {
     const reporterType = getReporterType(),
       reporterFile = reporters[reporterType] || reporters.tty,
       CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
-      hasColors = !(options.monochrome || Bun.env.NO_COLOR || Bun.env.NODE_DISABLE_COLORS),
+      hasColors = !(
+        options.monochrome ||
+        Bun.env.NO_COLOR ||
+        Bun.env.NODE_DISABLE_COLORS ||
+        Bun.env.FORCE_COLOR === '0'
+      ),
       customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...options, hasColors},
       customReporter = new CustomReporter(customOptions);
     setReporter(customReporter);

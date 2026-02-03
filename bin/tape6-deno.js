@@ -104,7 +104,8 @@ const init = async () => {
       hasColors = !(
         options.monochrome ||
         Deno.env.get('NO_COLOR') ||
-        Deno.env.get('NODE_DISABLE_COLORS')
+        Deno.env.get('NODE_DISABLE_COLORS') ||
+        Deno.env.get('FORCE_COLOR') === '0'
       ),
       customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...options, hasColors},
       customReporter = new CustomReporter(customOptions);
