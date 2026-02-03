@@ -10,9 +10,7 @@ export declare interface TestOptions {
   /**
    * The test function
    */
-  testFn?:
-    | ((t: Test) => void | Promise<void>)
-    | ((t: Test, resolve: () => void, reject: (error: unknown) => void) => void);
+  testFn?: (t: Tester) => void | Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
@@ -34,7 +32,7 @@ export declare interface TestOptions {
 /**
  * Test interface
  */
-export declare interface Test {
+export declare interface Tester {
   /**
    * A symbol that can be used to match any value.
    */
@@ -76,13 +74,13 @@ export declare interface Test {
    * @param name - The name of the test
    * @param fn - The test function
    */
-  test(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  test(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new embedded test with the given function.
    * @param fn - The test function
    */
-  test(fn: (t: Test) => void | Promise<void>): Promise<void>;
+  test(fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new embedded test with the given options.
@@ -94,20 +92,20 @@ export declare interface Test {
    * @param options - The test options
    * @param fn - The test function
    */
-  test(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  test(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
    * @param name - The name of the test
    * @param fn - The test function
    */
-  skip(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  skip(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
    * @param fn - The test function
    */
-  skip(fn: (t: Test) => void | Promise<void>): Promise<void>;
+  skip(fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Skips the test. The test will not be run.
@@ -120,7 +118,7 @@ export declare interface Test {
    * @param options - The test options
    * @param fn - The test function
    */
-  skip(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  skip(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new embedded test with the given name and function.
@@ -128,14 +126,14 @@ export declare interface Test {
    * @param name - The name of the test
    * @param fn - The test function
    */
-  todo(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  todo(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new embedded test with the given function.
    * It is a TODO test, which can fail or pass and does not count towards the test suite's result.
    * @param fn - The test function
    */
-  todo(fn: (t: Test) => void | Promise<void>): Promise<void>;
+  todo(fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new embedded test with the given options.
@@ -150,7 +148,7 @@ export declare interface Test {
    * @param options - The test options
    * @param fn - The test function
    */
-  todo(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  todo(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Runs non-asynchronous callback-based test.
@@ -159,7 +157,7 @@ export declare interface Test {
    */
   asPromise(
     name: string,
-    fn: (t: Test, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 
   /**
@@ -167,7 +165,7 @@ export declare interface Test {
    * @param fn - The test function
    */
   asPromise(
-    fn: (t: Test, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 
   /**
@@ -183,7 +181,7 @@ export declare interface Test {
    */
   asPromise(
     options: TestOptions,
-    fn: (t: Test, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 
   // asserts
@@ -651,12 +649,12 @@ export declare interface Test {
    * @param name - The name of the test
    * @param fn - The test function
    */
-  (name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  (name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test with the given function.
    * @param fn - The test function
    */
-  (fn: (t: Test) => void | Promise<void>): void;
+  (fn: (t: Tester) => void | Promise<void>): void;
   /**
    * Creates a new test with the given options.
    * @param options - The test options
@@ -667,19 +665,19 @@ export declare interface Test {
    * @param options - The test options
    * @param fn - The test function
    */
-  (options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  (options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be skipped.
    * @param name - The name of the test
    * @param fn - The test function
    */
-  skip(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  skip(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be skipped.
    * @param fn - The test function
    */
-  skip(fn: (t: Test) => void | Promise<void>): Promise<void>;
+  skip(fn: (t: Tester) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be skipped.
    * @param options - The test options
@@ -690,19 +688,19 @@ export declare interface Test {
    * @param options - The test options
    * @param fn - The test function
    */
-  skip(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  skip(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be TODO.
    * @param name - The name of the test
    * @param fn - The test function
    */
-  todo(name: string, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  todo(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be TODO.
    * @param fn - The test function
    */
-  todo(fn: (t: Test) => void | Promise<void>): Promise<void>;
+  todo(fn: (t: Tester) => void | Promise<void>): Promise<void>;
   /**
    * Creates a new test that will be TODO.
    * @param options - The test options
@@ -713,7 +711,7 @@ export declare interface Test {
    * @param options - The test options
    * @param fn - The test function
    */
-  todo(options: TestOptions, fn: (t: Test) => void | Promise<void>): Promise<void>;
+  todo(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be run as a promise.
@@ -723,7 +721,7 @@ export declare interface Test {
    */
   asPromise(
     name: string,
-    fn: (t: Test, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
@@ -731,7 +729,7 @@ export declare interface Test {
    * @param fn - The test function
    */
   asPromise(
-    fn: (t: Test, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
@@ -747,7 +745,7 @@ export declare interface Test {
    */
   asPromise(
     options: TestOptions,
-    fn: (t: Test, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 }
 
