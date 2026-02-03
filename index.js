@@ -67,6 +67,7 @@ const init = async () => {
 
   let reporter = getReporter();
   if (!reporter) {
+    let hasColors = !options.monochrome;
     if (isBrowser) {
       const id =
         window.__tape6_id || new URLSearchParams(window.location.search.substring(1)).get('id');
@@ -83,34 +84,41 @@ const init = async () => {
         reporter = new JSONLReporter({...options, originalConsole});
       }
     } else if (isDeno) {
+      hasColors = !(
+        options.monochrome ||
+        Deno.env.get('NO_COLOR') ||
+        Deno.env.get('NODE_DISABLE_COLORS')
+      );
       if (Deno.env.get('TAPE6_JSONL')) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
-        reporter = new JSONLReporter({...options, originalConsole});
+        reporter = new JSONLReporter({...options, originalConsole, hasColors});
       } else if (!Deno.env.get('TAPE6_TAP')) {
         const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
-        reporter = new TTYReporter({...options, originalConsole});
+        reporter = new TTYReporter({...options, originalConsole, hasColors});
       }
     } else if (isBun) {
+      hasColors = !(options.monochrome || Bun.env.NO_COLOR || Bun.env.NODE_DISABLE_COLORS);
       if (Bun.env.TAPE6_JSONL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
-        reporter = new JSONLReporter({...options, originalConsole});
+        reporter = new JSONLReporter({...options, originalConsole, hasColors});
       } else if (!Bun.env.TAPE6_TAP) {
         const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
-        reporter = new TTYReporter({...options, originalConsole});
+        reporter = new TTYReporter({...options, originalConsole, hasColors});
       }
     } else if (isNode) {
+      hasColors = !(options.monochrome || process.env.NO_COLOR || process.env.NODE_DISABLE_COLORS);
       if (process.env.TAPE6_JSONL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
-        reporter = new JSONLReporter({...options, originalConsole});
+        reporter = new JSONLReporter({...options, originalConsole, hasColors});
       } else if (!process.env.TAPE6_TAP) {
         const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
-        reporter = new TTYReporter({...options, originalConsole});
+        reporter = new TTYReporter({...options, originalConsole, hasColors});
       }
     }
     reporter ||= new TapReporter({
       useJson: true,
-      hasColors: !options.monochrome,
-      originalConsole
+      originalConsole,
+      hasColors
     });
     setReporter(reporter);
   }

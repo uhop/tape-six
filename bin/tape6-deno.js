@@ -101,8 +101,12 @@ const init = async () => {
     const reporterType = getReporterType(),
       reporterFile = reporters[reporterType] || reporters.tty,
       CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
-      customOptions =
-        reporterType === 'tap' ? {useJson: true, hasColors: !options.monochrome} : options,
+      hasColors = !(
+        options.monochrome ||
+        Deno.env.get('NO_COLOR') ||
+        Deno.env.get('NODE_DISABLE_COLORS')
+      ),
+      customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...options, hasColors},
       customReporter = new CustomReporter(customOptions);
     setReporter(customReporter);
   }
