@@ -116,10 +116,10 @@ export const clearAfterEach = () => (hooks.afterEach = []);
 
 export const runTests = async tests => {
   const reporter = getReporter();
-  if (reporter.state?.stopTest) return false;
-  await reporter.state?.runBeforeAll();
+  if (reporter.state.stopTest) return false;
+  await reporter.state.runBeforeAll();
   for (let i = 0; i < tests.length; ++i) {
-    if (reporter.state?.stopTest) return false;
+    if (reporter.state.stopTest) return false;
     const {options, deferred} = tests[i],
       testNumber = ++testCounter,
       tester = new Tester(testNumber, reporter);
@@ -130,7 +130,7 @@ export const runTests = async tests => {
     }
     testers.push(tester);
     try {
-      await reporter.state?.runBeforeEach();
+      await reporter.state.runBeforeEach();
       tester.reporter.report({
         type: 'test',
         name: options.name,
@@ -139,6 +139,13 @@ export const runTests = async tests => {
         todo: options.todo,
         time: tester.timer.now()
       });
+      if (typeof options.beforeAll == 'function') reporter.state.beforeAll.push(options.beforeAll);
+      if (typeof options.before == 'function') reporter.state.beforeAll.push(options.before);
+      if (typeof options.afterAll == 'function') reporter.state.afterAll.push(options.afterAll);
+      if (typeof options.after == 'function') reporter.state.afterAll.push(options.after);
+      if (typeof options.beforeEach == 'function')
+        reporter.state.beforeEach.push(options.beforeEach);
+      if (typeof options.afterEach == 'function') reporter.state.afterEach.push(options.afterEach);
       if (options.testFn) {
         if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
           const result = options.testFn(tester);
@@ -219,7 +226,7 @@ export const runTests = async tests => {
       time: tester.timer.now(),
       fail: tester.state && tester.state.failed > 0
     });
-    await reporter.state?.runAfterEach();
+    await reporter.state.runAfterEach();
     deferred && deferred.resolve(tester.state);
   }
   return true;
