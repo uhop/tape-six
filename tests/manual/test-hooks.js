@@ -13,13 +13,13 @@ test.afterEach(() => console.log('afterEach #2'));
 test('Hooks (outer)', async t => {
   t.pass();
   test.beforeAll(() => console.log('beforeAll (outer) #1'));
-  test.beforeAll(() => console.log('beforeAll (outer) #2'));
+  t.beforeAll(() => console.log('beforeAll (outer) #2'));
   test.afterAll(() => console.log('afterAll (outer) #1'));
-  test.afterAll(() => console.log('afterAll (outer) #2'));
+  t.afterAll(() => console.log('afterAll (outer) #2'));
   test.beforeEach(() => console.log('beforeEach (outer) #1'));
-  test.beforeEach(() => console.log('beforeEach (outer) #2'));
+  t.beforeEach(() => console.log('beforeEach (outer) #2'));
   test.afterEach(() => console.log('afterEach (outer) #1'));
-  test.afterEach(() => console.log('afterEach (outer) #2'));
+  t.afterEach(() => console.log('afterEach (outer) #2'));
   await t.test('Hooks (inner) #1', t => {
     t.pass();
   });

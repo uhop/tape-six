@@ -337,5 +337,15 @@ test.after = test.afterAll = afterAll;
 test.beforeEach = beforeEach;
 test.afterEach = afterEach;
 
+const addHookToTester = name =>
+  function (fn) {
+    this.state[name].push(fn);
+  };
+
+Tester.prototype.before = Tester.prototype.beforeAll = addHookToTester('beforeAll');
+Tester.prototype.after = Tester.prototype.afterAll = addHookToTester('afterAll');
+Tester.prototype.beforeEach = addHookToTester('beforeEach');
+Tester.prototype.afterEach = addHookToTester('afterEach');
+
 export {beforeAll as before, afterAll as after};
 export default test;
