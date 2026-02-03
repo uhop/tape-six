@@ -304,8 +304,9 @@ Tester.prototype.test = async function test(name, options, testFn) {
   if (this.state?.skip) {
     this.comment('SKIP test: ' + options.name);
   } else {
+    await this.lastEmbeddedTest;
     const promise = runTests([{options}]);
-    this.embeddedTests.push(promise);
+    this.lastEmbeddedTest = promise;
     return promise;
   }
 };
@@ -321,8 +322,9 @@ Tester.prototype.todo = async function todo(name, options, testFn) {
     this.comment('SKIP test: ' + options.name);
     return;
   }
+  await this.lastEmbeddedTest;
   const promise = runTests([{options: {...options, todo: true}}]);
-  this.embeddedTests.push(promise);
+  this.lastEmbeddedTest = promise;
   return promise;
 };
 
@@ -339,8 +341,9 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
         }
       });
   }
+  await this.lastEmbeddedTest;
   const promise = runTests([{options}]);
-  this.embeddedTests.push(promise);
+  this.lastEmbeddedTest = promise;
   return promise;
 };
 

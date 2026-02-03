@@ -15,12 +15,12 @@ export class Tester {
     this.testNumber = testNumber;
     this.reporter = reporter;
     this.timer = reporter.timer || getTimer();
-    this.embeddedTests = [];
+    this.lastEmbeddedTest = null;
   }
 
   async dispose() {
     this.reporter.abort();
-    await Promise.allSettled(this.embeddedTests);
+    await this.lastEmbeddedTest;
   }
 
   get signal() {
