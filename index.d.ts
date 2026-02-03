@@ -27,6 +27,36 @@ export declare interface TestOptions {
    * If not specified, no timeout is used for the test.
    */
   timeout?: number;
+
+  /**
+   * A function that will be called before all 1st-level embedded tests in the test/suite.
+   */
+  beforeAll?: () => void | Promise<void>;
+
+  /**
+   * A function that will be called after all 1st-level embedded tests in the test/suite.
+   */
+  afterAll?: () => void | Promise<void>;
+
+  /**
+   * A function that will be called before each 1st-level embedded test in the test/suite.
+   */
+  beforeEach?: () => void | Promise<void>;
+
+  /**
+   * A function that will be called after each 1st-level embedded test in the test/suite.
+   */
+  afterEach?: () => void | Promise<void>;
+
+  /**
+   * A function that will be called before all 1st-level embedded tests in the test/suite. An alias for `beforeAll`.
+   */
+  before?: () => void | Promise<void>;
+
+  /**
+   * A function that will be called after all 1st-level embedded tests in the test/suite. An alias for `afterAll`.
+   */
+  after?: () => void | Promise<void>;
 }
 
 /**
@@ -42,6 +72,11 @@ export declare interface Tester {
    * A symbol that can be used to match any value. An alias of `any`.
    */
   _: Symbol;
+
+  /**
+   * A signal that can be used to abort asynchronous operations. It is triggered when the test is ended.
+   */
+  signal: AbortSignal;
 
   /**
    * Plans the number of assertions that will be run. Unused.
