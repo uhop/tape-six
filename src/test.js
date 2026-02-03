@@ -114,44 +114,10 @@ export const clearBeforeEach = () => (hooks.beforeEach = []);
 export const getAfterEach = () => hooks.afterEach;
 export const clearAfterEach = () => (hooks.afterEach = []);
 
-const runBeforeAll = async () => {
-  if (reporter.state) {
-    await reporter.state.runBeforeAll();
-  } else {
-    const beforeAll = hooks.beforeAll;
-    hooks.beforeAll = [];
-    for (const hook of beforeAll) {
-      await hook();
-    }
-  }
-};
-
-const runBeforeEach = async () => {
-  if (reporter.state) {
-    await reporter.state.runBeforeEach();
-  } else {
-    const beforeEach = [...hooks.beforeEach];
-    for (const hook of beforeEach) {
-      await hook();
-    }
-  }
-};
-
-const runAfterEach = async () => {
-  if (reporter.state) {
-    await reporter.state.runAfterEach();
-  } else {
-    const afterEach = hooks.afterEach.toReversed();
-    for (const hook of afterEach) {
-      await hook();
-    }
-  }
-};
-
 export const runTests = async tests => {
   const reporter = getReporter();
   if (reporter.state?.stopTest) return false;
-  await runBeforeAll();
+  await reporter.state?.runBeforeAll();
   for (let i = 0; i < tests.length; ++i) {
     if (reporter.state?.stopTest) return false;
     const {options, deferred} = tests[i],
@@ -164,7 +130,7 @@ export const runTests = async tests => {
     }
     testers.push(tester);
     try {
-      await runBeforeEach();
+      await reporter.state?.runBeforeEach();
       tester.reporter.report({
         type: 'test',
         name: options.name,
@@ -253,7 +219,7 @@ export const runTests = async tests => {
       time: tester.timer.now(),
       fail: tester.state && tester.state.failed > 0
     });
-    await runAfterEach();
+    await reporter.state?.runAfterEach();
     deferred && deferred.resolve(tester.state);
   }
   return true;
