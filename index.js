@@ -8,7 +8,21 @@ import {
   setReporter,
   runTests,
   getConfiguredFlag,
-  registerNotifyCallback
+  registerNotifyCallback,
+  before,
+  after,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+  getBeforeAll,
+  clearBeforeAll,
+  getAfterAll,
+  clearAfterAll,
+  getBeforeEach,
+  clearBeforeEach,
+  getAfterEach,
+  clearAfterEach
 } from './src/test.js';
 import {selectTimer} from './src/utils/timer.js';
 import defer from './src/utils/defer.js';
@@ -157,6 +171,18 @@ const testCallback = async () => {
     name: testFileName ? 'FILE: /' + testFileName : ''
   });
 
+  reporter.state.beforeAll = getBeforeAll();
+  clearBeforeAll();
+  reporter.state.afterAll = getAfterAll();
+  clearAfterAll();
+  reporter.state.beforeEach = getBeforeEach();
+  clearBeforeEach();
+  reporter.state.afterEach = getAfterEach();
+  clearAfterEach();
+  reporter.state.isBeforeAllUsed = false;
+
+  const currentState = reporter.state;
+
   for (;;) {
     const tests = getTests();
     if (!tests.length) break;
@@ -165,6 +191,8 @@ const testCallback = async () => {
     if (!canContinue) break;
     await new Promise(resolve => defer(resolve));
   }
+
+  await currentState?.runAfterAll();
 
   const runHasFailed = reporter.state && reporter.state.failed > 0;
 
@@ -193,5 +221,5 @@ if (!getConfiguredFlag()) {
   registerNotifyCallback(testCallback);
 }
 
-export {test};
+export {test, before, after, beforeAll, afterAll, beforeEach, afterEach};
 export default test;

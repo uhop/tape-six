@@ -114,8 +114,44 @@ export const clearBeforeEach = () => (hooks.beforeEach = []);
 export const getAfterEach = () => hooks.afterEach;
 export const clearAfterEach = () => (hooks.afterEach = []);
 
+const runBeforeAll = async () => {
+  if (reporter.state) {
+    await reporter.state.runBeforeAll();
+  } else {
+    const beforeAll = hooks.beforeAll;
+    hooks.beforeAll = [];
+    for (const hook of beforeAll) {
+      await hook();
+    }
+  }
+};
+
+const runBeforeEach = async () => {
+  if (reporter.state) {
+    await reporter.state.runBeforeEach();
+  } else {
+    const beforeEach = [...hooks.beforeEach];
+    for (const hook of beforeEach) {
+      await hook();
+    }
+  }
+};
+
+const runAfterEach = async () => {
+  if (reporter.state) {
+    await reporter.state.runAfterEach();
+  } else {
+    const afterEach = hooks.afterEach.toReversed();
+    for (const hook of afterEach) {
+      await hook();
+    }
+  }
+};
+
 export const runTests = async tests => {
   const reporter = getReporter();
+  if (reporter.state?.stopTest) return false;
+  await runBeforeAll();
   for (let i = 0; i < tests.length; ++i) {
     if (reporter.state?.stopTest) return false;
     const {options, deferred} = tests[i],
@@ -124,10 +160,11 @@ export const runTests = async tests => {
     if (tester.state?.skip || options.skip) {
       tester.comment('SKIP test: ' + options.name);
       deferred && deferred.resolve(tester.state);
-      return;
+      continue;
     }
     testers.push(tester);
     try {
+      await runBeforeEach();
       tester.reporter.report({
         type: 'test',
         name: options.name,
@@ -207,6 +244,7 @@ export const runTests = async tests => {
       }
     }
     await tester.dispose();
+    await tester.reporter.state?.runAfterAll();
     testers.pop();
     tester.reporter.report({
       type: 'end',
@@ -215,6 +253,7 @@ export const runTests = async tests => {
       time: tester.timer.now(),
       fail: tester.state && tester.state.failed > 0
     });
+    await runAfterEach();
     deferred && deferred.resolve(tester.state);
   }
   return true;
@@ -310,8 +349,8 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
 const addToHook = name => fn => {
   if (testers.length) {
     const tester = testers[testers.length - 1];
-    if (tester.state) {
-      tester.state[name].push(fn);
+    if (tester.reporter.state) {
+      tester.reporter.state[name].push(fn);
       return;
     }
   }

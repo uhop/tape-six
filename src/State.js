@@ -6,7 +6,7 @@ export class StopTest extends Error {
   constructor(...args) {
     super(...args);
 
-    if (Error.captureStackTrace) Error.captureStackTrace(this, CustomError);
+    if (Error.captureStackTrace) Error.captureStackTrace(this, StopTest);
 
     this.name = 'StopTest';
     if (!this.message) this.message = 'Test stopped';
@@ -110,6 +110,7 @@ export class State {
     this.afterAll = [];
     this.beforeEach = [];
     this.afterEach = [];
+    this.isBeforeAllUsed = false;
   }
 
   get signal() {
@@ -138,12 +139,16 @@ export class State {
     }
     // beforeAll hooks run only once
     this.beforeAll = [];
+    this.isBeforeAllUsed = true;
   }
 
   async runAfterAll() {
+    if (!this.isBeforeAllUsed) return;
     for (let i = this.afterAll.length - 1; i >= 0; --i) {
       await this.afterAll[i]();
     }
+    this.afterAll = [];
+    this.isBeforeAllUsed = false;
   }
 
   async runBeforeEach() {
