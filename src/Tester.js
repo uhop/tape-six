@@ -27,6 +27,10 @@ export class Tester {
     return this.reporter.signal;
   }
 
+  get state() {
+    return this.reporter.state;
+  }
+
   plan(_n) {
     // nothing to do
   }

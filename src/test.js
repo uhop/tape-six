@@ -244,7 +244,7 @@ export const runTests = async tests => {
       }
     }
     await tester.dispose();
-    await tester.reporter.state?.runAfterAll();
+    await tester.state?.runAfterAll();
     testers.pop();
     tester.reporter.report({
       type: 'end',
@@ -301,7 +301,7 @@ test.asPromise = function asPromise(name, options, testFn) {
 
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (this.reporter.state?.skip) {
+  if (this.state?.skip) {
     this.comment('SKIP test: ' + options.name);
   } else {
     const promise = runTests([{options}]);
@@ -317,7 +317,7 @@ Tester.prototype.skip = async function skip(name, options, testFn) {
 
 Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (this.reporter.state?.skip) {
+  if (this.state?.skip) {
     this.comment('SKIP test: ' + options.name);
     return;
   }
@@ -349,8 +349,8 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
 const addToHook = name => fn => {
   if (testers.length) {
     const tester = testers[testers.length - 1];
-    if (tester.reporter.state) {
-      tester.reporter.state[name].push(fn);
+    if (tester.state) {
+      tester.state[name].push(fn);
       return;
     }
   }
