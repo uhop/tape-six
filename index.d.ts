@@ -358,6 +358,44 @@ export declare interface Tester {
     fn?: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 
+  // hooks
+
+  /**
+   * Registers a function that will be called before all 1st-level embedded tests in the current scope.
+   * @param fn a hook function
+   */
+  beforeAll(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called after all 1st-level embedded tests in the current scope.
+   * @param fn a hook function
+   */
+  afterAll(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called before each 1st-level embedded test in the current scope.
+   * @param fn a hook function
+   */
+  beforeEach(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called after each 1st-level embedded test in the current scope.
+   * @param fn a hook function
+   */
+  afterEach(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called before all 1st-level embedded tests in the current scope. An alias for `beforeAll`.
+   * @param fn a hook function
+   */
+  before(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called after all 1st-level embedded tests in the current scope. An alias for `afterAll`.
+   * @param fn a hook function
+   */
+  after(fn: () => void | Promise<void>): void;
+
   // asserts
 
   /**
@@ -1043,9 +1081,82 @@ export declare interface Test {
     name?: string,
     fn?: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
+
+  // hooks
+
+  /**
+   * Registers a function that will be called before all 1st-level embedded tests in the current scope.
+   * @param fn a hook function
+   */
+  beforeAll(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called after all 1st-level embedded tests in the current scope.
+   * @param fn a hook function
+   */
+  afterAll(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called before each 1st-level embedded test in the current scope.
+   * @param fn a hook function
+   */
+  beforeEach(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called after each 1st-level embedded test in the current scope.
+   * @param fn a hook function
+   */
+  afterEach(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called before all 1st-level embedded tests in the current scope. An alias for `beforeAll()`.
+   * @param fn a hook function
+   */
+  before(fn: () => void | Promise<void>): void;
+
+  /**
+   * Registers a function that will be called after all 1st-level embedded tests in the current scope. An alias for `afterAll()`.
+   * @param fn a hook function
+   */
+  after(fn: () => void | Promise<void>): void;
 }
 
-declare const test: Test;
+export declare const test: Test;
 
-export {test};
+/**
+ * Registers a function that will be called before all 1st-level embedded tests in the current scope.
+ * @param fn a hook function
+ */
+export declare const beforeAll: typeof test.beforeAll;
+
+/**
+ * Registers a function that will be called after all 1st-level embedded tests in the current scope.
+ * @param fn a hook function
+ */
+export declare const afterAll: typeof test.afterAll;
+
+/**
+ * Registers a function that will be called before each 1st-level embedded test in the current scope.
+ * @param fn a hook function
+ */
+export declare const beforeEach: typeof test.beforeEach;
+
+/**
+ * Registers a function that will be called after each 1st-level embedded test in the current scope.
+ * @param fn a hook function
+ */
+export declare const afterEach: typeof test.afterEach;
+
+/**
+ * Registers a function that will be called before all 1st-level embedded tests in the current scope. An alias for `beforeAll()`.
+ * @param fn a hook function
+ */
+export declare const before: typeof test.before;
+
+/**
+ * Registers a function that will be called after all 1st-level embedded tests in the current scope. An alias for `afterAll()`.
+ * @param fn a hook function
+ */
+export declare const after: typeof test.after;
+
 export default test;
