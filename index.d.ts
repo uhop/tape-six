@@ -822,104 +822,226 @@ export declare interface Test {
    * Creates a new test with the given name and function.
    * @param name - The name of the test
    * @param fn - The test function
-   */
-  (name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
-  /**
-   * Creates a new test with the given function.
-   * @param fn - The test function
-   */
-  (fn: (t: Tester) => void | Promise<void>): void;
-  /**
-   * Creates a new test with the given options.
    * @param options - The test options
    */
-  (options: TestOptions): Promise<void>;
+  (name: string, fn: (t: Tester) => void | Promise<void>, options?: TestOptions): Promise<void>;
   /**
-   * Creates a new test with the given options and function.
+   * Creates a new test with the given name and function.
+   * @param name - The name of the test
+   * @param fn - The test function
+   * @param options - The test options
+   */
+  (name: string, options?: TestOptions, fn?: (t: Tester) => void | Promise<void>): Promise<void>;
+  /**
+   * Creates a new test with the given name and function.
+   * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
+   */
+  (fn: (t: Tester) => void | Promise<void>, options: TestOptions, name?: string): Promise<void>;
+  /**
+   * Creates a new test with the given name and function.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  (fn: (t: Tester) => void | Promise<void>, name?: string, options?: TestOptions): Promise<void>;
+  /**
+   * Creates a new test with the given name and function.
    * @param options - The test options
    * @param fn - The test function
+   * @param name - The name of the test
    */
-  (options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  (options: TestOptions, fn: (t: Tester) => void | Promise<void>, name?: string): Promise<void>;
+  /**
+   * Creates a new test with the given name and function.
+   * @param options - The test options
+   * @param name - The name of the test
+   * @param fn - The test function
+   */
+  (options: TestOptions, name?: string, fn?: (t: Tester) => void | Promise<void>): Promise<void>;
 
   /**
    * Creates a new test that will be skipped.
    * @param name - The name of the test
    * @param fn - The test function
-   */
-  skip(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
-  /**
-   * Creates a new test that will be skipped.
-   * @param fn - The test function
-   */
-  skip(fn: (t: Tester) => void | Promise<void>): Promise<void>;
-  /**
-   * Creates a new test that will be skipped.
    * @param options - The test options
    */
-  skip(options: TestOptions): Promise<void>;
+  skip(name: string, fn: (t: Tester) => void | Promise<void>, options?: TestOptions): Promise<void>;
   /**
    * Creates a new test that will be skipped.
+   * @param name - The name of the test
    * @param options - The test options
    * @param fn - The test function
    */
-  skip(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  skip(
+    name: string,
+    options?: TestOptions,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
+  /**
+   * Creates a new test that will be skipped.
+   * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
+   */
+  skip(fn: (t: Tester) => void | Promise<void>, options: TestOptions, name?: string): Promise<void>;
+  /**
+   * Creates a new test that will be skipped.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  skip(
+    fn: (t: Tester) => void | Promise<void>,
+    name?: string,
+    options?: TestOptions
+  ): Promise<void>;
+  /**
+   * Creates a new test that will be skipped.
+   * @param options - The test options
+   * @param fn - The test function
+   * @param name - The name of the test
+   */
+  skip(options: TestOptions, fn: (t: Tester) => void | Promise<void>, name?: string): Promise<void>;
+  /**
+   * Creates a new test that will be skipped.
+   * @param options - The test options
+   * @param name - The name of the test
+   * @param fn - The test function
+   */
+  skip(
+    options: TestOptions,
+    name?: string,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
 
   /**
    * Creates a new test that will be TODO.
    * @param name - The name of the test
    * @param fn - The test function
-   */
-  todo(name: string, fn: (t: Tester) => void | Promise<void>): Promise<void>;
-  /**
-   * Creates a new test that will be TODO.
-   * @param fn - The test function
-   */
-  todo(fn: (t: Tester) => void | Promise<void>): Promise<void>;
-  /**
-   * Creates a new test that will be TODO.
    * @param options - The test options
    */
-  todo(options: TestOptions): Promise<void>;
+  todo(name: string, fn: (t: Tester) => void | Promise<void>, options?: TestOptions): Promise<void>;
   /**
    * Creates a new test that will be TODO.
+   * @param name - The name of the test
    * @param options - The test options
    * @param fn - The test function
    */
-  todo(options: TestOptions, fn: (t: Tester) => void | Promise<void>): Promise<void>;
+  todo(
+    name: string,
+    options?: TestOptions,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
+  /**
+   * Creates a new test that will be TODO.
+   * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
+   */
+  todo(fn: (t: Tester) => void | Promise<void>, options: TestOptions, name?: string): Promise<void>;
+  /**
+   * Creates a new test that will be TODO.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  todo(
+    fn: (t: Tester) => void | Promise<void>,
+    name?: string,
+    options?: TestOptions
+  ): Promise<void>;
+  /**
+   * Creates a new test that will be TODO.
+   * @param options - The test options
+   * @param fn - The test function
+   * @param name - The name of the test
+   */
+  todo(options: TestOptions, fn: (t: Tester) => void | Promise<void>, name?: string): Promise<void>;
+  /**
+   * Creates a new test that will be TODO.
+   * @param options - The test options
+   * @param name - The name of the test
+   * @param fn - The test function
+   */
+  todo(
+    options: TestOptions,
+    name?: string,
+    fn?: (t: Tester) => void | Promise<void>
+  ): Promise<void>;
 
   /**
    * Creates a new test that will be run as a promise.
    * Usually used for asynchronous tests that are based on callbacks.
    * @param name - The name of the test
+   * @param fn - The test function
+   * @param options - The test options
+   */
+  asPromise(
+    name: string,
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    options?: TestOptions
+  ): Promise<void>;
+  /**
+   * Creates a new test that will be run as a promise.
+   * Usually used for asynchronous tests that are based on callbacks.
+   * @param name - The name of the test
+   * @param options - The test options
    * @param fn - The test function
    */
   asPromise(
     name: string,
-    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
+    options?: TestOptions,
+    fn?: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
    * Usually used for asynchronous tests that are based on callbacks.
    * @param fn - The test function
+   * @param options - The test options
+   * @param name - The name of the test
    */
   asPromise(
-    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    options: TestOptions,
+    name?: string
+  ): Promise<void>;
+  /**
+   * Creates a new test that will be run as a promise.
+   * Usually used for asynchronous tests that are based on callbacks.
+   * @param fn - The test function
+   * @param name - The name of the test
+   * @param options - The test options
+   */
+  asPromise(
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    name?: string,
+    options?: TestOptions
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
    * Usually used for asynchronous tests that are based on callbacks.
    * @param options - The test options
+   * @param fn - The test function
+   * @param name - The name of the test
    */
-  asPromise(options: TestOptions): Promise<void>;
+  asPromise(
+    options: TestOptions,
+    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void,
+    name?: string
+  ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
    * Usually used for asynchronous tests that are based on callbacks.
    * @param options - The test options
+   * @param name - The name of the test
    * @param fn - The test function
    */
   asPromise(
     options: TestOptions,
-    fn: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
+    name?: string,
+    fn?: (t: Tester, resolve: () => void, reject: (error: unknown) => void) => void
   ): Promise<void>;
 }
 
