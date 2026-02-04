@@ -1121,6 +1121,9 @@ export declare interface Test {
   after(fn: () => void | Promise<void>): void;
 }
 
+/**
+ * The main function, which is used to define tests. Many other functions are defined as properties of this function.
+ */
 export declare const test: Test;
 
 /**
