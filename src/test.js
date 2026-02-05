@@ -90,7 +90,7 @@ export const test = async (name, options, testFn) => {
 };
 
 export const getTests = () => tests;
-export const clearTests = () => (tests = []);
+export const clearTests = () => void (tests = []);
 
 export const getReporter = () => reporter;
 export const setReporter = newReporter => (reporter = newReporter);
@@ -103,16 +103,16 @@ const hooks = {
 };
 
 export const getBeforeAll = () => hooks.beforeAll;
-export const clearBeforeAll = () => (hooks.beforeAll = []);
+export const clearBeforeAll = () => void (hooks.beforeAll = []);
 
 export const getAfterAll = () => hooks.afterAll;
-export const clearAfterAll = () => (hooks.afterAll = []);
+export const clearAfterAll = () => void (hooks.afterAll = []);
 
 export const getBeforeEach = () => hooks.beforeEach;
-export const clearBeforeEach = () => (hooks.beforeEach = []);
+export const clearBeforeEach = () => void (hooks.beforeEach = []);
 
 export const getAfterEach = () => hooks.afterEach;
-export const clearAfterEach = () => (hooks.afterEach = []);
+export const clearAfterEach = () => void (hooks.afterEach = []);
 
 export const runTests = async tests => {
   const reporter = getReporter();
