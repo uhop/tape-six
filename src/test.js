@@ -1,6 +1,6 @@
 import {selectTimer} from './utils/timer.js';
 import {isAssertionError, isStopTest} from './State.js';
-import getDeferred from './utils/getDeferred.js';
+import makeDeferred from './utils/makeDeferred.js';
 import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
 import defer from './utils/defer.js';
@@ -80,7 +80,7 @@ export const test = async (name, options, testFn) => {
     await selectTimer();
     isTimerSet = true;
   }
-  const deferred = getDeferred();
+  const deferred = makeDeferred();
   if (tests.push({options, deferred}) === 1 && notifyCallback) {
     defer(notifyCallback);
     notifyCallback = null;
@@ -277,7 +277,7 @@ Tester.prototype.test = async function test(name, options, testFn) {
   if (!this.state?.skip) {
     if (this.lastEmbeddedTest) {
       const last = this.lastEmbeddedTest,
-        deferred = getDeferred();
+        deferred = makeDeferred();
       this.lastEmbeddedTest = deferred.promise;
       await last;
       return runTests([{options}]).then(deferred.resolve, deferred.reject);
@@ -297,7 +297,7 @@ Tester.prototype.todo = async function todo(name, options, testFn) {
   if (!this.state?.skip) {
     if (this.lastEmbeddedTest) {
       const last = this.lastEmbeddedTest,
-        deferred = getDeferred();
+        deferred = makeDeferred();
       this.lastEmbeddedTest = deferred.promise;
       await last;
       return runTests([{options: {...options, todo: true}}]).then(
@@ -326,7 +326,7 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
     }
     if (this.lastEmbeddedTest) {
       const last = this.lastEmbeddedTest,
-        deferred = getDeferred();
+        deferred = makeDeferred();
       this.lastEmbeddedTest = deferred.promise;
       await last;
       return runTests([{options}]).then(deferred.resolve, deferred.reject);

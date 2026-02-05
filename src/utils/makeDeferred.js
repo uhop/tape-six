@@ -7,13 +7,13 @@ class Deferred {
   }
 }
 
-let getDeferred = null;
+let makeDeferred = null;
 
 if (typeof Promise.withResolvers == 'function') {
-  getDeferred = Promise.withResolvers.bind(Promise);
+  makeDeferred = Promise.withResolvers.bind(Promise);
 } else {
-  getDeferred = () => new Deferred();
+  makeDeferred = () => new Deferred();
 }
 
-export {getDeferred};
-export default getDeferred;
+export {makeDeferred};
+export default makeDeferred;
