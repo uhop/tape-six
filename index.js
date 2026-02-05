@@ -48,7 +48,8 @@ const init = async () => {
     isBrowser = typeof window == 'object' && !!window.location,
     options = {};
 
-  let flags = '';
+  let flags = '',
+    skipExit = false;
 
   if (isBrowser) {
     if (typeof window.__tape6_flags == 'string') {
@@ -58,10 +59,13 @@ const init = async () => {
     }
   } else if (isDeno) {
     flags = Deno.env.get('TAPE6_FLAGS') || '';
+    skipExit = !!Deno.env.get('TAPE6_SKIP_EXIT');
   } else if (isBun) {
     flags = Bun.env.TAPE6_FLAGS || '';
+    skipExit = !!Bun.env.TAPE6_SKIP_EXIT;
   } else if (isNode) {
     flags = process.env.TAPE6_FLAGS || '';
+    skipExit = !!process.env.TAPE6_SKIP_EXIT;
   }
 
   for (let i = 0; i < flags.length; ++i) {
@@ -71,12 +75,14 @@ const init = async () => {
   }
   options.flags = flags;
 
-  let originalConsole = null;
+  let originalConsole = null,
+    setCurrentReporter = null;
   if (!options.dontCaptureConsole && (isNode || isBun || isDeno)) {
-    const {captureConsole} = await import(
+    const {captureConsole, setCurrentReporter: setReporter} = await import(
       new URL('./src/utils/capture-console.js', import.meta.url)
     );
     originalConsole = captureConsole();
+    setCurrentReporter = setReporter;
   }
 
   let reporter = getReporter();
@@ -146,6 +152,7 @@ const init = async () => {
       hasColors
     });
     setReporter(reporter);
+    setCurrentReporter?.(reporter);
   }
 
   let testFileName = '';
@@ -165,16 +172,18 @@ const init = async () => {
     testFileName = process.env.TAPE6_TEST_FILE_NAME || '';
   }
 
-  return {reporter, options, testFileName};
+  return {reporter, options, testFileName, isBrowser, isBun, isDeno, isNode, skipExit};
 };
 
 let settings = null;
 
 const testCallback = async () => {
-  await selectTimer();
-  if (!settings) settings = await init();
+  if (!settings) {
+    await selectTimer();
+    settings = await init();
+  }
 
-  const {reporter, testFileName} = settings;
+  const {reporter, testFileName, isBrowser, isBun, isDeno, isNode, skipExit} = settings;
 
   reporter.report({
     type: 'test',
@@ -214,14 +223,16 @@ const testCallback = async () => {
     fail: runHasFailed
   });
 
-  if (typeof Deno == 'object') {
-    runHasFailed && Deno.exit(1);
-  } else if (typeof Bun == 'object') {
-    runHasFailed && process.exit(1);
-  } else if (typeof process == 'object' && process.versions?.node) {
-    runHasFailed && process.exit(1);
-  } else if (typeof __tape6_reportResults == 'function') {
-    __tape6_reportResults(runHasFailed ? 'failure' : 'success');
+  if (!skipExit) {
+    if (isDeno) {
+      runHasFailed && Deno.exit(1);
+    } else if (isBun) {
+      runHasFailed && process.exit(1);
+    } else if (isNode) {
+      runHasFailed && process.exit(1);
+    } else if (isBrowser && typeof __tape6_reportResults == 'function') {
+      __tape6_reportResults(runHasFailed ? 'failure' : 'success');
+    }
   }
 
   registerNotifyCallback(testCallback); // register self again
