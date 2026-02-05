@@ -28,7 +28,6 @@ export default class TestWorker extends EventServer {
       }
       if (msg.type === 'end' && msg.test === 0) {
         this.close(id);
-        return;
       }
     });
     worker.addEventListener('error', error => {
