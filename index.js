@@ -232,5 +232,16 @@ if (!getConfiguredFlag()) {
   registerNotifyCallback(testCallback);
 }
 
-export {test, before, after, beforeAll, afterAll, beforeEach, afterEach};
+export {
+  test,
+  before,
+  after,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+  test as suite,
+  test as describe,
+  test as it
+};
 export default test;
