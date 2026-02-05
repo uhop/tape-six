@@ -1127,6 +1127,21 @@ export declare interface Test {
 export declare const test: Test;
 
 /**
+ * An alias for `test`. Used for compatibility with other testing frameworks to define test suites.
+ */
+export declare const suite = test;
+
+/**
+ * An alias for `test`. Used for compatibility with other testing frameworks to define test suites.
+ */
+export declare const describe = test;
+
+/**
+ * An alias for `test`. Used for compatibility with other testing frameworks to define tests.
+ */
+export declare const it = test;
+
+/**
  * Registers a function that will be called before all 1st-level embedded tests in the current scope.
  * @param fn a hook function
  */
