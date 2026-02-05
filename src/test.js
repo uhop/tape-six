@@ -275,10 +275,14 @@ test.asPromise = function asPromise(name, options, testFn) {
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
   if (!this.state?.skip) {
-    this.lastEmbeddedTest && (await this.lastEmbeddedTest);
-    const promise = runTests([{options}]);
-    this.lastEmbeddedTest = promise;
-    return promise;
+    if (this.lastEmbeddedTest) {
+      const last = this.lastEmbeddedTest,
+        deferred = getDeferred();
+      this.lastEmbeddedTest = deferred.promise;
+      await last;
+      return runTests([{options}]).then(deferred.resolve, deferred.reject);
+    }
+    return (this.lastEmbeddedTest = runTests([{options}]));
   }
   this.comment('SKIP test: ' + options.name);
 };
@@ -291,10 +295,17 @@ Tester.prototype.skip = async function skip(name, options, testFn) {
 Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
   if (!this.state?.skip) {
-    this.lastEmbeddedTest && (await this.lastEmbeddedTest);
-    const promise = runTests([{options: {...options, todo: true}}]);
-    this.lastEmbeddedTest = promise;
-    return promise;
+    if (this.lastEmbeddedTest) {
+      const last = this.lastEmbeddedTest,
+        deferred = getDeferred();
+      this.lastEmbeddedTest = deferred.promise;
+      await last;
+      return runTests([{options: {...options, todo: true}}]).then(
+        deferred.resolve,
+        deferred.reject
+      );
+    }
+    return (this.lastEmbeddedTest = runTests([{options: {...options, todo: true}}]));
   }
   this.comment('SKIP test: ' + options.name);
 };
@@ -313,10 +324,14 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
           }
         });
     }
-    this.lastEmbeddedTest && (await this.lastEmbeddedTest);
-    const promise = runTests([{options}]);
-    this.lastEmbeddedTest = promise;
-    return promise;
+    if (this.lastEmbeddedTest) {
+      const last = this.lastEmbeddedTest,
+        deferred = getDeferred();
+      this.lastEmbeddedTest = deferred.promise;
+      await last;
+      return runTests([{options}]).then(deferred.resolve, deferred.reject);
+    }
+    return (this.lastEmbeddedTest = runTests([{options}]));
   }
   this.comment('SKIP test: ' + options.name);
 };
