@@ -274,14 +274,13 @@ test.asPromise = function asPromise(name, options, testFn) {
 
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (this.state?.skip) {
-    this.comment('SKIP test: ' + options.name);
-  } else {
-    await this.lastEmbeddedTest;
+  if (!this.state?.skip) {
+    this.lastEmbeddedTest && (await this.lastEmbeddedTest);
     const promise = runTests([{options}]);
     this.lastEmbeddedTest = promise;
     return promise;
   }
+  this.comment('SKIP test: ' + options.name);
 };
 
 Tester.prototype.skip = async function skip(name, options, testFn) {
@@ -291,33 +290,35 @@ Tester.prototype.skip = async function skip(name, options, testFn) {
 
 Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (this.state?.skip) {
-    this.comment('SKIP test: ' + options.name);
-    return;
+  if (!this.state?.skip) {
+    this.lastEmbeddedTest && (await this.lastEmbeddedTest);
+    const promise = runTests([{options: {...options, todo: true}}]);
+    this.lastEmbeddedTest = promise;
+    return promise;
   }
-  await this.lastEmbeddedTest;
-  const promise = runTests([{options: {...options, todo: true}}]);
-  this.lastEmbeddedTest = promise;
-  return promise;
+  this.comment('SKIP test: ' + options.name);
 };
 
 Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (options.testFn) {
-    const testFn = options.testFn;
-    options.testFn = tester =>
-      new Promise((resolve, reject) => {
-        try {
-          testFn(tester, resolve, reject);
-        } catch (error) {
-          reject(error);
-        }
-      });
+  if (!this.state?.skip) {
+    if (options.testFn) {
+      const testFn = options.testFn;
+      options.testFn = tester =>
+        new Promise((resolve, reject) => {
+          try {
+            testFn(tester, resolve, reject);
+          } catch (error) {
+            reject(error);
+          }
+        });
+    }
+    this.lastEmbeddedTest && (await this.lastEmbeddedTest);
+    const promise = runTests([{options}]);
+    this.lastEmbeddedTest = promise;
+    return promise;
   }
-  await this.lastEmbeddedTest;
-  const promise = runTests([{options}]);
-  this.lastEmbeddedTest = promise;
-  return promise;
+  this.comment('SKIP test: ' + options.name);
 };
 
 // before/after hooks
@@ -325,10 +326,7 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
 const addToHook = name => fn => {
   if (testers.length) {
     const tester = testers[testers.length - 1];
-    if (tester.state) {
-      tester.state[name].push(fn);
-      return;
-    }
+    if (tester.state) return void tester.state[name].push(fn);
   }
   hooks[name].push(fn);
 };
