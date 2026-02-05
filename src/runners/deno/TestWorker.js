@@ -1,10 +1,10 @@
 import {pathToFileURL} from 'node:url';
 import {sep} from 'node:path';
 
-import {isStopTest} from '../State.js';
-import EventServer from '../utils/EventServer.js';
+import {isStopTest} from '../../State.js';
+import EventServer from '../../utils/EventServer.js';
 
-const srcName = new URL('../', import.meta.url),
+const srcName = new URL('../../', import.meta.url),
   baseName = pathToFileURL(Deno.cwd() + sep);
 
 export default class TestWorker extends EventServer {

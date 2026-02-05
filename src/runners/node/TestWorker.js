@@ -1,10 +1,13 @@
+import process from 'node:process';
 import {sep} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {Worker} from 'node:worker_threads';
 
-import {isStopTest} from '../State.js';
-import EventServer from '../utils/EventServer.js';
+import {isStopTest} from '../../State.js';
+import EventServer from '../../utils/EventServer.js';
 
-const srcName = new URL('../', import.meta.url),
-  baseName = Bun.pathToFileURL(Bun.cwd + sep);
+const srcName = new URL('../../', import.meta.url),
+  baseName = pathToFileURL(process.cwd() + sep);
 
 export default class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks = globalThis.navigator?.hardwareConcurrency || 1, options) {
@@ -19,8 +22,7 @@ export default class TestWorker extends EventServer {
         type: 'module'
       });
     this.idToWorker[id] = worker;
-    worker.addEventListener('message', event => {
-      const msg = event.data;
+    worker.on('message', msg => {
       try {
         this.report(id, msg);
       } catch (error) {
@@ -31,7 +33,7 @@ export default class TestWorker extends EventServer {
         return;
       }
     });
-    worker.addEventListener('error', error => {
+    worker.on('error', error => {
       this.report(id, {
         type: 'comment',
         name: 'fail to load: ' + (error.message || 'Worker error'),
@@ -53,7 +55,7 @@ export default class TestWorker extends EventServer {
       }
       this.close(id);
     });
-    worker.addEventListener('messageerror', error => {
+    worker.on('messageerror', error => {
       this.report(id, {
         type: 'comment',
         name: 'fail to load: ' + (error.message || 'Worker error'),

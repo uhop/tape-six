@@ -11,7 +11,7 @@ import {
 import {getReporter, setReporter} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
 
-import TestWorker from '../src/deno/TestWorker.js';
+import TestWorker from '../src/runners/deno/TestWorker.js';
 
 const options = {},
   rootFolder = Deno.cwd();

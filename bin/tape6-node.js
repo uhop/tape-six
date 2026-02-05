@@ -12,7 +12,7 @@ import {
 import {getReporter, setReporter} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
 
-import TestWorker from '../src/node/TestWorker.js';
+import TestWorker from '../src/runners/node/TestWorker.js';
 
 const options = {},
   rootFolder = process.cwd();
