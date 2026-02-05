@@ -88,7 +88,7 @@ if (typeof Deno == 'object' && Deno?.version) {
   runtime.name = 'browser';
 }
 
-export const getReporter = () => {
+export const getReporterType = () => {
   if (runtime.name === 'browser') return null;
   if (runtime.getEnvVar('TAPE6_JSONL')) return 'jsonl';
   if (runtime.getEnvVar('TAPE6_TAP')) return 'tap';

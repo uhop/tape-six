@@ -3,11 +3,7 @@
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {
-  resolveTests,
-  resolvePatterns,
-  getReporter as getReporterType
-} from '../src/utils/config.js';
+import {resolveTests, resolvePatterns, getReporterType} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
