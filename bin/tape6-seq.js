@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 
 import {resolveTests, resolvePatterns, getReporterType} from '../src/utils/config.js';
 
-import {getReporter, setReporter} from '../src/test.js';
+import {getReporter, setReporter, testRunner} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/runners/seq/TestWorker.js';
@@ -117,9 +117,11 @@ const main = async () => {
   );
 
   const reporter = getReporter(),
-    worker = new TestWorker(reporter, 1, options);
+    worker = new TestWorker(reporter, 1, {...options, testRunner});
 
   reporter.report({type: 'test', test: 0});
+
+  console.log('Start:', reporter.state?.name, reporter.state?.test);
 
   await new Promise(resolve => {
     worker.done = () => resolve();
@@ -127,6 +129,8 @@ const main = async () => {
   });
 
   const hasFailed = reporter.state && reporter.state.failed > 0;
+
+  console.log('Finish:', reporter.state?.name, reporter.state?.test);
 
   reporter.report({
     type: 'end',

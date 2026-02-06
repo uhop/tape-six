@@ -67,7 +67,7 @@ export default class TestWorker extends EventServer {
             }
             <script type="module">
               window.__tape6_id = ${JSON.stringify(id)};
-              window.__tape6_test_file_name = ${JSON.stringify(fileName)};
+              window.__tape6_testFileName = ${JSON.stringify(fileName)};
               window.__tape6_flags = "${this.options.failOnce ? 'F' : ''}";
               const s = document.createElement('script');
               s.setAttribute('type', 'module');

@@ -8,6 +8,7 @@ import {
   setReporter,
   runTests,
   getConfiguredFlag,
+  setTestRunner,
   registerNotifyCallback,
   before,
   after,
@@ -48,8 +49,7 @@ const init = async () => {
     isBrowser = typeof window == 'object' && !!window.location,
     options = {};
 
-  let flags = '',
-    skipExit = false;
+  let flags = '';
 
   if (isBrowser) {
     if (typeof window.__tape6_flags == 'string') {
@@ -59,13 +59,10 @@ const init = async () => {
     }
   } else if (isDeno) {
     flags = Deno.env.get('TAPE6_FLAGS') || '';
-    skipExit = !!Deno.env.get('TAPE6_SKIP_EXIT');
   } else if (isBun) {
     flags = Bun.env.TAPE6_FLAGS || '';
-    skipExit = !!Bun.env.TAPE6_SKIP_EXIT;
   } else if (isNode) {
     flags = process.env.TAPE6_FLAGS || '';
-    skipExit = !!process.env.TAPE6_SKIP_EXIT;
   }
 
   for (let i = 0; i < flags.length; ++i) {
@@ -155,11 +152,15 @@ const init = async () => {
     setCurrentReporter?.(reporter);
   }
 
+  return {reporter, options, isBrowser, isBun, isDeno, isNode};
+};
+
+const getTestFileName = ({isBrowser, isBun, isDeno, isNode}) => {
   let testFileName = '';
 
   if (isBrowser) {
-    if (typeof window.__tape6_test_file_name == 'string') {
-      testFileName = window.__tape6_test_file_name;
+    if (typeof window.__tape6_testFileName == 'string') {
+      testFileName = window.__tape6_testFileName;
     } else if (window.location.search) {
       testFileName =
         new URLSearchParams(window.location.search.substring(1)).get('test-file-name') || '';
@@ -172,24 +173,27 @@ const init = async () => {
     testFileName = process.env.TAPE6_TEST_FILE_NAME || '';
   }
 
-  return {reporter, options, testFileName, isBrowser, isBun, isDeno, isNode, skipExit};
+  return testFileName;
 };
 
 let settings = null;
 
-const testCallback = async () => {
+const testRunner = async () => {
   if (!settings) {
     await selectTimer();
     settings = await init();
   }
 
-  const {reporter, testFileName, isBrowser, isBun, isDeno, isNode, skipExit} = settings;
+  const {reporter, isBrowser, isBun, isDeno, isNode} = settings,
+    testFileName = getTestFileName(settings);
 
   reporter.report({
     type: 'test',
     test: 0,
     name: testFileName ? 'FILE: /' + testFileName : ''
   });
+
+  console.log('Start index:', reporter.state?.name, reporter.state?.test);
 
   reporter.state.beforeAll = getBeforeAll();
   clearBeforeAll();
@@ -207,6 +211,7 @@ const testCallback = async () => {
     const tests = getTests();
     if (!tests.length) break;
     clearTests();
+    // console.log('Reporter:', reporter, getReporter());
     const canContinue = await runTests(tests);
     if (!canContinue) break;
     await new Promise(resolve => defer(resolve));
@@ -216,6 +221,8 @@ const testCallback = async () => {
 
   const runHasFailed = reporter.state && reporter.state.failed > 0;
 
+  console.log('Finish index:', reporter.state?.name, reporter.state?.test);
+
   reporter.report({
     type: 'end',
     test: 0,
@@ -223,24 +230,27 @@ const testCallback = async () => {
     fail: runHasFailed
   });
 
-  if (!skipExit) {
+  if (!getConfiguredFlag()) {
     if (isDeno) {
       runHasFailed && Deno.exit(1);
     } else if (isBun) {
       runHasFailed && process.exit(1);
     } else if (isNode) {
       runHasFailed && process.exit(1);
-    } else if (isBrowser && typeof __tape6_reportResults == 'function') {
-      __tape6_reportResults(runHasFailed ? 'failure' : 'success');
     }
   }
+  if (isBrowser && typeof __tape6_reportResults == 'function') {
+    __tape6_reportResults(runHasFailed ? 'failure' : 'success');
+  }
 
-  registerNotifyCallback(testCallback); // register self again
+  registerNotifyCallback(testRunner); // register self again
 };
 
+setTestRunner(testRunner);
 if (!getConfiguredFlag()) {
   // if nobody is running the show
-  registerNotifyCallback(testCallback);
+  registerNotifyCallback(testRunner);
+  // console.log('Register callback:', getConfiguredFlag());
 }
 
 export {
