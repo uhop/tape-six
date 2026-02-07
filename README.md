@@ -341,6 +341,12 @@ tape6 --par 1 # run one test at a time
 
 If you want to run tests in separate processes, check out [tape-six-proc](https://www.npmjs.com/package/tape-six-proc). Why do you want to do that? When tests have to modify globals or use single-threaded binary extensions.
 
+If you want to run tests sequentially without expenses of threads and processes, you can use the `tape6-seq` command, which uses the same options and configuration as `tape6`:
+
+```bash
+tape6-seq
+```
+
 ### Configuring test runners
 
 TLDR version &mdash; add to your `package.json`:
