@@ -9,24 +9,29 @@ export default class EventServer {
     this.totalTasks = 0;
     this.fileQueue = [];
     this.passThroughId = null;
-    this.backlog = {};
-    this.closed = {};
-    this.finalized = {};
+    this.retained = {};
+    this.readyQueue = [];
   }
   report(id, event) {
-    if (this.finalized[id] === 1) return this.reporter.report(event);
     if (this.passThroughId === null) this.passThroughId = id;
-    if (this.passThroughId === id) return this.reporter.report(event);
-    const events = this.backlog[id];
+    const events = this.retained[id];
+    if (this.passThroughId === id) {
+      if (events) {
+        for (const event of events) {
+          this.reporter.report(event);
+        }
+        delete this.retained[id];
+      }
+      return this.reporter.report(event);
+    }
     if (Array.isArray(events)) {
       events.push(event);
     } else {
-      this.backlog[id] = [event];
+      this.retained[id] = [event];
     }
   }
   close(id) {
     this.destroyTask(id);
-    this.finalized[id] = 1;
     --this.totalTasks;
     if (this.fileQueue.length) {
       if (this.reporter.state?.stopTest) {
@@ -38,34 +43,24 @@ export default class EventServer {
       }
     }
     if (this.passThroughId === id) {
-      this.passThroughId = null;
-      Object.keys(this.closed).forEach(id => {
-        const events = this.backlog[id];
-        if (!events) return;
-        events.forEach(event => this.reporter.report(event));
-        delete this.backlog[id];
-      });
-      this.closed = {};
-      const ids = Object.keys(this.backlog);
-      if (ids.length) {
-        const id = (this.passThroughId = ids[0]),
-          events = this.backlog[id];
-        if (events) {
-          events.forEach(event => this.reporter.report(event));
-          delete this.backlog[id];
+      // dump ready events
+      for (const events of this.readyQueue) {
+        for (const event of events) {
+          this.reporter.report(event);
         }
       }
+      this.readyQueue = [];
+      this.passThroughId = null;
     } else {
-      this.closed[id] = 1;
+      // add to the ready queue
+      const events = this.retained[id];
+      if (events) {
+        this.readyQueue.push(events);
+      }
+      delete this.retained[id];
     }
     if (!this.totalTasks) {
-      Object.keys(this.backlog).forEach(id => {
-        this.finalized[id] = 1;
-        const events = this.backlog[id];
-        events.forEach(event => this.reporter.report(event));
-      });
-      this.closed = {};
-      this.backlog = {};
+      this.retained = {};
       this.done && this.done();
     }
   }
