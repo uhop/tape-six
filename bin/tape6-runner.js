@@ -7,6 +7,7 @@ const runtimeFiles = {
   node: 'tape6-node.js',
   deno: 'tape6-deno.js',
   bun: 'tape6-bun.js',
+  seq: 'tape6-seq.js',
   server: 'tape6-server.js',
   runner: 'tape6-runner.js',
   main: 'tape6.js'
