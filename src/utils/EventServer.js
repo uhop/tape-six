@@ -52,12 +52,19 @@ export default class EventServer {
       this.readyQueue = [];
       this.passThroughId = null;
     } else {
-      // add to the ready queue
       const events = this.retained[id];
       if (events) {
-        this.readyQueue.push(events);
+        if (this.passThroughId === null) {
+          // dump events
+          for (const event of events) {
+            this.reporter.report(event);
+          }
+        } else {
+          // add to the ready queue
+          this.readyQueue.push(events);
+        }
+        delete this.retained[id];
       }
-      delete this.retained[id];
     }
     if (!this.totalTasks) {
       this.retained = {};
