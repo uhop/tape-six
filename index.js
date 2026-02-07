@@ -193,8 +193,6 @@ const testRunner = async () => {
     name: testFileName ? 'FILE: /' + testFileName : ''
   });
 
-  console.log('Start index:', reporter.state?.name, reporter.state?.test);
-
   reporter.state.beforeAll = getBeforeAll();
   clearBeforeAll();
   reporter.state.afterAll = getAfterAll();
@@ -211,7 +209,6 @@ const testRunner = async () => {
     const tests = getTests();
     if (!tests.length) break;
     clearTests();
-    // console.log('Reporter:', reporter, getReporter());
     const canContinue = await runTests(tests);
     if (!canContinue) break;
     await new Promise(resolve => defer(resolve));
@@ -220,8 +217,6 @@ const testRunner = async () => {
   await currentState?.runAfterAll();
 
   const runHasFailed = reporter.state && reporter.state.failed > 0;
-
-  console.log('Finish index:', reporter.state?.name, reporter.state?.test);
 
   reporter.report({
     type: 'end',
@@ -243,14 +238,13 @@ const testRunner = async () => {
     __tape6_reportResults(runHasFailed ? 'failure' : 'success');
   }
 
-  registerNotifyCallback(testRunner); // register self again
+  // registerNotifyCallback(testRunner); // register self again
 };
 
 setTestRunner(testRunner);
 if (!getConfiguredFlag()) {
   // if nobody is running the show
   registerNotifyCallback(testRunner);
-  // console.log('Register callback:', getConfiguredFlag());
 }
 
 export {
