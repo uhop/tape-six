@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "The test harness for the modern JavaScript and TypeScript.",
   "type": "module",
   "main": "index.js",
@@ -85,10 +85,10 @@
   },
   "devDependencies": {
     "@types/chai": "^5.2.3",
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.2.1",
     "chai": "^6.2.2",
-    "playwright": "^1.58.1",
-    "puppeteer": "^24.36.1",
+    "playwright": "^1.58.2",
+    "puppeteer": "^24.37.2",
     "typescript": "^5.9.3"
   }
 }
