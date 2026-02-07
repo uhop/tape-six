@@ -10,7 +10,6 @@ import {
   clearAfterAll,
   clearBeforeEach,
   clearAfterEach,
-  getReporter,
   setReporter,
   registerNotifyCallback
 } from '../../test.js';
@@ -27,15 +26,11 @@ export default class TestWorker extends EventServer {
   }
   makeTask(fileName) {
     const id = String(++this.counter),
-      reporter = new BypassReporter(getReporter(), event => {
-        // const reporter = getReporter();
-        // setReporter(this.reporter);
+      reporter = new BypassReporter(this.reporter, event => {
         try {
           this.report(id, event);
         } catch (error) {
           if (!isStopTest(error)) throw error;
-          // } finally {
-          //   setReporter(reporter);
         }
         if (event.type === 'end' && event.test === 0) {
           this.close(id);

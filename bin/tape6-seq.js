@@ -5,16 +5,17 @@ import {fileURLToPath} from 'node:url';
 
 import {resolveTests, resolvePatterns, getReporterType} from '../src/utils/config.js';
 
-import {getReporter, setReporter, testRunner} from '../src/test.js';
+import {getReporter, setReporter, setConfiguredFlag, testRunner} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/runners/seq/TestWorker.js';
+
+setConfiguredFlag(true);
 
 const options = {},
   rootFolder = process.cwd();
 
 let flags = '',
-  parallel = '',
   files = [];
 
 const showSelf = () => {
@@ -42,8 +43,6 @@ const config = () => {
     h: 'hideStreams'
   };
 
-  let parIsSet = false;
-
   for (let i = 2; i < process.argv.length; ++i) {
     const arg = process.argv[i];
     if (arg == '-f' || arg == '--flags') {
@@ -53,14 +52,8 @@ const config = () => {
       continue;
     }
     if (arg == '-p' || arg == '--par') {
-      if (++i < process.argv.length) {
-        parallel = process.argv[i];
-        parIsSet = true;
-        if (!parallel || isNaN(parallel)) {
-          parallel = '';
-          parIsSet = false;
-        }
-      }
+      // skip
+      ++i;
       continue;
     }
     files.push(arg);
@@ -121,16 +114,12 @@ const main = async () => {
 
   reporter.report({type: 'test', test: 0});
 
-  console.log('Start:', reporter.state?.name, reporter.state?.test);
-
   await new Promise(resolve => {
     worker.done = () => resolve();
     worker.execute(files);
   });
 
   const hasFailed = reporter.state && reporter.state.failed > 0;
-
-  console.log('Finish:', reporter.state?.name, reporter.state?.test);
 
   reporter.report({
     type: 'end',
