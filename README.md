@@ -6,9 +6,9 @@
 `tape-six` is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
 It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
 
-It runs ES modules (`import`-based code) natively and supports CommonJS modules transparently using built-in [ESM](https://nodejs.org/api/esm.html).
+It runs ES modules (`import`-based code) natively and supports CommonJS modules transparently using the built-in [ESM](https://nodejs.org/api/esm.html).
 
-It can run TypeScript code with modern versions of Node, Bun and Deno without transpilation. Obviously TS bindings are included.
+It can run TypeScript code with modern versions of Node, Bun and Deno **without transpilation**. Obviously TS bindings are included.
 
 Individual test files can be executed directly with `node`, `deno`, `bun` without a need for a special test runner utility. It facilitates debugging and improves testing.
 
@@ -33,7 +33,7 @@ with existing unit test libraries:
 - Tests should work with ES modules natively.
   - What if I want to debug some CommonJS code with Node? No problem, it just works.
 - Tests should work with TypeScript natively.
-  - It just workss: modern runtimes (Node, Deno, Bun) support running TypeScript natively without transpilation by ignoring type information and running the code directly.
+  - It just works: modern runtimes (Node, Deno, Bun) support running TypeScript natively without transpilation by ignoring type information and running the code directly.
 - The [DX](https://en.wikipedia.org/wiki/User_experience#Developer_experience) in browsers are usually abysmal.
   - Both console-based debugging and a UI to navigate results are properly supported.
   - Integration with browser automation tools is supported for automated testing.
@@ -316,6 +316,10 @@ test('Sample test', async t => {
 });
 ```
 
+### Before/after hooks
+
+`tape-six` supports scope-based before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`, which can be used to set-up and tear-down a proper environment for tests. Read all about it in [before and after hooks](https://github.com/uhop/tape-six/wiki/Before-and-after-hooks).
+
 ### Running tests
 
 It is super easy to run tests:
@@ -328,7 +332,7 @@ It is super easy to run tests:
    3. Or you can run them in a browser!
 4. Profit!
 
-If you have a lot of tests, you can organize them using multiple files and directories.
+If you have a lot of tests, you can organize them using multiple files and directories (see configuration below).
 `tape-six` provides multiple test runners that can run them in different environments.
 
 Tests can run in parallel using multiple threads to speed up the whole process.
@@ -390,26 +394,5 @@ The most recent releases:
 - 1.6.0 _New features: support for `AssertionError` and 3rd-party assertion libraries based on it like `node:assert` and `chai`, support for `console.assert()`, support for `signal` to cancel asynchronous operations, tests wait for embedded tests, improved reporting of errors, updated dev dependencies._
 - 1.5.1 _Better support for stopping parallel tests, better support for "failed to load" errors._
 - 1.5.0 _Internal refactoring (moved state to reporters), added type identification of values in the DOM and TTY reporters, multiple minor fixes._
-- 1.4.5 _Internal: added flags support for custom test runners._
-- 1.4.4 _Refreshed the lock file._
-- 1.4.3 _Updated dev dependencies + a minor bugfix._
-- 1.4.2 _Improved documentation._
-- 1.4.1 _Added browser automation support._
-- 1.4.0 _Added a high-level helper `OK()` for evaluating simple expressions._
-- 1.3.5 _Minor improvements, better docs._
-- 1.3.4 _Minor bugfixes and improvements._
-- 1.3.3 _Added a way to hide console/streams output, better support for file tests, better TTY formatting._
-- 1.3.2 _Internal refactoring (capture console calls), updated dependencies._
-- 1.3.1 _Bugfix for web browser using JSONL reporter._
-- 1.3.0 _Bugfixes, updated dependencies, new feature: proxied console calls._
-- 1.2.0 _Updated dependencies + added an optional prefix for JSON lines._
-- 1.1.2 _Updated dependencies._
-- 1.1.1 _Technical re-release with the missing `index.d.ts` file._
-- 1.1.0 _Added TypeScript support._
-- 1.0.4 _Bugfix for platform-specific tests, old platforms, minor updates to accommodate Deno 2, updated dev deps._
-- 1.0.3 _Minor update to accommodate changes in Bun and updated dev deps._
-- 1.0.2 _Bugfix for Deno using the JSONL reporter._
-- 1.0.1 _Technical release: added more links._
-- 1.0.0 _The first official release._
 
 For more info consult full [release notes](https://github.com/uhop/tape-six/wiki/Release-notes).
