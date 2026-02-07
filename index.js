@@ -152,7 +152,7 @@ const init = async () => {
     setCurrentReporter?.(reporter);
   }
 
-  return {reporter, options, isBrowser, isBun, isDeno, isNode};
+  return {options, isBrowser, isBun, isDeno, isNode};
 };
 
 const getTestFileName = ({isBrowser, isBun, isDeno, isNode}) => {
@@ -184,7 +184,8 @@ const testRunner = async () => {
     settings = await init();
   }
 
-  const {reporter, isBrowser, isBun, isDeno, isNode} = settings,
+  const {isBrowser, isBun, isDeno, isNode} = settings,
+    reporter = getReporter(),
     testFileName = getTestFileName(settings);
 
   reporter.report({
