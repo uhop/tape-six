@@ -15,6 +15,7 @@
     "tape6": "bin/tape6.js",
     "tape6-bun": "bin/tape6-bun.js",
     "tape6-deno": "bin/tape6-deno.js",
+    "tape6-seq": "bin/tape6-seq.js",
     "tape6-server": "bin/tape6-server.js",
     "tape6-runner": "bin/tape6-runner.js"
   },
@@ -28,6 +29,7 @@
     "test": "node ./bin/tape6.js --flags FO",
     "test:bun": "bun run ./bin/tape6-bun.js --flags FO",
     "test:deno": "deno run -A ./bin/tape6-deno.js --flags FO",
+    "test:seq": "node ./bin/tape6-seq.js --flags FO",
     "test:puppeteer": "node tests/puppeteer-chrome.js",
     "test:playwright": "node tests/playwright-chrome.js",
     "ts-check": "tsc --noEmit",
