@@ -629,7 +629,7 @@ export declare interface Tester {
   is(a: unknown, b: unknown, message?: string): void;
 
   /**
-   * Asserts that `actual` is deeply equal to `expected`. Alias of `strictEqual`.
+   * Asserts that `actual` is strictly equal to `expected`. Alias of `strictEqual`.
    * @param actual - The actual value
    * @param expected - The expected value
    * @param message - Optional message to display if the assertion fails

@@ -13,6 +13,7 @@
   },
   "bin": {
     "tape6": "bin/tape6.js",
+    "tape6-node": "bin/tape6-node.js",
     "tape6-bun": "bin/tape6-bun.js",
     "tape6-deno": "bin/tape6-deno.js",
     "tape6-seq": "bin/tape6-seq.js",

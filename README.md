@@ -247,6 +247,8 @@ The following methods are available (all `msg` arguments are optional):
     - `notStrictEquals()` &mdash; an alias of `notStrictEqual()`.
     - `doesNotEqual()` &mdash; an alias of `notStrictEqual()`.
     - `isUnequal()` &mdash; an alias of `notStrictEqual()`.
+    - `isNotEqual()` &mdash; an alias of `notStrictEqual()`.
+    - `isNot()` &mdash; an alias of `notStrictEqual()`.
   - `looseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are loosely equal.
     - Loose equality is defined as `a == b`.
     - `looseEquals()` &mdash; an alias of `looseEqual()`.
@@ -290,6 +292,7 @@ The following methods are available (all `msg` arguments are optional):
 - Miscellaneous:
   - `any` &mdash; returns the `any` object. It can be used in deep equivalency asserts to match any value.
     See [deep6's any](https://github.com/uhop/deep6/wiki/any) for details.
+    - `_` &mdash; an alias of `any`.
   - `plan(n)` &mdash; sets the number of tests in the test suite. Rarely used.
   - `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
   - `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
