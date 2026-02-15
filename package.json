@@ -50,7 +50,18 @@
     "test",
     "harness",
     "assert",
-    "browser"
+    "browser",
+    "unit-test",
+    "testing",
+    "test-runner",
+    "esm",
+    "es-modules",
+    "typescript",
+    "deno",
+    "bun",
+    "nodejs",
+    "tap-protocol",
+    "cross-runtime"
   ],
   "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (https://www.lazutkin.com/)",
   "funding": "https://github.com/sponsors/uhop",
@@ -59,6 +70,8 @@
     "url": "https://github.com/uhop/tape-six/issues"
   },
   "homepage": "https://github.com/uhop/tape-six#readme",
+  "llms": "https://raw.githubusercontent.com/uhop/tape-six/master/llms.txt",
+  "llmsFull": "https://raw.githubusercontent.com/uhop/tape-six/master/llms-full.txt",
   "files": [
     "index.*",
     "bin",

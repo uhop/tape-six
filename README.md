@@ -99,10 +99,28 @@ And:
 
 <img width="240" height="329" alt="image" src="https://github.com/user-attachments/assets/f3d8ac65-9e6a-499d-837f-0271146da1de" />
 
+## Project structure
+
+```
+tape-six/
+├── index.js          # Main entry point, exports test, hooks, aliases
+├── index.d.ts        # TypeScript definitions for the public API
+├── package.json      # Package config; "tape6" section configures test discovery
+├── bin/              # CLI utilities: tape6, tape6-server, tape6-node, tape6-bun, tape6-deno, tape6-seq
+├── src/              # Source code (test engine, reporters, runners, utilities)
+├── web-app/          # Browser test UI application
+├── tests/            # Test files
+├── ts-tests/         # TypeScript test files
+├── wiki/             # GitHub wiki documentation (submodule)
+└── vendors/          # Git submodules (deep6)
+```
+
 ## Docs
 
 The documentation can be found in the [wiki](https://github.com/uhop/tape-six/wiki).
 See how it can be used in [tests/](https://github.com/uhop/tape-six/tree/master/tests).
+
+For AI assistants: see [llms.txt](https://github.com/uhop/tape-six/blob/master/llms.txt) and [llms-full.txt](https://github.com/uhop/tape-six/blob/master/llms-full.txt) for LLM-optimized documentation.
 
 The whole API is based on two objects: `test` and `Tester`.
 

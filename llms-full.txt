@@ -1,0 +1,384 @@
+# tape-six
+
+> A TAP-based unit testing library for modern JavaScript (ES6+). Works in Node, Deno, Bun, and browsers. Runs ES modules natively, supports TypeScript without transpilation. The npm package name is `tape-six` but all internal names use `tape6`.
+
+- Minimal, zero-dependency test library with a familiar API
+- Test files are directly executable: `node test.js`, `bun run test.js`, `deno run -A test.js`
+- Parallel test execution via worker threads
+- TAP, TTY (colored), and JSONL output formats
+- Browser testing with built-in web UI and automation support (Puppeteer, Playwright)
+- Before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
+- `test()` is aliased as `suite()`, `describe()`, and `it()` for easy migration
+- Compatible with `AssertionError`-based libraries like `node:assert` and `chai`
+
+## Quick start
+
+Install:
+
+```bash
+npm i -D tape-six
+```
+
+Write a test (`tests/test-example.js`):
+
+```js
+import test from 'tape-six';
+
+test('example', t => {
+  t.ok(true, 'truthy');
+  t.equal(1 + 1, 2, 'math works');
+  t.deepEqual([1, 2], [1, 2], 'arrays match');
+});
+```
+
+Run it directly:
+
+```bash
+node tests/test-example.js
+```
+
+Or run all configured tests:
+
+```bash
+npx tape6 --flags FO
+```
+
+## Importing
+
+```js
+import test from 'tape-six';
+// or: import {test} from 'tape-six';
+// or: import {test, beforeAll, afterAll, beforeEach, afterEach} from 'tape-six';
+// or: import {describe, it} from 'tape-six';
+
+// CommonJS:
+// const {test} = require('tape-six');
+```
+
+## test() API
+
+`test` registers a test suite. All three arguments are optional and recognized by type:
+
+- `async test(name, options, testFn)` — registers a test suite.
+- `test.skip(name, options, testFn)` — registers a skipped test suite.
+- `test.todo(name, options, testFn)` — registers a TODO test suite (failures not counted).
+- `test.asPromise(name, options, testPromiseFn)` — registers a callback-style test: `testPromiseFn(tester, resolve, reject)`.
+
+Arguments:
+
+- `name` (string, optional) — test name. Defaults to function name or `'(anonymous)'`.
+- `options` (object, optional):
+  - `name` — overridden by the `name` argument.
+  - `skip` (boolean) — skip this test.
+  - `todo` (boolean) — mark as TODO.
+  - `timeout` (number, ms) — timeout for async tests.
+  - `beforeAll`, `afterAll`, `beforeEach`, `afterEach` — hook functions.
+  - `before` — alias for `beforeAll`.
+  - `after` — alias for `afterAll`.
+- `testFn` (function) — `async testFn(tester)`. Can be sync or async.
+
+Flexible call signatures:
+
+```js
+test(name, options, testFn);
+test(name, testFn);
+test(testFn);
+test(name, options);
+test(options, testFn);
+test(options);
+```
+
+Examples:
+
+```js
+test('foo', t => {
+  t.pass();
+});
+
+test('bar', async t => {
+  const result = await fetchData();
+  t.equal(result.status, 200);
+});
+
+test.skip('not ready yet', t => {
+  t.fail();
+});
+
+test.todo('work in progress', t => {
+  t.ok(false); // reported but not counted as failure
+});
+
+test.asPromise('callback style', (t, resolve, reject) => {
+  const stream = getStream();
+  stream.on('end', resolve);
+  stream.on('error', reject);
+});
+```
+
+### Embedded tests
+
+```js
+test('top', async t => {
+  t.pass();
+  await t.test('nested', async t => {
+    t.pass();
+  });
+});
+```
+
+Always `await` embedded tests to preserve execution order.
+
+## Tester API
+
+The `Tester` object is passed to test functions. All `msg` arguments are optional.
+
+### Properties
+
+- `signal` — `AbortSignal` triggered when the test is stopped or timed out.
+- `any` (alias `_`) — wildcard for deep equality matching.
+
+### Assert methods
+
+- `pass(msg)` — assert pass.
+- `fail(msg)` — assert fail.
+- `ok(val, msg)` — assert truthy. Aliases: `true()`, `assert()`.
+- `notOk(val, msg)` — assert falsy. Aliases: `false()`, `notok()`.
+- `error(err, msg)` — assert err is falsy. Aliases: `ifError()`, `ifErr()`, `iferror()`.
+- `strictEqual(a, b, msg)` — assert `a === b`. Aliases: `is()`, `equal()`, `isEqual()`, `equals()`, `strictEquals()`.
+- `notStrictEqual(a, b, msg)` — assert `a !== b`. Aliases: `not()`, `notEqual()`, `notEquals()`, `notStrictEquals()`, `doesNotEqual()`, `isUnequal()`, `isNotEqual()`, `isNot()`.
+- `looseEqual(a, b, msg)` — assert `a == b`. Alias: `looseEquals()`.
+- `notLooseEqual(a, b, msg)` — assert `a != b`. Alias: `notLooseEquals()`.
+- `deepEqual(a, b, msg)` — deep strict equality. Aliases: `same()`, `deepEquals()`, `isEquivalent()`.
+- `notDeepEqual(a, b, msg)` — not deeply equal. Aliases: `notSame()`, `notDeepEquals()`, `notEquivalent()`, `notDeeply()`, `isNotDeepEqual()`, `isNotEquivalent()`.
+- `deepLooseEqual(a, b, msg)` — deep loose equality.
+- `notDeepLooseEqual(a, b, msg)` — not deeply loosely equal.
+- `throws(fn, msg)` — assert fn throws.
+- `doesNotThrow(fn, msg)` — assert fn does not throw.
+- `matchString(string, regexp, msg)` — assert string matches regexp.
+- `doesNotMatchString(string, regexp, msg)` — assert string does not match regexp.
+- `match(a, b, msg)` — deep structural match (supports wildcards).
+- `doesNotMatch(a, b, msg)` — assert no deep match.
+- `rejects(promise, msg)` — assert promise rejects (async, await it). Alias: `doesNotResolve()`.
+- `resolves(promise, msg)` — assert promise resolves (async, await it). Alias: `doesNotReject()`.
+
+### Embedded test methods
+
+- `test(name, options, testFn)` — nested test suite (async, await it).
+- `skip(name, options, testFn)` — skip nested suite.
+- `todo(name, options, testFn)` — TODO nested suite.
+- `asPromise(name, options, testPromiseFn)` — callback-style nested suite.
+
+### Hooks
+
+- `beforeAll(fn)` / `before(fn)` — run before first nested test.
+- `afterAll(fn)` / `after(fn)` — run after last nested test.
+- `beforeEach(fn)` — run before each nested test.
+- `afterEach(fn)` — run after each nested test.
+
+### Miscellaneous
+
+- `plan(n)` — set expected number of assertions.
+- `comment(msg)` — send a comment to the reporter.
+- `skipTest(...args, msg)` — skip current test with a message.
+- `bailOut(msg)` — abort the test suite.
+
+### Expression evaluator
+
+- `OK(condition, msg, options)` — returns code string for `eval()`. Aliases: `TRUE()`, `ASSERT()`.
+  - `condition`: a JavaScript expression as a string.
+  - On failure, reports values of all variables in the expression.
+  - `options.self`: tester variable name (default: `"t"`).
+
+```js
+test('evaluator', t => {
+  const a = 1, b = 2;
+  eval(t.OK('a + b === 3'));
+});
+```
+
+## Before and after hooks
+
+Hooks are scoped — they only affect tests at their level.
+
+Top-level hooks (affect top-level tests only):
+
+```js
+import {test, beforeAll, afterAll, beforeEach, afterEach} from 'tape-six';
+
+beforeAll(() => { /* runs once before first top-level test */ });
+afterAll(() => { /* runs once after last top-level test */ });
+beforeEach(() => { /* runs before each top-level test */ });
+afterEach(() => { /* runs after each top-level test */ });
+```
+
+Nested hooks (via tester object):
+
+```js
+test('suite', async t => {
+  t.beforeEach(() => { /* before each nested test */ });
+  t.afterEach(() => { /* after each nested test */ });
+
+  await t.test('test 1', t => t.pass());
+  await t.test('test 2', t => t.pass());
+});
+```
+
+Hooks via options (reusable):
+
+```js
+const opts = {
+  beforeEach: () => setupDb(),
+  afterEach: () => teardownDb()
+};
+
+test('suite', opts, async t => {
+  await t.test('test 1', t => t.pass());
+});
+```
+
+Multiple hooks of the same type run in registration order (before) or reverse order (after).
+
+## Configuring tests
+
+Configuration is read from `tape6.json` or the `"tape6"` section of `package.json`:
+
+```json
+{
+  "tape6": {
+    "tests": ["/tests/test-*.*js"],
+    "cli": ["/tests/test-*.cjs"],
+    "browser": ["/tests/web/test-*.html"],
+    "importmap": {
+      "imports": {
+        "tape-six": "/node_modules/tape-six/index.js",
+        "tape-six/": "/node_modules/tape-six/src/"
+      }
+    }
+  }
+}
+```
+
+Environment-specific subsections: `node`, `deno`, `bun`, `browser`.
+
+## Command-line utilities
+
+### tape6
+
+Runs test files in parallel using worker threads.
+
+```bash
+tape6 [--flags FLAGS] [--par N] [tests...]
+```
+
+- `--flags FLAGS` — output control flags (see below).
+- `--par N` — number of parallel workers (default: all CPU cores).
+- No arguments: runs tests from configuration.
+
+### tape6-seq
+
+Sequential in-process runner. Same options as `tape6` but no threads.
+
+### tape6-server
+
+Web server for browser testing:
+
+```bash
+tape6-server [--trace] [--port N]
+```
+
+Default port: 3000. Navigate to `http://localhost:3000` for the web UI.
+
+### Runtime-specific runners
+
+- `tape6-node` — Node.js runner.
+- `tape6-bun` — Bun runner.
+- `tape6-deno` — Deno runner.
+
+## Supported flags
+
+Flags are a string of characters. Uppercase = enabled, lowercase = disabled.
+
+- `F` — Failures only: show only failed tests.
+- `T` — show Time for each test.
+- `B` — show Banner with summary.
+- `D` — show Data of failed tests.
+- `O` — fail Once: stop at first failure.
+- `N` — show assert Number.
+- `M` — Monochrome: no colors.
+- `C` — don't Capture console output.
+- `H` — Hide streams and console output.
+
+Usage:
+
+```bash
+tape6 --flags FO
+TAPE6_FLAGS=FO node tests/test-example.js
+```
+
+Browser: `http://localhost:3000/?flags=FO`
+
+## Environment variables
+
+- `TAPE6_FLAGS` — flags string.
+- `TAPE6_PAR` — number of parallel workers.
+- `TAPE6_TAP` — force TAP reporter (any non-empty value).
+- `TAPE6_JSONL` — force JSONL reporter (any non-empty value).
+- `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
+
+## Browser testing
+
+1. Start the server: `npm start` (runs `tape6-server --trace`).
+2. Open `http://localhost:3000` for the web UI.
+3. Or automate with Puppeteer/Playwright:
+
+```js
+// Puppeteer example
+import puppeteer from 'puppeteer';
+const browser = await puppeteer.launch({headless: true});
+const page = await browser.newPage();
+page.on('console', msg => console.log(msg.text()));
+await page.exposeFunction('__tape6_reportResults', async text => {
+  await browser.close();
+  process.exit(text === 'success' ? 0 : 1);
+});
+await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=M');
+```
+
+```js
+// Playwright example
+import {chromium} from 'playwright';
+const browser = await chromium.launch({headless: true});
+const page = await browser.newPage();
+page.on('console', msg => console.log(msg.text()));
+await page.exposeFunction('__tape6_reportResults', async text => {
+  await browser.close();
+  process.exit(text === 'success' ? 0 : 1);
+});
+await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=M');
+```
+
+## 3rd-party assertion libraries
+
+`tape-six` supports `AssertionError`-based assertions. You can use `node:assert` or `chai` inside test functions:
+
+```js
+import test from 'tape-six';
+import {assert, expect} from 'chai';
+
+test('with chai', t => {
+  expect(1).to.be.lessThan(2);
+  assert.deepEqual([1], [1]);
+});
+```
+
+```js
+import test from 'tape-six';
+import assert from 'node:assert/strict';
+
+test('with node:assert', t => {
+  assert.equal(1 + 1, 2);
+  assert.deepEqual({a: 1}, {a: 1});
+});
+```
+
+Assertions that throw `AssertionError` are automatically caught and reported.

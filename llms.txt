@@ -1,0 +1,38 @@
+# tape-six
+
+> A TAP-based unit testing library for modern JavaScript (ES6+). Works in Node, Deno, Bun, and browsers. Runs ES modules natively, supports TypeScript without transpilation. The npm package name is `tape-six` but all internal names use `tape6`.
+
+- Minimal, zero-dependency test library with a familiar API
+- Test files are directly executable: `node test.js`, `bun run test.js`, `deno run -A test.js`
+- Parallel test execution via worker threads
+- TAP, TTY (colored), and JSONL output formats
+- Browser testing with built-in web UI and automation support (Puppeteer, Playwright)
+- Before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
+- `test()` is aliased as `suite()`, `describe()`, and `it()` for easy migration
+- Compatible with `AssertionError`-based libraries like `node:assert` and `chai`
+
+## Docs
+
+- [README](https://github.com/uhop/tape-six/blob/master/README.md): Full API reference for `test()` and `Tester` with examples
+- [Wiki home](https://github.com/uhop/tape-six/wiki): Complete documentation index
+- [test() API](https://github.com/uhop/tape-six/wiki/test()): Registration, signatures, arguments, embedded tests, async patterns
+- [Tester API](https://github.com/uhop/tape-six/wiki/Tester): All assert methods, hooks, evaluators, and aliases
+- [Before and after hooks](https://github.com/uhop/tape-six/wiki/Before-and-after-hooks): Scoped setup/teardown with examples
+- [Set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests): Configuration via `package.json` or `tape6.json`
+- [Supported flags](https://github.com/uhop/tape-six/wiki/Supported-flags): Output control flags (F, T, B, D, O, N, M, C, H)
+- [tape6 utility](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6): CLI usage, environment variables, parallel execution
+- [tape6-server utility](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6-server): Browser test server
+- [Examples](https://github.com/uhop/tape-six/wiki/Examples): Step-by-step debugging workflow
+- [TypeScript definitions](https://github.com/uhop/tape-six/blob/master/index.d.ts): Full type definitions for the public API
+
+## Optional
+
+- [3rd-party assertion libraries](https://github.com/uhop/tape-six/wiki/3rd-party-assertion-libraries): Using `node:assert` and `chai`
+- [Environment: Node](https://github.com/uhop/tape-six/wiki/Environment-%E2%80%90-Node): Node-specific notes
+- [Environment: Bun](https://github.com/uhop/tape-six/wiki/Environment-%E2%80%90-Bun): Bun-specific notes
+- [Environment: Deno](https://github.com/uhop/tape-six/wiki/Environment-%E2%80%90-Deno): Deno-specific notes
+- [Environment: Browsers](https://github.com/uhop/tape-six/wiki/Environment-%E2%80%90-Browsers): Browser testing setup
+- [Environment: Playwright](https://github.com/uhop/tape-six/wiki/Environment-%E2%80%90-Playwright): Playwright automation
+- [Environment: Puppeteer](https://github.com/uhop/tape-six/wiki/Environment-%E2%80%90-Puppeteer): Puppeteer automation
+- [Working on this project](https://github.com/uhop/tape-six/wiki/Working-on-this-project): Contributor setup with git submodules
+- [Release notes](https://github.com/uhop/tape-six/wiki/Release-notes): Version history
