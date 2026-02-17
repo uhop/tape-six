@@ -1,8 +1,36 @@
-const reportToParent = fileName => msg => {
-  if ((msg.type === 'test' || msg.type === 'end') && !msg.test && !msg.name) {
-    msg.name = 'FILE: /' + fileName;
-  }
-  postMessage(msg);
+const DEFAULT_TIMEOUT = 5_000;
+
+const getTimeout = () => {
+  const timeoutValue = Deno.env.get('TAPE6_WORKER_TIMEOUT');
+  if (!timeoutValue) return DEFAULT_TIMEOUT;
+  let timeout = Number(timeoutValue);
+  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_TIMEOUT;
+  return timeout;
+};
+
+const reportToParent = fileName => {
+  const timeout = getTimeout();
+  let timeoutBeforeStartId = setTimeout(() => {
+    postMessage({type: 'test', test: 0, name: 'FILE: /' + fileName});
+    postMessage({
+      name: `No tests found in ${timeout}ms`,
+      test: 0,
+      marker: new Error(),
+      operator: 'error',
+      fail: true
+    });
+    postMessage({type: 'end', test: 0, name: 'FILE: /' + fileName, fail: true});
+  }, timeout);
+  return msg => {
+    if (timeoutBeforeStartId) {
+      clearTimeout(timeoutBeforeStartId);
+      timeoutBeforeStartId = null;
+    }
+    if ((msg.type === 'test' || msg.type === 'end') && !msg.test && !msg.name) {
+      msg.name = 'FILE: /' + fileName;
+    }
+    postMessage(msg);
+  };
 };
 
 addEventListener('message', async event => {
