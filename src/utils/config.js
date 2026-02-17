@@ -17,7 +17,7 @@ export const resolvePatterns = async (rootFolder, patterns) => {
     if (item.length && item[0] == '!') {
       result = exclude(result, wildToRe(rootFolder, item.substring(1)));
     } else {
-      for (const file of await listing(rootFolder, item)) {
+      for await (const file of listing(rootFolder, item)) {
         result.add(file);
       }
     }

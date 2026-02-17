@@ -17,44 +17,36 @@ const mergeWildcards = folders =>
     []
   );
 
-const listFiles = async (rootFolder, folders, baseRe, parents) => {
+const listFiles = async function* (rootFolder, folders, baseRe, parents) {
   const dir = path.join(rootFolder, parents.join(path.sep)),
     files = await fsp.readdir(dir, {withFileTypes: true});
 
-  let result = [];
-
   if (!folders.length) {
     for (const file of files) {
-      if (file.isFile() && baseRe.test(file.name)) result.push(path.join(dir, file.name));
+      if (file.isFile() && baseRe.test(file.name)) yield path.join(dir, file.name);
     }
-    return result;
+    return;
   }
 
   const theRest = folders.slice(1);
 
   if (folders[0]) {
     for (const file of files) {
-      if (file.isDirectory() && folders[0].test(file.name)) {
-        result = result.concat(
-          await listFiles(rootFolder, theRest, baseRe, parents.concat(file.name))
-        );
-      }
+      if (file.isDirectory() && folders[0].test(file.name))
+        yield* listFiles(rootFolder, theRest, baseRe, parents.concat(file.name));
     }
-    return result;
+    return;
   }
 
-  result = result.concat(await listFiles(rootFolder, theRest, baseRe, parents));
+  yield* listFiles(rootFolder, theRest, baseRe, parents);
   for (const file of files) {
-    if (file.isDirectory()) {
-      result = result.concat(
-        await listFiles(rootFolder, folders, baseRe, parents.concat(file.name))
-      );
-    }
+    if (file.isDirectory())
+      yield* listFiles(rootFolder, folders, baseRe, parents.concat(file.name));
   }
-  return result;
+  return;
 };
 
-export const listing = async (rootFolder, wildcard) => {
+export const listing = async function* (rootFolder, wildcard) {
   const parsed = path.parse(path.normalize(wildcard)),
     baseRe = new RegExp('^' + prepRe(parsed.name, '.*') + prepRe(parsed.ext, '.*', true) + '$'),
     folders = mergeWildcards(
@@ -63,7 +55,7 @@ export const listing = async (rootFolder, wildcard) => {
         .filter(part => part)
         .map(part => (part === '**' ? null : new RegExp('^' + prepRe(part, notSep) + '$')))
     );
-  return listFiles(rootFolder, folders, baseRe, []);
+  yield* listFiles(rootFolder, folders, baseRe, []);
 };
 
 export const wildToRe = (rootFolder, wildcard) => {
