@@ -1,7 +1,7 @@
 const DEFAULT_TIMEOUT = 5_000;
 
 const getTimeout = () => {
-  const timeoutValue = Bun.env.TAPE6_WORKER_TIMEOUT;
+  const timeoutValue = Bun.env.TAPE6_WORKER_START_TIMEOUT;
   if (!timeoutValue) return DEFAULT_TIMEOUT;
   let timeout = Number(timeoutValue);
   if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_TIMEOUT;

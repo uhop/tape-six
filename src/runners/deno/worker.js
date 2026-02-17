@@ -1,7 +1,7 @@
 const DEFAULT_TIMEOUT = 5_000;
 
 const getTimeout = () => {
-  const timeoutValue = Deno.env.get('TAPE6_WORKER_TIMEOUT');
+  const timeoutValue = Deno.env.get('TAPE6_WORKER_START TIMEOUT');
   if (!timeoutValue) return DEFAULT_TIMEOUT;
   let timeout = Number(timeoutValue);
   if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_TIMEOUT;
