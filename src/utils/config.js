@@ -2,18 +2,32 @@ import {promises as fsp} from 'node:fs';
 import path from 'node:path';
 
 import {listing, wildToRe} from './listing.js';
-import {union, exclude} from './fileSets.js';
+
+const exclude = (files, pattern) => {
+  const excluded = new Set();
+  for (const file of files) {
+    if (pattern.test(file)) excluded.add(file);
+  }
+  return files.difference(excluded);
+};
 
 export const resolvePatterns = async (rootFolder, patterns) => {
-  let result = [];
+  let result = new Set();
   for (const item of patterns) {
     if (item.length && item[0] == '!') {
       result = exclude(result, wildToRe(rootFolder, item.substring(1)));
     } else {
-      result = union(result, await listing(rootFolder, item));
+      for (const file of await listing(rootFolder, item)) {
+        result.add(file);
+      }
     }
   }
-  return result.map(fileName => path.relative(rootFolder, fileName));
+
+  const files = [];
+  for (const file of result) {
+    files.push(path.relative(rootFolder, file));
+  }
+  return files;
 };
 
 export const getConfig = async (rootFolder, traceFn) => {
