@@ -109,13 +109,13 @@ export const getReporterType = () => {
   return 'tty';
 };
 
-const DEFAULT_TIMEOUT = 5_000;
+export const DEFAULT_START_TIMEOUT = 5_000;
 
 export const getTimeoutValue = () => {
-  if (runtime.name === 'browser') return DEFAULT_TIMEOUT;
+  if (runtime.name === 'browser') return DEFAULT_START_TIMEOUT;
   const timeoutValue = runtime.getEnvVar('TAPE6_WORKER_START_TIMEOUT');
-  if (!timeoutValue) return DEFAULT_TIMEOUT;
+  if (!timeoutValue) return DEFAULT_START_TIMEOUT;
   let timeout = Number(timeoutValue);
-  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_TIMEOUT;
+  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_START_TIMEOUT;
   return timeout;
 };

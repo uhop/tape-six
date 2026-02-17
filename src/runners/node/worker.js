@@ -1,13 +1,13 @@
 import process from 'node:process';
 import {parentPort} from 'node:worker_threads';
 
-const DEFAULT_TIMEOUT = 5_000;
+const DEFAULT_START_TIMEOUT = 5_000;
 
 const getTimeout = () => {
   const timeoutValue = process.env.TAPE6_WORKER_START_TIMEOUT;
-  if (!timeoutValue) return DEFAULT_TIMEOUT;
+  if (!timeoutValue) return DEFAULT_START_TIMEOUT;
   let timeout = Number(timeoutValue);
-  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_TIMEOUT;
+  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_START_TIMEOUT;
   return timeout;
 };
 
