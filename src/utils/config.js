@@ -108,3 +108,14 @@ export const getReporterType = () => {
   if (runtime.getEnvVar('TAPE6_TAP')) return 'tap';
   return 'tty';
 };
+
+const DEFAULT_TIMEOUT = 5_000;
+
+export const getTimeoutValue = () => {
+  if (runtime.name === 'browser') return DEFAULT_TIMEOUT;
+  const timeoutValue = runtime.getEnvVar('TAPE6_WORKER_START_TIMEOUT');
+  if (!timeoutValue) return DEFAULT_TIMEOUT;
+  let timeout = Number(timeoutValue);
+  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_TIMEOUT;
+  return timeout;
+};

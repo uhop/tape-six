@@ -4,6 +4,7 @@ import {pathToFileURL} from 'node:url';
 
 import {isStopTest} from '../../State.js';
 import EventServer from '../../utils/EventServer.js';
+import {getTimeoutValue} from '../../utils/config.js';
 import {getOriginalConsole, setCurrentReporter} from '../../utils/capture-console.js';
 import {
   clearBeforeAll,
@@ -23,10 +24,16 @@ export default class TestWorker extends EventServer {
     this.testRunner = options.testRunner;
     this.counter = 0;
     this.originalConsole = getOriginalConsole() || globalThis.console;
+    this.timeout = getTimeoutValue();
+    this.timeoutId = null;
   }
   makeTask(fileName) {
     const id = String(++this.counter),
       reporter = new BypassReporter(this.reporter, event => {
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+          this.timeoutId = null;
+        }
         try {
           this.report(id, event);
         } catch (error) {
@@ -39,33 +46,20 @@ export default class TestWorker extends EventServer {
     setReporter(reporter);
     setCurrentReporter(this.reporter);
     process.env.TAPE6_TEST_FILE_NAME = fileName;
-    import(new URL(fileName, baseName))
+    const url = new URL(fileName, baseName);
+    import(url)
       .then(async () => {
         const testRunner = await this.testRunner;
         registerNotifyCallback(testRunner);
-      })
-      .catch(error => {
-        this.report(id, {
-          type: 'comment',
-          name: 'fail to load: ' + (error.message || 'Worker error'),
-          test: 0
-        });
-        try {
-          this.report(id, {
-            name: String(error),
-            test: 0,
-            marker: new Error(),
-            operator: 'error',
-            fail: true,
-            data: {
-              actual: error
-            }
-          });
-        } catch (error) {
-          if (!isStopTest(error)) throw error;
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+          this.timeoutId = null;
         }
-        this.close(id);
-      });
+        this.timeoutId = setTimeout(() => {
+          this.#reportTimeout(id, fileName);
+        }, this.timeout);
+      })
+      .catch(error => this.#reportError(id, error));
     return id;
   }
   destroyTask() {
@@ -75,5 +69,52 @@ export default class TestWorker extends EventServer {
     clearAfterAll();
     clearBeforeEach();
     clearAfterEach();
+  }
+  #reportError(id, error) {
+    this.report(id, {
+      type: 'comment',
+      name: 'fail to load: ' + (error.message || 'Worker error'),
+      test: 0
+    });
+    try {
+      this.report(id, {
+        name: String(error),
+        test: 0,
+        marker: new Error(),
+        operator: 'error',
+        fail: true,
+        data: {
+          actual: error
+        }
+      });
+    } catch (error) {
+      if (!isStopTest(error)) throw error;
+    }
+    this.close(id);
+  }
+  #reportTimeout(id, fileName) {
+    this.report(id, {
+      type: 'test',
+      test: 0,
+      name: 'FILE: /' + fileName
+    });
+    try {
+      this.report(id, {
+        name: `No tests found in ${this.timeout}ms`,
+        test: 0,
+        marker: new Error(),
+        operator: 'error',
+        fail: true
+      });
+    } catch (error) {
+      if (!isStopTest(error)) throw error;
+    }
+    this.report(id, {
+      type: 'end',
+      test: 0,
+      name: 'FILE: /' + fileName,
+      fail: true
+    });
+    this.close(id);
   }
 }
