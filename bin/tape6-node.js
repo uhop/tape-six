@@ -125,6 +125,11 @@ const main = async () => {
     console.error('UNHANDLED ERROR:', origin, error)
   );
 
+  if (!files.length) {
+    console.log('No files found.');
+    process.exit(1);
+  }
+
   const reporter = getReporter(),
     worker = new TestWorker(reporter, parallel, options);
 
