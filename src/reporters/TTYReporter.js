@@ -58,7 +58,7 @@ export class TTYReporter extends Reporter {
     this.hasColors =
       hasColors &&
       this.output.isTTY &&
-      (typeof this.output.hasColors == 'function' ? this.output.hasColors(256) : true);
+      (typeof this.output.hasColors == 'function' ? this.output.hasColors(16) : true);
     this.renumberAsserts = renumberAsserts;
     this.failureOnly = failureOnly;
     this.showBanner = showBanner;
@@ -221,7 +221,7 @@ export class TTYReporter extends Reporter {
               paint = method === 'error' || method === 'assert' ? 'stderrPaint' : 'stdoutPaint',
               prefix = this[paint](consoleDict[method] + ':') + ' ';
             for (const line of lines) {
-              this.out(prefix + line);
+              this.out(prefix + line, this.failureOnly);
             }
           }
         }
@@ -231,7 +231,7 @@ export class TTYReporter extends Reporter {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stdoutPaint('stdout:') + ' ';
           for (const line of lines) {
-            this.out(prefix + line);
+            this.out(prefix + line, this.failureOnly);
           }
         }
         break;
@@ -240,7 +240,7 @@ export class TTYReporter extends Reporter {
           const lines = event.name.split(/\r?\n/),
             prefix = this.stderrPaint('stderr:') + ' ';
           for (const line of lines) {
-            this.out(prefix + line);
+            this.out(prefix + line, this.failureOnly);
           }
         }
         break;
