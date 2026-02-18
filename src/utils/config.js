@@ -102,11 +102,24 @@ if (typeof Deno == 'object' && Deno?.version) {
   runtime.name = 'browser';
 }
 
+export const reporterFileNames = {
+  jsonl: 'JSONLReporter.js',
+  min: 'MinReporter.js',
+  tap: 'TapReporter.js',
+  tty: 'TTYReporter.js'
+};
+
 export const getReporterType = () => {
   if (runtime.name === 'browser') return null;
   if (runtime.getEnvVar('TAPE6_JSONL')) return 'jsonl';
+  if (runtime.getEnvVar('TAPE6_MIN')) return 'min';
   if (runtime.getEnvVar('TAPE6_TAP')) return 'tap';
   return 'tty';
+};
+
+export const getReporterFileName = type => {
+  const reporterType = type || getReporterType();
+  return reporterFileNames[reporterType] || reporterFileNames.tty;
 };
 
 export const DEFAULT_START_TIMEOUT = 5_000;

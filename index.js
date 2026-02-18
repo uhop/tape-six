@@ -110,6 +110,9 @@ const init = async () => {
       if (Deno.env.get('TAPE6_JSONL')) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
         reporter = new JSONLReporter({...options, originalConsole, hasColors});
+      } else if (Deno.env.get('TAPE6_MIN')) {
+        const {MinReporter} = await import('./src/reporters/MinReporter.js');
+        reporter = new MinReporter({...options, originalConsole});
       } else if (!Deno.env.get('TAPE6_TAP')) {
         const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
         reporter = new TTYReporter({...options, originalConsole, hasColors});
@@ -124,6 +127,9 @@ const init = async () => {
       if (Bun.env.TAPE6_JSONL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
         reporter = new JSONLReporter({...options, originalConsole, hasColors});
+      } else if (Bun.env.TAPE6_MIN) {
+        const {MinReporter} = await import('./src/reporters/MinReporter.js');
+        reporter = new MinReporter({...options, originalConsole});
       } else if (!Bun.env.TAPE6_TAP) {
         const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
         reporter = new TTYReporter({...options, originalConsole, hasColors});
@@ -138,6 +144,9 @@ const init = async () => {
       if (process.env.TAPE6_JSONL) {
         const {JSONLReporter} = await import('./src/reporters/JSONLReporter.js');
         reporter = new JSONLReporter({...options, originalConsole, hasColors});
+      } else if (process.env.TAPE6_MIN) {
+        const {MinReporter} = await import('./src/reporters/MinReporter.js');
+        reporter = new MinReporter({...options, originalConsole});
       } else if (!process.env.TAPE6_TAP) {
         const {TTYReporter} = await import('./src/reporters/TTYReporter.js');
         reporter = new TTYReporter({...options, originalConsole, hasColors});

@@ -2,7 +2,12 @@
 
 import {fileURLToPath} from 'node:url';
 
-import {resolveTests, resolvePatterns, getReporterType} from '../src/utils/config.js';
+import {
+  resolveTests,
+  resolvePatterns,
+  getReporterFileName,
+  getReporterType
+} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
@@ -85,17 +90,11 @@ const config = () => {
   if (!parallel) parallel = globalThis.navigator?.hardwareConcurrency || 1;
 };
 
-const reporters = {
-  jsonl: 'JSONLReporter.js',
-  tap: 'TapReporter.js',
-  tty: 'TTYReporter.js'
-};
-
 const init = async () => {
   const currentReporter = getReporter();
   if (!currentReporter) {
     const reporterType = getReporterType(),
-      reporterFile = reporters[reporterType] || reporters.tty,
+      reporterFile = getReporterFileName(reporterType),
       CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
       hasColors = !(
         options.monochrome ||
