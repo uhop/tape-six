@@ -23,7 +23,7 @@ export const testRunner = testRunnerDeferred.promise;
 export const setTestRunner = runner => testRunnerDeferred.resolve(runner);
 
 export const registerNotifyCallback = callback => {
-  if (tests.size) {
+  if (tests.length) {
     defer(callback);
   } else {
     notifyCallback.add(callback);
