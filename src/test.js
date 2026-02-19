@@ -12,7 +12,7 @@ let tests = [],
   reporter = null,
   testCounter = 0,
   isConfigured = false,
-  notifyCallback = [];
+  notifyCallback = new Set();
 
 export const getConfiguredFlag = () => isConfigured;
 export const setConfiguredFlag = value => (isConfigured = !!value);
@@ -23,12 +23,14 @@ export const testRunner = testRunnerDeferred.promise;
 export const setTestRunner = runner => testRunnerDeferred.resolve(runner);
 
 export const registerNotifyCallback = callback => {
-  if (tests.length) {
+  if (tests.size) {
     defer(callback);
   } else {
-    notifyCallback.push(callback);
+    notifyCallback.add(callback);
   }
 };
+
+export const unregisterNotifyCallback = callback => notifyCallback.delete(callback);
 
 const testers = [];
 
@@ -86,9 +88,9 @@ export const test = async (name, options, testFn) => {
     isTimerSet = true;
   }
   const deferred = makeDeferred();
-  if (tests.push({options, deferred}) === 1 && notifyCallback.length) {
+  if (tests.push({options, deferred}) === 1 && notifyCallback.size) {
     for (const callback of notifyCallback) defer(callback);
-    notifyCallback = [];
+    notifyCallback = new Set();
   }
 
   return deferred.promise;
