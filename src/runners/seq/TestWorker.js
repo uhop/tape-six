@@ -56,6 +56,7 @@ export default class TestWorker extends EventServer {
           this.timeoutId = null;
         }
         this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
           this.#reportTimeout(id, fileName);
         }, this.timeout);
       })
