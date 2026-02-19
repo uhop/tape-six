@@ -1,7 +1,7 @@
 {
   "name": "tape-six",
   "version": "1.7.1",
-  "description": "The test harness for the modern JavaScript and TypeScript.",
+  "description": "TAP-based unit test library for Node, Deno, Bun, and browsers. ES modules, TypeScript, zero dependencies.",
   "type": "module",
   "main": "index.js",
   "module": "index.js",
@@ -76,7 +76,9 @@
     "index.*",
     "bin",
     "web-app",
-    "src"
+    "src",
+    "llms.txt",
+    "llms-full.txt"
   ],
   "tape6": {
     "tests": [
