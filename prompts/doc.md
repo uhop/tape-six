@@ -1,6 +1,7 @@
 Generate a comprehensive documentation file for the specified file, including a detailed description of its purpose, key features, technical specifications, usage instructions, and any relevant troubleshooting steps. Ensure the document is formatted for easy readability and includes clear headings and sections. Target the developers who will use the file. Be concise and do not include any unnecessary details.
 
 Before generating documentation:
+
 1. Review README.md for project overview
 2. Review index.js and index.d.ts for the public API and TypeScript definitions
 3. Check the actual source file (.js) and TypeScript definitions (.d.ts) for accuracy
@@ -20,6 +21,7 @@ If you document an interface or object, include the following information in the
 - Aliases and their canonical counterparts
 
 Usage instructions should include:
+
 - Import statement following project conventions: `import test from 'tape-six'` or `import {test} from 'tape-six'`
 - A simple but representative use case
 - Show relevant methods and options in context
@@ -27,11 +29,13 @@ Usage instructions should include:
 Troubleshooting should include common issues and their solutions.
 
 Cross-reference related components:
+
 - Link to related API pages (e.g., test() references Tester, Tester references test())
 - Link to related utilities (e.g., tape6, tape6-server)
 - Link to components commonly used together
 
 Include a "See Also" section at the end with:
+
 - Related API documentation links
 - Related utility documentation links
 - Link to examples in the wiki Examples page

@@ -1,6 +1,7 @@
 Write tests for the specified feature or module using the `tape-six` testing library.
 
 Before writing tests:
+
 1. Review the feature's source code to understand its public API, edge cases, and error conditions
 2. Review `index.js` and `index.d.ts` for exports and type signatures
 3. Check existing test files in `tests/` for style and conventions
@@ -90,8 +91,12 @@ Nested tests with setup/teardown:
 ```js
 test('feature group', async t => {
   let resource;
-  t.beforeAll(async () => { resource = await setup(); });
-  t.afterAll(async () => { await resource.close(); });
+  t.beforeAll(async () => {
+    resource = await setup();
+  });
+  t.afterAll(async () => {
+    await resource.close();
+  });
 
   await t.test('scenario 1', t => {
     t.ok(resource.isReady(), 'resource is ready');
@@ -107,8 +112,12 @@ Testing exceptions:
 
 ```js
 test('error handling', async t => {
-  t.throws(() => { badFunction(); }, 'should throw on bad input');
-  t.doesNotThrow(() => { goodFunction(); }, 'should not throw on good input');
+  t.throws(() => {
+    badFunction();
+  }, 'should throw on bad input');
+  t.doesNotThrow(() => {
+    goodFunction();
+  }, 'should not throw on good input');
   await t.rejects(asyncBadFunction(), 'should reject on bad async input');
   await t.resolves(asyncGoodFunction(), 'should resolve on good async input');
 });
@@ -117,6 +126,7 @@ test('error handling', async t => {
 ## Verification
 
 After writing the test file, verify it:
+
 1. Run directly: `node tests/test-<feature>.js` (or `node ts-tests/test-<feature>.ts` for TypeScript)
 2. Run with flags: `TAPE6_FLAGS=FO node tests/test-<feature>.js`
 3. Ensure it is picked up by the test runner:
