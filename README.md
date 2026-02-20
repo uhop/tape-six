@@ -411,6 +411,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.7.2 _Minor internal refactoring and fixes._
 - 1.7.1 _Added AI support, added timeout to start test runners, fixed some bugs in the sequential test runner._
 - 1.7.0 _New features: after/before hooks for tests, aliases for `suite()`, `describe()`, `it()`, `tape6-seq` &mdash; an in-process sequential test runner. Improvements: stricter monochrome detection, refactoring, bugfixes, updated dev dependencies and the documentation._
 - 1.6.0 _New features: support for `AssertionError` and 3rd-party assertion libraries based on it like `node:assert` and `chai`, support for `console.assert()`, support for `signal` to cancel asynchronous operations, tests wait for embedded tests, improved reporting of errors, updated dev dependencies._
