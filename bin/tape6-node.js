@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import process from 'node:process';
+import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 
 import {
@@ -88,7 +89,18 @@ const config = () => {
   } else {
     parallel = 0;
   }
-  if (!parallel) parallel = globalThis.navigator?.hardwareConcurrency || 1;
+  if (!parallel) {
+    if (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) {
+      parallel = navigator.hardwareConcurrency;
+    } else {
+      try {
+        parallel = os.availableParallelism();
+      } catch (e) {
+        void e;
+        parallel = 1;
+      }
+    }
+  }
 };
 
 const init = async () => {
