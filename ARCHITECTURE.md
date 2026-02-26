@@ -93,6 +93,7 @@ Hooks are scoped to their registration level:
 | `TTYReporter`   | Default for Node/Bun/Deno terminals       | Colored, human-readable |
 | `TapReporter`   | When `TAPE6_TAP` is set, or as fallback   | TAP protocol            |
 | `JSONLReporter` | When `TAPE6_JSONL` is set                 | JSON Lines              |
+| `MinReporter`   | When `TAPE6_MIN` is set                   | Minimal output          |
 | `ProxyReporter` | Browser iframes communicating with parent | Event forwarding        |
 | `DomReporter`   | Browser web app                           | DOM rendering           |
 

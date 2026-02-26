@@ -420,6 +420,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.7.3 _Bug fixes in reporters, runners, and assertions. Documentation corrections and improvements._
 - 1.7.2 _Minor internal refactoring and fixes._
 - 1.7.1 _Added AI support, added timeout to start test runners, fixed some bugs in the sequential test runner._
 - 1.7.0 _New features: after/before hooks for tests, aliases for `suite()`, `describe()`, `it()`, `tape6-seq` &mdash; an in-process sequential test runner. Improvements: stricter monochrome detection, refactoring, bugfixes, updated dev dependencies and the documentation._

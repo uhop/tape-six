@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "TAP-based unit test library for Node, Deno, Bun, and browsers. ES modules, TypeScript, zero dependencies.",
   "type": "module",
   "main": "index.js",
@@ -104,7 +104,7 @@
   },
   "devDependencies": {
     "@types/chai": "^5.2.3",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.3.1",
     "chai": "^6.2.2",
     "playwright": "^1.58.2",
     "puppeteer": "^24.37.5",

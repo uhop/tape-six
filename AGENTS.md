@@ -25,7 +25,8 @@ npm run build
 - **Test (Node):** `npm test` (runs `tape6 --flags FO`)
 - **Test (Bun):** `npm run test:bun`
 - **Test (Deno):** `npm run test:deno`
-- **Test (Chrome via Puppeteer):** `npm run test:chrome` (requires `npm start` running in another terminal)
+- **Test (Puppeteer):** `npm run test:puppeteer` (requires `npm start` running in another terminal)
+- **Test (Playwright):** `npm run test:playwright` (requires `npm start` running in another terminal)
 - **Start browser test server:** `npm start` (runs `tape6-server --trace` on port 3000)
 - **Lint:** `npm run lint` (Prettier check)
 - **Lint fix:** `npm run lint:fix` (Prettier write)

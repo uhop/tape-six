@@ -342,6 +342,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - `TAPE6_PAR` — number of parallel workers.
 - `TAPE6_TAP` — force TAP reporter (any non-empty value).
 - `TAPE6_JSONL` — force JSONL reporter (any non-empty value).
+- `TAPE6_MIN` — force minimal reporter (any non-empty value).
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
 
 ## Browser testing
