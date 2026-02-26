@@ -61,7 +61,8 @@
     "bun",
     "nodejs",
     "tap-protocol",
-    "cross-runtime"
+    "cross-runtime",
+    "zero-dependency"
   ],
   "author": "Eugene Lazutkin <eugene.lazutkin@gmail.com> (https://www.lazutkin.com/)",
   "funding": "https://github.com/sponsors/uhop",

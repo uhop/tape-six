@@ -2,6 +2,9 @@
 
 > `tape-six` is a TAP-based unit testing library for modern JavaScript (ES6+). It works in Node, Deno, Bun, and browsers. It runs ES modules natively and supports TypeScript without transpilation.
 
+For project structure, module dependencies, and the architecture overview see [ARCHITECTURE.md](./ARCHITECTURE.md).
+For detailed usage docs and API references see the [wiki](https://github.com/uhop/tape-six/wiki).
+
 ## Setup
 
 This project uses git submodules:
@@ -86,7 +89,7 @@ test('example', t => {
 ```
 
 - Test files should be directly executable: `node tests/test-foo.js`
-- Test file naming convention: `test-*.js`, `test-*.mjs`, `test-*.cjs`, `test-*.ts`
+- Test file naming convention: `test-*.js`, `test-*.mjs`, `test-*.cjs`, `test-*.ts`, `test-*.mts`, `test-*.cts`.
 - Tests are configured in `package.json` under the `"tape6"` section.
 
 ## Key conventions

@@ -1,0 +1,64 @@
+<!-- Canonical source: AGENTS.md — keep this file in sync -->
+# tape-six — AI Agent Rules
+
+## Project identity
+
+tape-six is a TAP-based unit testing library for modern JavaScript (ES6+). Works in Node, Deno, Bun, and browsers. Runs ES modules natively, supports TypeScript without transpilation. The npm package name is `tape-six` but all internal names use `tape6` (CLI commands, environment variables, config keys).
+
+## Critical rules
+
+- **ESM-only.** The project is `"type": "module"`. Use `import`/`export` syntax.
+- **No transpilation.** Code runs directly in all target runtimes.
+- **No runtime dependencies.** Never add packages to `dependencies`. Only `devDependencies` are allowed.
+- **Build step required.** `npm run build` copies vendored `deep6` from `vendors/deep6/src/` into `src/deep6/` (which is gitignored). Run after cloning.
+- **Do not modify or delete test expectations** without understanding why they changed.
+- **Do not add comments or remove comments** unless explicitly asked.
+- **Keep `index.js` and `index.d.ts` in sync.** All public API is exported from `index.js` and typed in `index.d.ts`.
+
+## Code style
+
+- Prettier: 100 char width, single quotes, no bracket spacing, no trailing commas, arrow parens "avoid" (see `.prettierrc`).
+- 2-space indentation.
+- Imports at top of file, using `import` syntax. No dynamic imports unless necessary.
+- No semicolons — follow existing patterns.
+
+## Architecture quick reference
+
+- `index.js` is the main entry point. It auto-detects the runtime, selects the reporter, and starts the test runner.
+- `test()` registers test suites. Aliased as `suite()`, `describe()`, `it()`.
+- `Tester` object is passed to test functions and provides all assert methods.
+- Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
+- `tape6` CLI dispatches to runtime-specific runners (`tape6-node`, `tape6-bun`, `tape6-deno`).
+- `tape6-seq` runs tests sequentially in-process (no worker threads).
+- `tape6-server` serves files for browser-based testing with a web UI.
+- The `deep6` dependency is vendored via git submodule and copied into the source tree at build time.
+
+## Verification commands
+
+- `npm test` — run the full test suite (parallel workers)
+- `node tests/test-<name>.js` — run a single test file directly
+- `npm run test:bun` — run with Bun
+- `npm run test:deno` — run with Deno
+- `npm run test:seq` — run sequentially (no workers)
+- `npm run ts-check` — TypeScript type checking
+- `npm run lint` — Prettier format check
+
+## File layout
+
+- Entry point: `index.js` + `index.d.ts`
+- CLI utilities: `bin/tape6*.js`
+- Core engine: `src/test.js`, `src/Tester.js`, `src/OK.js`, `src/State.js`
+- Reporters: `src/reporters/` (TAP, TTY, JSONL, Proxy, Min)
+- Runners: `src/runners/` (node, bun, deno, seq)
+- Utilities: `src/utils/`
+- Vendored deep equality: `src/deep6/` (gitignored, copied at build)
+- Browser UI: `web-app/`
+- Tests: `tests/test-*.js`
+- Wiki docs: `wiki/` (git submodule)
+
+## When reading the codebase
+
+- Start with `ARCHITECTURE.md` for the module map and dependency graph.
+- `index.d.ts` is the best API reference for the public API.
+- Wiki markdown files in `wiki/` contain detailed usage docs.
+- `src/test.js` and `src/Tester.js` are the core modules — read them first.
