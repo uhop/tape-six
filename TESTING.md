@@ -78,8 +78,12 @@ When called inside a test body, top-level functions (`test`, `it`, `describe`, a
 import {describe, it, before, beforeEach} from 'tape-six';
 
 describe('module', () => {
-  before(() => { /* setup — same as t.before() */ });
-  beforeEach(() => { /* per-test setup */ });
+  before(() => {
+    /* setup — same as t.before() */
+  });
+  beforeEach(() => {
+    /* per-test setup */
+  });
 
   it('works', t => {
     t.ok(true);
@@ -94,37 +98,41 @@ describe('module', () => {
 ### Skip and TODO
 
 ```js
-test.skip('not ready', t => { t.fail(); });           // skipped entirely
-test.todo('in progress', t => { t.equal(1, 2); });    // runs, failures not counted
+test.skip('not ready', t => {
+  t.fail();
+}); // skipped entirely
+test.todo('in progress', t => {
+  t.equal(1, 2);
+}); // runs, failures not counted
 ```
 
 ### Assertions
 
 All `msg` arguments are optional. If omitted, a generic message is used.
 
-| Method | Checks | Common aliases |
-|---|---|---|
-| `t.pass(msg)` | Unconditional pass | |
-| `t.fail(msg)` | Unconditional fail | |
-| `t.ok(val, msg)` | `val` is truthy | `true`, `assert` |
-| `t.notOk(val, msg)` | `val` is falsy | `false`, `notok` |
-| `t.error(err, msg)` | `err` is falsy | `ifError`, `ifErr` |
-| `t.equal(a, b, msg)` | `a === b` | `is`, `strictEqual`, `isEqual` |
-| `t.notEqual(a, b, msg)` | `a !== b` | `not`, `notStrictEqual`, `isNot` |
-| `t.deepEqual(a, b, msg)` | Deep strict equality | `same`, `isEquivalent` |
-| `t.notDeepEqual(a, b, msg)` | Not deeply equal | `notSame`, `notEquivalent` |
-| `t.looseEqual(a, b, msg)` | `a == b` | |
-| `t.notLooseEqual(a, b, msg)` | `a != b` | |
-| `t.deepLooseEqual(a, b, msg)` | Deep loose equality | |
-| `t.notDeepLooseEqual(a, b, msg)` | Not deeply loosely equal | |
-| `t.throws(fn, msg)` | `fn()` throws | |
-| `t.doesNotThrow(fn, msg)` | `fn()` does not throw | |
-| `t.matchString(str, re, msg)` | `str` matches `re` | |
-| `t.doesNotMatchString(str, re, msg)` | `str` doesn't match `re` | |
-| `t.match(a, b, msg)` | Structural pattern match | |
-| `t.doesNotMatch(a, b, msg)` | No structural match | |
-| `t.rejects(promise, msg)` | Promise rejects (**await it**) | `doesNotResolve` |
-| `t.resolves(promise, msg)` | Promise resolves (**await it**) | `doesNotReject` |
+| Method                               | Checks                          | Common aliases                   |
+| ------------------------------------ | ------------------------------- | -------------------------------- |
+| `t.pass(msg)`                        | Unconditional pass              |                                  |
+| `t.fail(msg)`                        | Unconditional fail              |                                  |
+| `t.ok(val, msg)`                     | `val` is truthy                 | `true`, `assert`                 |
+| `t.notOk(val, msg)`                  | `val` is falsy                  | `false`, `notok`                 |
+| `t.error(err, msg)`                  | `err` is falsy                  | `ifError`, `ifErr`               |
+| `t.equal(a, b, msg)`                 | `a === b`                       | `is`, `strictEqual`, `isEqual`   |
+| `t.notEqual(a, b, msg)`              | `a !== b`                       | `not`, `notStrictEqual`, `isNot` |
+| `t.deepEqual(a, b, msg)`             | Deep strict equality            | `same`, `isEquivalent`           |
+| `t.notDeepEqual(a, b, msg)`          | Not deeply equal                | `notSame`, `notEquivalent`       |
+| `t.looseEqual(a, b, msg)`            | `a == b`                        |                                  |
+| `t.notLooseEqual(a, b, msg)`         | `a != b`                        |                                  |
+| `t.deepLooseEqual(a, b, msg)`        | Deep loose equality             |                                  |
+| `t.notDeepLooseEqual(a, b, msg)`     | Not deeply loosely equal        |                                  |
+| `t.throws(fn, msg)`                  | `fn()` throws                   |                                  |
+| `t.doesNotThrow(fn, msg)`            | `fn()` does not throw           |                                  |
+| `t.matchString(str, re, msg)`        | `str` matches `re`              |                                  |
+| `t.doesNotMatchString(str, re, msg)` | `str` doesn't match `re`        |                                  |
+| `t.match(a, b, msg)`                 | Structural pattern match        |                                  |
+| `t.doesNotMatch(a, b, msg)`          | No structural match             |                                  |
+| `t.rejects(promise, msg)`            | Promise rejects (**await it**)  | `doesNotResolve`                 |
+| `t.resolves(promise, msg)`           | Promise resolves (**await it**) | `doesNotReject`                  |
 
 ### Async assertions
 
@@ -171,10 +179,18 @@ import {test, beforeAll, afterAll, beforeEach, afterEach} from 'tape-six';
 // or with aliases:
 import {test, before, after, beforeEach, afterEach} from 'tape-six';
 
-beforeAll(() => { /* once before first test */ });
-afterAll(() => { /* once after last test */ });
-beforeEach(() => { /* before each test */ });
-afterEach(() => { /* after each test */ });
+beforeAll(() => {
+  /* once before first test */
+});
+afterAll(() => {
+  /* once after last test */
+});
+beforeEach(() => {
+  /* before each test */
+});
+afterEach(() => {
+  /* after each test */
+});
 ```
 
 **Nested hooks** (affect embedded tests within a suite):
@@ -187,9 +203,15 @@ import {test, before, after, beforeEach} from 'tape-six';
 test('database tests', async t => {
   let db;
   // these use top-level functions — they auto-delegate to t:
-  before(async () => { db = await connect(); });
-  after(async () => { await db.close(); });
-  beforeEach(() => { /* reset state */ });
+  before(async () => {
+    db = await connect();
+  });
+  after(async () => {
+    await db.close();
+  });
+  beforeEach(() => {
+    /* reset state */
+  });
 
   // equivalent using t. methods:
   // t.before(async () => { db = await connect(); });
@@ -216,8 +238,12 @@ const dbOpts = {
   afterEach: () => cleanupDb()
 };
 
-test('suite A', dbOpts, async t => { /* ... */ });
-test('suite B', dbOpts, async t => { /* ... */ });
+test('suite A', dbOpts, async t => {
+  /* ... */
+});
+test('suite B', dbOpts, async t => {
+  /* ... */
+});
 ```
 
 ## Migrating from other test frameworks
@@ -229,11 +255,19 @@ test('suite B', dbOpts, async t => { /* ... */ });
 ```js
 // Mocha / Jest
 describe('module', () => {
-  before(() => { /* setup */ });
-  after(() => { /* teardown */ });
-  beforeEach(() => { /* per-test setup */ });
+  before(() => {
+    /* setup */
+  });
+  after(() => {
+    /* teardown */
+  });
+  beforeEach(() => {
+    /* per-test setup */
+  });
 
-  it('works', () => { expect(1).toBe(1); });
+  it('works', () => {
+    expect(1).toBe(1);
+  });
 });
 ```
 
@@ -242,15 +276,24 @@ describe('module', () => {
 import {describe, it, before, after, beforeEach} from 'tape-six';
 
 describe('module', () => {
-  before(() => { /* setup */ });
-  after(() => { /* teardown */ });
-  beforeEach(() => { /* per-test setup */ });
+  before(() => {
+    /* setup */
+  });
+  after(() => {
+    /* teardown */
+  });
+  beforeEach(() => {
+    /* per-test setup */
+  });
 
-  it('works', t => { t.equal(1, 1); });
+  it('works', t => {
+    t.equal(1, 1);
+  });
 });
 ```
 
 Key differences from Mocha/Jest:
+
 - **Assertions** use `t.equal`, `t.deepEqual`, etc. instead of `expect`.
 - The test function receives a `t` argument for assertions.
 - No magic globals — everything is imported explicitly.
@@ -297,8 +340,8 @@ import {expect} from 'chai';
 
 describe('mixed assertions', () => {
   it('uses both', t => {
-    expect(1).to.be.lessThan(2);      // Chai — caught automatically
-    t.equal(1 + 1, 2);                // tape-six native
+    expect(1).to.be.lessThan(2); // Chai — caught automatically
+    t.equal(1 + 1, 2); // tape-six native
   });
 });
 ```
@@ -311,8 +354,12 @@ import {describe, it, before, after} from 'node:test';
 import assert from 'node:assert/strict';
 
 describe('module', () => {
-  before(() => { /* setup */ });
-  it('works', () => { assert.equal(1, 1); });
+  before(() => {
+    /* setup */
+  });
+  it('works', () => {
+    assert.equal(1, 1);
+  });
 });
 ```
 
@@ -321,8 +368,12 @@ describe('module', () => {
 import {describe, it, before} from 'tape-six';
 
 describe('module', () => {
-  before(() => { /* setup */ });
-  it('works', t => { t.equal(1, 1); });
+  before(() => {
+    /* setup */
+  });
+  it('works', t => {
+    t.equal(1, 1);
+  });
 });
 ```
 
@@ -330,24 +381,24 @@ Note: you can also keep using `node:assert` inside tape-six tests — `Assertion
 
 ### Quick reference
 
-| Mocha / Jest / node:test | tape-six equivalent |
-|---|---|
-| `describe(name, fn)` | `describe(name, fn)` — same |
-| `it(name, fn)` | `it(name, t => { ... })` — same, but receives `t` |
-| `before(fn)` | `before(fn)` — same (alias for `beforeAll`) |
-| `after(fn)` | `after(fn)` — same (alias for `afterAll`) |
-| `beforeEach(fn)` | `beforeEach(fn)` — same |
-| `afterEach(fn)` | `afterEach(fn)` — same |
-| `expect(a).toBe(b)` | `t.equal(a, b)` |
-| `expect(a).toEqual(b)` | `t.deepEqual(a, b)` |
-| `expect(a).toBeTruthy()` | `t.ok(a)` |
-| `expect(fn).toThrow()` | `t.throws(fn)` |
-| `assert.equal(a, b)` | `t.equal(a, b)` or keep `assert.equal` |
-| `assert.deepEqual(a, b)` | `t.deepEqual(a, b)` or keep `assert.deepEqual` |
-| `expect(a).to.equal(b)` (Chai) | `t.equal(a, b)` or keep `expect` |
-| `expect(a).to.deep.equal(b)` (Chai) | `t.deepEqual(a, b)` or keep `expect` |
-| `expect(a).to.be.ok` (Chai) | `t.ok(a)` or keep `expect` |
-| `expect(fn).to.throw()` (Chai) | `t.throws(fn)` or keep `expect` |
+| Mocha / Jest / node:test            | tape-six equivalent                               |
+| ----------------------------------- | ------------------------------------------------- |
+| `describe(name, fn)`                | `describe(name, fn)` — same                       |
+| `it(name, fn)`                      | `it(name, t => { ... })` — same, but receives `t` |
+| `before(fn)`                        | `before(fn)` — same (alias for `beforeAll`)       |
+| `after(fn)`                         | `after(fn)` — same (alias for `afterAll`)         |
+| `beforeEach(fn)`                    | `beforeEach(fn)` — same                           |
+| `afterEach(fn)`                     | `afterEach(fn)` — same                            |
+| `expect(a).toBe(b)`                 | `t.equal(a, b)`                                   |
+| `expect(a).toEqual(b)`              | `t.deepEqual(a, b)`                               |
+| `expect(a).toBeTruthy()`            | `t.ok(a)`                                         |
+| `expect(fn).toThrow()`              | `t.throws(fn)`                                    |
+| `assert.equal(a, b)`                | `t.equal(a, b)` or keep `assert.equal`            |
+| `assert.deepEqual(a, b)`            | `t.deepEqual(a, b)` or keep `assert.deepEqual`    |
+| `expect(a).to.equal(b)` (Chai)      | `t.equal(a, b)` or keep `expect`                  |
+| `expect(a).to.deep.equal(b)` (Chai) | `t.deepEqual(a, b)` or keep `expect`              |
+| `expect(a).to.be.ok` (Chai)         | `t.ok(a)` or keep `expect`                        |
+| `expect(fn).to.throw()` (Chai)      | `t.throws(fn)` or keep `expect`                   |
 
 ### Wildcard matching with `t.any`
 
@@ -364,7 +415,9 @@ test('partial match', t => {
 
 ```js
 test('errors', async t => {
-  t.throws(() => { throw new Error('boom'); }, 'should throw');
+  t.throws(() => {
+    throw new Error('boom');
+  }, 'should throw');
   t.doesNotThrow(() => 42, 'should not throw');
   await t.rejects(Promise.reject(new Error('fail')), 'should reject');
   await t.resolves(Promise.resolve(42), 'should resolve');
@@ -441,17 +494,17 @@ npx tape6-seq --flags FO tests/test-foo.js tests/test-bar.js
 
 Flags control test output. Uppercase = enabled, lowercase = disabled.
 
-| Flag | Meaning |
-|---|---|
-| `F` | **F**ailures only — hide passing tests |
-| `O` | Fail **o**nce — stop at first failure |
-| `T` | Show **t**ime for each test |
-| `D` | Show **d**ata of failed tests |
-| `B` | Show **b**anner with summary |
-| `N` | Show assert **n**umber |
-| `M` | **M**onochrome — no colors |
-| `C` | Don't **c**apture console output |
-| `H` | **H**ide streams and console output |
+| Flag | Meaning                                |
+| ---- | -------------------------------------- |
+| `F`  | **F**ailures only — hide passing tests |
+| `O`  | Fail **o**nce — stop at first failure  |
+| `T`  | Show **t**ime for each test            |
+| `D`  | Show **d**ata of failed tests          |
+| `B`  | Show **b**anner with summary           |
+| `N`  | Show assert **n**umber                 |
+| `M`  | **M**onochrome — no colors             |
+| `C`  | Don't **c**apture console output       |
+| `H`  | **H**ide streams and console output    |
 
 Common combinations: `FO` (failures only + stop at first), `FOT` (+ show time).
 
@@ -665,7 +718,9 @@ import {MyClass} from 'my-package/my-class.js';
 
 test('MyClass', async t => {
   let instance;
-  t.beforeEach(() => { instance = new MyClass(); });
+  t.beforeEach(() => {
+    instance = new MyClass();
+  });
 
   await t.test('constructor', t => {
     t.ok(instance, 'creates instance');

@@ -88,13 +88,13 @@ Hooks are scoped to their registration level:
 
 ### Reporters
 
-| Reporter | When used | Format |
-|---|---|---|
-| `TTYReporter` | Default for Node/Bun/Deno terminals | Colored, human-readable |
-| `TapReporter` | When `TAPE6_TAP` is set, or as fallback | TAP protocol |
-| `JSONLReporter` | When `TAPE6_JSONL` is set | JSON Lines |
-| `ProxyReporter` | Browser iframes communicating with parent | Event forwarding |
-| `DomReporter` | Browser web app | DOM rendering |
+| Reporter        | When used                                 | Format                  |
+| --------------- | ----------------------------------------- | ----------------------- |
+| `TTYReporter`   | Default for Node/Bun/Deno terminals       | Colored, human-readable |
+| `TapReporter`   | When `TAPE6_TAP` is set, or as fallback   | TAP protocol            |
+| `JSONLReporter` | When `TAPE6_JSONL` is set                 | JSON Lines              |
+| `ProxyReporter` | Browser iframes communicating with parent | Event forwarding        |
+| `DomReporter`   | Browser web app                           | DOM rendering           |
 
 ### CLI architecture
 
@@ -105,6 +105,7 @@ tape6 → detects runtime → imports tape6-node / tape6-bun / tape6-deno
 ```
 
 Each runtime-specific runner:
+
 1. Reads configuration from `tape6.json` or `package.json`.
 2. Resolves test file patterns using glob matching.
 3. Spawns worker threads to run test files in parallel.
@@ -117,6 +118,7 @@ Each runtime-specific runner:
 ### Deep equality
 
 The `deep6` library (vendored via git submodule) provides:
+
 - `equal(a, b)` — recursive strict deep equality.
 - `match(a, b)` — structural pattern matching with wildcard support (`t.any`).
 
