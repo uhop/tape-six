@@ -4,7 +4,7 @@
 [npm-url]: https://npmjs.org/package/tape-six
 
 `tape-six` is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
-It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers.
+It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers. **Zero runtime dependencies.**
 
 It runs ES modules (`import`-based code) natively and supports CommonJS modules transparently using the built-in [ESM](https://nodejs.org/api/esm.html).
 
@@ -164,11 +164,15 @@ The arguments mentioned above are:
   - `name` &mdash; the optional name of the test suite. If not provided, it will be set to the name of the test function or `'(anonymous)'`.
     - Can be overridden by the `name` argument.
   - `timeout` &mdash; the optional timeout in milliseconds. It is used for asynchronous tests.
-    - If the timeout is exceeded, the test suite will be marked as failed.
-    - **Important:** JavaScript does not provide a generic way to cancel asynchronous operations.
-      When the timeout is exceeded, `tape6` will stop waiting for the test to finish,
-      but it will continue running in the background.
+    - If the timeout is exceeded, `tape6` will use the tester's `signal` to indicate cancellation and stop waiting for the test to finish.
     - The default: no timeout.
+  - Hooks:
+    - `beforeAll` &mdash; a function to be executed before all tests in the suite.
+    - `afterAll` &mdash; a function to be executed after all tests in the suite.
+    - `beforeEach` &mdash; a function to be executed before each test in the suite.
+    - `afterEach` &mdash; a function to be executed after each test in the suite.
+    - `before` &mdash; an alias for `beforeAll`.
+    - `after` &mdash; an alias for `afterAll`.
   - `testFn` &mdash; the optional test function to be executed (see below).
     - Can be overridden by the `testFn` argument.
   - `testPromiseFn` &mdash; the optional callback-based test function to be executed.
@@ -310,8 +314,10 @@ The following methods are available (all `msg` arguments are optional):
   - `todo(name, options, testFn)` &mdash; runs a provisional test suite asynchronously. See `test.todo()` above.
   - `asPromise(name, options, testPromiseFn)` &mdash; runs a test suite asynchronously. See `test.asPromise()` above.
   - Note: top-level `test()` and its aliases auto-delegate to `t.test()` when called inside a test body. Using `t.test()` directly is preferred.
+- Properties:
+  - `signal` &mdash; an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) that fires when the test is aborted (e.g. on timeout or bail-out). Use it to cancel pending async operations.
 - Miscellaneous:
-  - `any` &mdash; returns the `any` object. It can be used in deep equivalency asserts to match any value.
+  - `any` &mdash; a symbol that can be used in deep equivalency asserts to match any value.
     See [deep6's any](https://github.com/uhop/deep6/wiki/any) for details.
     - `_` &mdash; an alias of `any`.
   - `plan(n)` &mdash; sets the number of tests in the test suite. Rarely used.
