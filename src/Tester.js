@@ -236,7 +236,7 @@ export class Tester {
 
   deepLooseEqual(a, b, msg) {
     this.reporter.report({
-      name: msg || 'should be loosely equal',
+      name: msg || 'should be deeply loosely equal',
       test: this.testNumber,
       marker: new Error(),
       time: this.timer.now(),
@@ -251,7 +251,7 @@ export class Tester {
 
   notDeepLooseEqual(a, b, msg) {
     this.reporter.report({
-      name: msg || 'should not be loosely equal',
+      name: msg || 'should not be deeply loosely equal',
       test: this.testNumber,
       marker: new Error(),
       time: this.timer.now(),

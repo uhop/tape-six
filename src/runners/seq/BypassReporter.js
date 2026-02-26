@@ -25,8 +25,8 @@ export class BypassReporter {
     return this.reporter.signal;
   }
 
-  get abort() {
-    return this.reporter.abort;
+  abort() {
+    this.reporter.abort();
   }
 
   report(event) {

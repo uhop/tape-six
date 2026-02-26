@@ -1,16 +1,5 @@
 import Reporter from './Reporter.js';
 
-const getEnvVar = name => {
-  if (typeof Deno == 'object' && Deno?.version) {
-    return Deno.env.get(name);
-  } else if (typeof Bun == 'object' && Bun?.version) {
-    return Bun.env[name];
-  } else if (typeof process == 'object' && process?.versions?.node) {
-    return process.env[name];
-  }
-  return undefined;
-};
-
 export class MinReporter extends Reporter {
   constructor({failOnce = false, originalConsole} = {}) {
     super({failOnce});

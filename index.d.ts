@@ -425,8 +425,8 @@ export declare interface Tester {
   notOk(value: unknown, message?: string): void;
 
   /**
-   * Asserts that `error` is an error and fails the test.
-   * @param error - The error to test
+   * Asserts that `error` is falsy. If the value is truthy (e.g. an Error object), the assertion fails.
+   * @param error - The value to test
    * @param message - Optional message to display if the assertion fails
    */
   error(error: Error | null | unknown, message?: string): void;
@@ -600,22 +600,22 @@ export declare interface Tester {
   notok(value: unknown, message?: string): void;
 
   /**
-   * Asserts that `error` is an error and fails the test. Alias of `error`.
-   * @param error - The error to test
+   * Asserts that `error` is falsy. If the value is truthy (e.g. an Error object), the assertion fails. Alias of `error`.
+   * @param error - The value to test
    * @param message - Optional message to display if the assertion fails
    */
   ifError(error: Error | null | unknown, message?: string): void;
 
   /**
-   * Asserts that `error` is an error and fails the test. Alias of `error`.
-   * @param error - The error to test
+   * Asserts that `error` is falsy. If the value is truthy (e.g. an Error object), the assertion fails. Alias of `error`.
+   * @param error - The value to test
    * @param message - Optional message to display if the assertion fails
    */
   ifErr(error: Error | null | unknown, message?: string): void;
 
   /**
-   * Asserts that `error` is an error and fails the test. Alias of `error`.
-   * @param error - The error to test
+   * Asserts that `error` is falsy. If the value is truthy (e.g. an Error object), the assertion fails. Alias of `error`.
+   * @param error - The value to test
    * @param message - Optional message to display if the assertion fails
    */
   iferror(error: Error | null | unknown, message?: string): void;

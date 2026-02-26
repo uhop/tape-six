@@ -76,7 +76,7 @@ export class Reporter {
     console: 'onConsole',
     stdout: 'onStdout',
     stderr: 'onStderr',
-    bailOut: 'onBailOut'
+    'bail-out': 'onBailOut'
   };
 }
 

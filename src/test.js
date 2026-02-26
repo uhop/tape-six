@@ -203,6 +203,7 @@ export const runTests = async tests => {
         });
       } else {
         tester.reporter.report({
+          type: 'assert',
           name: 'UNEXPECTED EXCEPTION: ' + String(error),
           test: testNumber,
           marker: new Error(),
