@@ -79,7 +79,9 @@
     "web-app",
     "src",
     "llms.txt",
-    "llms-full.txt"
+    "llms-full.txt",
+    "TESTING.md",
+    "workflows"
   ],
   "tape6": {
     "tests": [

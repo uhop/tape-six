@@ -9,6 +9,7 @@
 - Browser testing with built-in web UI and automation support (Puppeteer, Playwright)
 - Before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
 - `test()` is aliased as `suite()`, `describe()`, and `it()` for easy migration
+- When called inside a test body, top-level functions auto-delegate to the current tester
 - Compatible with `AssertionError`-based libraries like `node:assert` and `chai`
 
 ## Quick start
@@ -128,6 +129,20 @@ test('top', async t => {
 
 Always `await` embedded tests to preserve execution order.
 
+Top-level `test()`/`it()`/`describe()` auto-delegate when called inside a test body, so these are equivalent:
+
+```js
+import {describe, it, before, beforeEach} from 'tape-six';
+
+describe('module', () => {
+  before(() => { /* setup */ });
+  beforeEach(() => { /* per-test setup */ });
+
+  it('works', t => { t.ok(true); });
+  it('also works', t => { t.equal(1, 1); });
+});
+```
+
 ## Tester API
 
 The `Tester` object is passed to test functions. All `msg` arguments are optional.
@@ -163,17 +178,17 @@ The `Tester` object is passed to test functions. All `msg` arguments are optiona
 
 ### Embedded test methods
 
-- `test(name, options, testFn)` — nested test suite (async, await it).
+- `test(name, options, testFn)` — nested test suite (async, await it). Top-level `test()`/`it()` also works.
 - `skip(name, options, testFn)` — skip nested suite.
 - `todo(name, options, testFn)` — TODO nested suite.
 - `asPromise(name, options, testPromiseFn)` — callback-style nested suite.
 
 ### Hooks
 
-- `beforeAll(fn)` / `before(fn)` — run before first nested test.
-- `afterAll(fn)` / `after(fn)` — run after last nested test.
-- `beforeEach(fn)` — run before each nested test.
-- `afterEach(fn)` — run after each nested test.
+- `beforeAll(fn)` / `before(fn)` — run before first nested test. Top-level `beforeAll()`/`before()` also works.
+- `afterAll(fn)` / `after(fn)` — run after last nested test. Top-level `afterAll()`/`after()` also works.
+- `beforeEach(fn)` — run before each nested test. Top-level `beforeEach()` also works.
+- `afterEach(fn)` — run after each nested test. Top-level `afterEach()` also works.
 
 ### Miscellaneous
 
@@ -211,12 +226,16 @@ beforeEach(() => { /* runs before each top-level test */ });
 afterEach(() => { /* runs after each top-level test */ });
 ```
 
-Nested hooks (via tester object):
+Nested hooks (top-level functions auto-delegate to current tester):
 
 ```js
+import {test, beforeEach, afterEach} from 'tape-six';
+
 test('suite', async t => {
-  t.beforeEach(() => { /* before each nested test */ });
-  t.afterEach(() => { /* after each nested test */ });
+  beforeEach(() => { /* before each nested test */ });
+  afterEach(() => { /* after each nested test */ });
+
+  // equivalent: t.beforeEach(), t.afterEach()
 
   await t.test('test 1', t => t.pass());
   await t.test('test 2', t => t.pass());

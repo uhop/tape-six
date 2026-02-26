@@ -33,6 +33,7 @@ Registers a test. All three arguments are optional and can be in any order (reco
 Returns a promise that resolves when the test finishes. Usually no need to await.
 
 Aliases: `suite`, `describe`, `it` — all are the same function.
+When called inside a test body, these (and all hook functions) automatically delegate to the current tester — no need to use `t.test()` or `t.before()` explicitly.
 
 ```js
 import {test, describe, it, suite} from 'tape-six';
@@ -97,7 +98,7 @@ The object passed to test functions. Provides assertions and test control.
 
 #### Embedded tests (all async, should be awaited)
 
-- `await t.test(name, options, testFn)` — nested test.
+- `await t.test(name, options, testFn)` — nested test. Top-level `test()`/`it()` also works (auto-delegates).
 - `await t.skip(name, options, testFn)` — nested skipped test.
 - `await t.todo(name, options, testFn)` — nested TODO test.
 - `await t.asPromise(name, options, testPromiseFn)` — nested callback-style test.
@@ -122,12 +123,14 @@ afterAll(() => { /* runs once after all tests */ });
 beforeEach(() => { /* runs before each test */ });
 afterEach(() => { /* runs after each test */ });
 
-// Or inside a test:
+// Inside a test — top-level functions auto-delegate to current tester:
 test('suite', async t => {
-  t.beforeAll(() => { /* before embedded tests */ });
-  t.afterAll(() => { /* after embedded tests */ });
-  t.beforeEach(() => { /* before each embedded test */ });
-  t.afterEach(() => { /* after each embedded test */ });
+  beforeAll(() => { /* before embedded tests */ });
+  afterAll(() => { /* after embedded tests */ });
+  beforeEach(() => { /* before each embedded test */ });
+  afterEach(() => { /* after each embedded test */ });
+
+  // equivalent: t.beforeAll(), t.afterAll(), t.beforeEach(), t.afterEach()
 
   await t.test('inner', t => { t.pass(); });
 });
@@ -198,9 +201,12 @@ test('partial match', t => {
 ### Using describe/it style
 
 ```js
-import {describe, it} from 'tape-six';
+import {describe, it, before, beforeEach} from 'tape-six';
 
 describe('my module', () => {
+  before(() => { /* setup — auto-delegates to current tester */ });
+  beforeEach(() => { /* per-test setup */ });
+
   it('should work', t => {
     t.ok(true);
   });
