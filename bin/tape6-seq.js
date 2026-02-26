@@ -104,9 +104,10 @@ const main = async () => {
 
   const console = globalThis.console;
 
-  process.on('uncaughtException', (error, origin) =>
-    console.error('UNHANDLED ERROR:', origin, error)
-  );
+  process.on('uncaughtException', (error, origin) => {
+    console.error('UNHANDLED ERROR:', origin, error);
+    process.exit(1);
+  });
 
   const reporter = getReporter(),
     worker = new TestWorker(reporter, 1, {...options, testRunner});

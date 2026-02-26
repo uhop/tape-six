@@ -132,9 +132,10 @@ const main = async () => {
   await init();
   await selectTimer();
 
-  process.on('uncaughtException', (error, origin) =>
-    console.error('UNHANDLED ERROR:', origin, error)
-  );
+  process.on('uncaughtException', (error, origin) => {
+    console.error('UNHANDLED ERROR:', origin, error);
+    process.exit(1);
+  });
 
   if (!files.length) {
     console.log('No files found.');

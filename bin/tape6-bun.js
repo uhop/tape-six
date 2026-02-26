@@ -119,9 +119,10 @@ const main = async () => {
   await init();
   await selectTimer();
 
-  process.on('uncaughtException', (error, origin) =>
-    console.error('UNHANDLED ERROR:', origin, error)
-  );
+  process.on('uncaughtException', (error, origin) => {
+    console.error('UNHANDLED ERROR:', origin, error);
+    process.exit(1);
+  });
 
   const reporter = getReporter(),
     worker = new TestWorker(reporter, parallel, options);
