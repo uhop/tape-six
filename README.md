@@ -137,6 +137,9 @@ import test from 'tape-six';
 // const {default: test} = require('tape-six');
 ```
 
+In order to help porting tests from other frameworks, `test()` function
+is aliased as `suite()`, `describe()` and `it()`. When called inside a test body, `test()` and its aliases automatically delegate to the current tester's `t.test()` method. The same applies to `test.skip()`, `test.todo()`, and `test.asPromise()`. Using `t.test()` directly is still preferred because it makes the delegation explicit.
+
 This function registers a test suite. Available options:
 
 - `async test(name, options, testFn)` &mdash; registers a test suite to be executed asynchronously.
@@ -307,6 +310,7 @@ The following methods are available (all `msg` arguments are optional):
   - `skip(name, options, testFn)` &mdash; skips a test suite asynchronously. See `test.skip()` above.
   - `todo(name, options, testFn)` &mdash; runs a provisional test suite asynchronously. See `test.todo()` above.
   - `asPromise(name, options, testPromiseFn)` &mdash; runs a test suite asynchronously. See `test.asPromise()` above.
+  - Note: top-level `test()` and its aliases auto-delegate to `t.test()` when called inside a test body. Using `t.test()` directly is preferred.
 - Miscellaneous:
   - `any` &mdash; returns the `any` object. It can be used in deep equivalency asserts to match any value.
     See [deep6's any](https://github.com/uhop/deep6/wiki/any) for details.
@@ -339,7 +343,7 @@ test('Sample test', async t => {
 
 ### Before/after hooks
 
-`tape-six` supports scope-based before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`, which can be used to set-up and tear-down a proper environment for tests. Read all about it in [before and after hooks](https://github.com/uhop/tape-six/wiki/Before-and-after-hooks).
+`tape-six` supports scope-based before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach` (with `before`/`after` as aliases for `beforeAll`/`afterAll`), which can be used to set-up and tear-down a proper environment for tests. Like `test()` and its aliases, the top-level hook functions auto-delegate to the current tester when called inside a test body. Using `t.beforeAll()`, etc. is preferred. Read all about it in [before and after hooks](https://github.com/uhop/tape-six/wiki/Before-and-after-hooks).
 
 ### Running tests
 

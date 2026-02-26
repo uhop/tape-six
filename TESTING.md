@@ -72,7 +72,7 @@ test('async test', async t => {
 
 Aliases: `suite()`, `describe()`, `it()` — all identical to `test()`.
 
-When called inside a test body, top-level functions (`test`, `it`, `describe`, and all hooks) automatically delegate to the current tester. This means you don't need to use `t.test()` or `t.before()` explicitly — the top-level imports work at any nesting level:
+When called inside a test body, top-level functions (`test`, `it`, `describe`, and all hooks) automatically delegate to the current tester. Using `t.test()`, `t.before()`, etc. is still preferred because it makes the delegation explicit. The top-level form is convenient when porting tests from frameworks like Mocha or Jest:
 
 ```js
 import {describe, it, before, beforeEach} from 'tape-six';
@@ -139,7 +139,7 @@ test('async asserts', async t => {
 
 ### Nested (embedded) tests
 
-Tests can be nested. You can use either `t.test()` or top-level `test()`/`it()` — they are equivalent inside a test body:
+Tests can be nested. The preferred way is `t.test()` because it makes the delegation explicit. Top-level `test()`/`it()` are equivalent inside a test body — they auto-delegate to the current tester:
 
 ```js
 import {test, it} from 'tape-six';
@@ -179,7 +179,7 @@ afterEach(() => { /* after each test */ });
 
 **Nested hooks** (affect embedded tests within a suite):
 
-You can use either `t.before()`/`t.after()` or top-level `before()`/`after()` — they are equivalent inside a test body:
+The preferred way is `t.before()`/`t.after()` because it makes the scope explicit. Top-level `before()`/`after()` are equivalent inside a test body — they auto-delegate to the current tester:
 
 ```js
 import {test, before, after, beforeEach} from 'tape-six';
