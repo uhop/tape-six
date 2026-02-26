@@ -37,7 +37,7 @@ with existing unit test libraries:
 - The [DX](https://en.wikipedia.org/wiki/User_experience#Developer_experience) in browsers are usually abysmal.
   - Both console-based debugging and a UI to navigate results are properly supported.
   - Integration with browser automation tools is supported for automated testing.
-    - Examples for such tools are [Playwright](https://playwright.dev/) and [Puppeteer](https://pptr.dev/) are provided.
+    - Examples for [Playwright](https://playwright.dev/) and [Puppeteer](https://pptr.dev/) are provided.
 
 ## How it looks
 
@@ -137,8 +137,7 @@ import test from 'tape-six';
 // const {default: test} = require('tape-six');
 ```
 
-In order to help porting tests from other frameworks, `test()` function
-is aliased as `suite()`, `describe()` and `it()`. When called inside a test body, `test()` and its aliases automatically delegate to the current tester's `t.test()` method. The same applies to `test.skip()`, `test.todo()`, and `test.asPromise()`. Using `t.test()` directly is still preferred because it makes the delegation explicit.
+To help port tests from other frameworks, `test()` is aliased as `suite()`, `describe()` and `it()`. When called inside a test body, `test()` and its aliases automatically delegate to the current tester's `t.test()` method. The same applies to `test.skip()`, `test.todo()`, and `test.asPromise()`. Using `t.test()` directly is still preferred because it makes the delegation explicit.
 
 This function registers a test suite. Available options:
 

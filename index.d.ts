@@ -66,15 +66,15 @@ export declare interface Tester {
   /**
    * A symbol that can be used to match any value.
    */
-  any: Symbol;
+  any: symbol;
 
   /**
    * A symbol that can be used to match any value. An alias of `any`.
    */
-  _: Symbol;
+  _: symbol;
 
   /**
-   * A signal that can be used to abort asynchronous operations. It is triggered when the test is ended.
+   * A signal that can be used to abort asynchronous operations. It is triggered when the test ends.
    */
   signal: AbortSignal;
 
@@ -287,7 +287,7 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs non-asynchronous callback-based test.
+   * Runs a callback-based test wrapped in a promise.
    * @param name - The name of the test
    * @param fn - The test function
    * @param options - The test options
@@ -299,7 +299,7 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs non-asynchronous callback-based test.
+   * Runs a callback-based test wrapped in a promise.
    * @param name - The name of the test
    * @param options - The test options
    * @param fn - The test function
@@ -311,7 +311,7 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs non-asynchronous callback-based test.
+   * Runs a callback-based test wrapped in a promise.
    * @param fn - The test function
    * @param options - The test options
    * @param name - The name of the test
@@ -323,7 +323,7 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs non-asynchronous callback-based test.
+   * Runs a callback-based test wrapped in a promise.
    * @param fn - The test function
    * @param name - The name of the test
    * @param options - The test options
@@ -335,7 +335,7 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs non-asynchronous callback-based test.
+   * Runs a callback-based test wrapped in a promise.
    * @param options - The test options
    * @param fn - The test function
    * @param name - The name of the test
@@ -347,7 +347,7 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs non-asynchronous callback-based test.
+   * Runs a callback-based test wrapped in a promise.
    * @param options - The test options
    * @param name - The name of the test
    * @param fn - The test function
@@ -1122,57 +1122,64 @@ export declare interface Test {
 }
 
 /**
- * The main function, which is used to define tests. Many other functions are defined as properties of this function.
+ * The main function used to define tests. When called inside a test body, it delegates to the current tester.
+ * Many other functions are defined as properties of this function.
  */
 export declare const test: Test;
 
 /**
- * An alias for `test`. Used for compatibility with other testing frameworks to define test suites.
+ * An alias for `test`. When called inside a test body, it delegates to the current tester.
  */
 export declare const suite = test;
 
 /**
- * An alias for `test`. Used for compatibility with other testing frameworks to define test suites.
+ * An alias for `test`. When called inside a test body, it delegates to the current tester.
  */
 export declare const describe = test;
 
 /**
- * An alias for `test`. Used for compatibility with other testing frameworks to define tests.
+ * An alias for `test`. When called inside a test body, it delegates to the current tester.
  */
 export declare const it = test;
 
 /**
  * Registers a function that will be called before all 1st-level embedded tests in the current scope.
+ * When called inside a test body, delegates to the current tester.
  * @param fn a hook function
  */
 export declare const beforeAll: typeof test.beforeAll;
 
 /**
  * Registers a function that will be called after all 1st-level embedded tests in the current scope.
+ * When called inside a test body, delegates to the current tester.
  * @param fn a hook function
  */
 export declare const afterAll: typeof test.afterAll;
 
 /**
  * Registers a function that will be called before each 1st-level embedded test in the current scope.
+ * When called inside a test body, delegates to the current tester.
  * @param fn a hook function
  */
 export declare const beforeEach: typeof test.beforeEach;
 
 /**
  * Registers a function that will be called after each 1st-level embedded test in the current scope.
+ * When called inside a test body, delegates to the current tester.
  * @param fn a hook function
  */
 export declare const afterEach: typeof test.afterEach;
 
 /**
  * Registers a function that will be called before all 1st-level embedded tests in the current scope. An alias for `beforeAll()`.
+ * When called inside a test body, delegates to the current tester.
  * @param fn a hook function
  */
 export declare const before: typeof test.before;
 
 /**
  * Registers a function that will be called after all 1st-level embedded tests in the current scope. An alias for `afterAll()`.
+ * When called inside a test body, delegates to the current tester.
  * @param fn a hook function
  */
 export declare const after: typeof test.after;
