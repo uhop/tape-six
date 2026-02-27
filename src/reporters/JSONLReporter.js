@@ -21,7 +21,7 @@ export class JSONLReporter extends Reporter {
     prefix ||= getEnvVar('TAPE6_JSONL_PREFIX') || '';
     this.prefix = prefix ? '\n' + prefix : '';
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
     if (event.type === 'assert' && this.renumberAsserts) {
       event = {...event, id: ++this.assertCounter};
@@ -39,7 +39,7 @@ export class JSONLReporter extends Reporter {
     }
     const jsonEvent = JSON.stringify(event);
     this.console.log(this.prefix ? this.prefix + jsonEvent : jsonEvent);
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
 }
 

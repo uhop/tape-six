@@ -61,7 +61,7 @@ export class TapReporter extends Reporter {
       this.opened = true;
     }
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
     let text;
     switch (event.type) {
@@ -192,6 +192,7 @@ export class TapReporter extends Reporter {
         }
         break;
     }
+    this.state?.postprocess(event, suppressStopTest);
   }
   showSummary(state, diffTime) {
     const success = state.asserts - state.failed - state.skipped;

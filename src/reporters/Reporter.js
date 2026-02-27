@@ -57,13 +57,13 @@ export class Reporter {
     }
   }
 
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
 
     const handler = this.constructor.EVENT_MAP[event.type];
     typeof handler == 'string' && this[handler]?.(event);
 
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
 
   static EVENT_MAP = {

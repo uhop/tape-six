@@ -5,7 +5,7 @@ export class ProxyReporter extends Reporter {
     super({failOnce});
     this.reportTo = reportTo;
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
     switch (event.type) {
       case 'test':
@@ -19,7 +19,7 @@ export class ProxyReporter extends Reporter {
         break;
     }
     this.reportTo(event);
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
 }
 

@@ -97,6 +97,12 @@ Hooks are scoped to their registration level:
 | `ProxyReporter` | Browser iframes communicating with parent | Event forwarding        |
 | `DomReporter`   | Browser web app                           | DOM rendering           |
 
+All reporters implement `report(event, suppressStopTest = false)`. The method:
+
+1. Calls `this.state?.preprocess(event)` to update counters and enrich the event.
+2. Handles the event (output, DOM updates, forwarding, etc.).
+3. Calls `this.state?.postprocess(event, suppressStopTest)` to throw `StopTest` when `failOnce` is active and an assertion fails — unless `suppressStopTest` is `true`.
+
 ### CLI architecture
 
 `tape6` (the main command) is a thin dispatcher:

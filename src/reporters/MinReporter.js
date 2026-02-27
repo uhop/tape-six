@@ -5,7 +5,7 @@ export class MinReporter extends Reporter {
     super({failOnce});
     this.console = originalConsole || console;
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
     const handler = Reporter.EVENT_MAP[event.type];
     typeof handler == 'string' && this[handler]?.(event);
@@ -19,7 +19,7 @@ export class MinReporter extends Reporter {
       'Fail:',
       event.fail
     );
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
 }
 

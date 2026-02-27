@@ -246,10 +246,10 @@ export class State {
     return event;
   }
 
-  postprocess(event) {
+  postprocess(event, suppressStopTest = false) {
     switch (event.type) {
       case 'assert':
-        if (event.stopTest && event.operator !== 'exception') {
+        if (!suppressStopTest && event.stopTest && event.operator !== 'exception') {
           const stopTest = new StopTest('failOnce is activated');
           stopTest[signature] = signature;
           throw stopTest;
@@ -257,6 +257,7 @@ export class State {
         this.time = this.timer.now();
         break;
       case 'bail-out':
+        if (suppressStopTest) return;
         const stopTest = new StopTest('bailOut is activated');
         stopTest[signature] = signature;
         throw stopTest;

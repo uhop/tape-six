@@ -28,7 +28,7 @@ class DomReporter extends Reporter {
     this.stack = []; // previous test nodes
     this.current = null; // the current test node
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
     let text;
     switch (event.type) {
@@ -194,7 +194,7 @@ class DomReporter extends Reporter {
         }
         break;
     }
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
 }
 

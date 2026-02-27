@@ -29,8 +29,8 @@ export class BypassReporter {
     this.reporter.abort();
   }
 
-  report(event) {
-    this.reportTo(event);
+  report(event, suppressStopTest = false) {
+    this.reportTo(event, suppressStopTest);
   }
 }
 

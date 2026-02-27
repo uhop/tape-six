@@ -148,15 +148,15 @@ export class TTYReporter extends Reporter {
     ++this.lines;
     return this;
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     this.consoleSkipChecks = true;
     try {
-      this.reportInternal(event);
+      this.reportInternal(event, suppressStopTest);
     } finally {
       this.consoleSkipChecks = false;
     }
   }
-  reportInternal(event) {
+  reportInternal(event, suppressStopTest = false) {
     if (this.output.isTTY) {
       if (!this.consoleWasUsed && this.overrideLastLine) {
         this.output.moveCursor(0, -1);
@@ -320,7 +320,7 @@ export class TTYReporter extends Reporter {
       this.showScore();
       this.overrideLastLine = true;
     }
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
   showScore() {
     this.out(

@@ -27,7 +27,7 @@ export class DashReporter extends Reporter {
     this.spinnerNode = document.querySelector('.tape6 tape6-spinner');
     this.running = true;
   }
-  report(event) {
+  report(event, suppressStopTest = false) {
     event = this.state?.preprocess(event) || event;
     switch (event.type) {
       case 'test':
@@ -57,7 +57,7 @@ export class DashReporter extends Reporter {
         this.updateDashboard();
         break;
     }
-    this.state?.postprocess(event);
+    this.state?.postprocess(event, suppressStopTest);
   }
   updateDashboard() {
     this.updateDonut();
