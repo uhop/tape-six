@@ -2,7 +2,6 @@ import process from 'node:process';
 import {sep} from 'node:path';
 import {pathToFileURL} from 'node:url';
 
-import {isStopTest} from '../../State.js';
 import EventServer from '../../utils/EventServer.js';
 import {getTimeoutValue} from '../../utils/config.js';
 import {getOriginalConsole, setCurrentReporter} from '../../utils/capture-console.js';
@@ -35,11 +34,7 @@ export default class TestWorker extends EventServer {
           clearTimeout(this.timeoutId);
           this.timeoutId = null;
         }
-        try {
-          this.report(id, event);
-        } catch (error) {
-          if (!isStopTest(error)) throw error;
-        }
+        this.report(id, event);
         if (event.type === 'end' && event.test === 0) {
           this.close(id);
         }
@@ -79,20 +74,16 @@ export default class TestWorker extends EventServer {
       name: 'fail to load: ' + (error.message || 'Worker error'),
       test: 0
     });
-    try {
-      this.report(id, {
-        name: String(error),
-        test: 0,
-        marker: new Error(),
-        operator: 'error',
-        fail: true,
-        data: {
-          actual: error
-        }
-      });
-    } catch (error) {
-      if (!isStopTest(error)) throw error;
-    }
+    this.report(id, {
+      name: String(error),
+      test: 0,
+      marker: new Error(),
+      operator: 'error',
+      fail: true,
+      data: {
+        actual: error
+      }
+    });
     this.close(id);
   }
   #reportTimeout(id, fileName) {
@@ -101,17 +92,13 @@ export default class TestWorker extends EventServer {
       test: 0,
       name: 'FILE: /' + fileName
     });
-    try {
-      this.report(id, {
-        name: `No tests found in ${this.timeout}ms`,
-        test: 0,
-        marker: new Error(),
-        operator: 'error',
-        fail: true
-      });
-    } catch (error) {
-      if (!isStopTest(error)) throw error;
-    }
+    this.report(id, {
+      name: `No tests found in ${this.timeout}ms`,
+      test: 0,
+      marker: new Error(),
+      operator: 'error',
+      fail: true
+    });
     this.report(id, {
       type: 'end',
       test: 0,

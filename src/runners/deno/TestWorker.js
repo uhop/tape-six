@@ -1,7 +1,6 @@
 import {pathToFileURL} from 'node:url';
 import {sep} from 'node:path';
 
-import {isStopTest} from '../../State.js';
 import EventServer from '../../utils/EventServer.js';
 
 const srcName = new URL('../../', import.meta.url),
@@ -23,11 +22,7 @@ export default class TestWorker extends EventServer {
     this.idToWorker[id] = worker;
     worker.addEventListener('message', event => {
       const msg = event.data;
-      try {
-        this.report(id, msg);
-      } catch (error) {
-        if (!isStopTest(error)) throw error;
-      }
+      this.report(id, msg);
       if (msg.type === 'end' && msg.test === 0) {
         this.close(id);
       }
@@ -38,20 +33,16 @@ export default class TestWorker extends EventServer {
         name: 'fail to load: ' + (error.message || 'Worker error'),
         test: 0
       });
-      try {
-        this.report(id, {
-          name: String(error),
-          test: 0,
-          marker: new Error(),
-          operator: 'error',
-          fail: true,
-          data: {
-            actual: error
-          }
-        });
-      } catch (error) {
-        if (!isStopTest(error)) throw error;
-      }
+      this.report(id, {
+        name: String(error),
+        test: 0,
+        marker: new Error(),
+        operator: 'error',
+        fail: true,
+        data: {
+          actual: error
+        }
+      });
       this.close(id);
     });
     worker.postMessage({

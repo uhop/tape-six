@@ -18,11 +18,11 @@ export default class EventServer {
     if (this.passThroughId === id) {
       if (events) {
         for (const event of events) {
-          this.reporter.report(event);
+          this.reporter.report(event, true);
         }
         delete this.retained[id];
       }
-      return this.reporter.report(event);
+      return this.reporter.report(event, true);
     }
     if (Array.isArray(events)) {
       events.push(event);
@@ -46,7 +46,7 @@ export default class EventServer {
       // dump ready events
       for (const events of this.readyQueue) {
         for (const event of events) {
-          this.reporter.report(event);
+          this.reporter.report(event, true);
         }
       }
       this.readyQueue = [];
@@ -57,7 +57,7 @@ export default class EventServer {
         if (this.passThroughId === null) {
           // dump events
           for (const event of events) {
-            this.reporter.report(event);
+            this.reporter.report(event, true);
           }
         } else {
           // add to the ready queue
