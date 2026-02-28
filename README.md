@@ -420,6 +420,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.7.4 _Bug fixes: uncaught exception handling, `StopTest` suppression in parallel runners._
 - 1.7.3 _Bug fixes in reporters, runners, and assertions. Documentation corrections and improvements._
 - 1.7.2 _Minor internal refactoring and fixes._
 - 1.7.1 _Added AI support, added timeout to start test runners, fixed some bugs in the sequential test runner._
