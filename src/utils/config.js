@@ -272,9 +272,9 @@ export const initReporter = async (getReporter, setReporter, flags) => {
       CustomReporter = (await import('../reporters/' + reporterFile)).default,
       hasColors = !(
         flags.monochrome ||
-        process.env.NO_COLOR ||
-        process.env.NODE_DISABLE_COLORS ||
-        process.env.FORCE_COLOR === '0'
+        runtime.getEnvVar('NO_COLOR') ||
+        runtime.getEnvVar('NODE_DISABLE_COLORS') ||
+        runtime.getEnvVar('FORCE_COLOR') === '0'
       ),
       customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...flags, hasColors},
       customReporter = new CustomReporter(customOptions);
@@ -282,7 +282,7 @@ export const initReporter = async (getReporter, setReporter, flags) => {
   }
 };
 
-export const initFiles = (files, rootFolder) => {
+export const initFiles = (files, rootFolder, type) => {
   if (files.length) return resolvePatterns(rootFolder, files);
-  return resolveTests(rootFolder, 'node');
+  return resolveTests(rootFolder, type || runtime.name);
 };
