@@ -19,8 +19,8 @@ import TestWorker from '../src/runners/node/TestWorker.js';
 const options = {},
   rootFolder = process.cwd();
 
-let flags = '',
-  parallel = '',
+let flags = process.env.TAPE6_FLAGS || '',
+  parallel = process.env.TAPE6_PAR || '',
   files = [];
 
 const showSelf = () => {
@@ -48,8 +48,6 @@ const config = () => {
     h: 'hideStreams'
   };
 
-  let parIsSet = false;
-
   for (let i = 2; i < process.argv.length; ++i) {
     const arg = process.argv[i];
     if (arg == '-f' || arg == '--flags') {
@@ -61,10 +59,8 @@ const config = () => {
     if (arg == '-p' || arg == '--par') {
       if (++i < process.argv.length) {
         parallel = process.argv[i];
-        parIsSet = true;
         if (!parallel || isNaN(parallel)) {
           parallel = '';
-          parIsSet = false;
         }
       }
       continue;
@@ -72,7 +68,6 @@ const config = () => {
     files.push(arg);
   }
 
-  flags = (process.env.TAPE6_FLAGS || '') + flags;
   for (let i = 0; i < flags.length; ++i) {
     const option = flags[i].toLowerCase(),
       name = optionNames[option];
@@ -80,9 +75,6 @@ const config = () => {
   }
   options.flags = flags;
 
-  if (!parIsSet) {
-    parallel = process.env.TAPE6_PAR || parallel;
-  }
   if (parallel) {
     parallel = Math.max(0, +parallel);
     if (parallel === Infinity) parallel = 0;
