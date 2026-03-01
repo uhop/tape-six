@@ -2,24 +2,14 @@
 
 import {fileURLToPath} from 'node:url';
 
-import {
-  resolveTests,
-  resolvePatterns,
-  getReporterFileName,
-  getReporterType
-} from '../src/utils/config.js';
+import {getOptions, initFiles, initReporter} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/runners/bun/TestWorker.js';
 
-const options = {},
-  rootFolder = Bun.cwd;
-
-let flags = '',
-  parallel = '',
-  files = [];
+const rootFolder = Bun.cwd;
 
 const showSelf = () => {
   const self = new URL(import.meta.url);
@@ -31,101 +21,29 @@ const showSelf = () => {
   process.exit(0);
 };
 
-const config = () => {
-  if (Bun.argv.includes('--self')) showSelf();
-
-  const optionNames = {
-    f: 'failureOnly',
-    t: 'showTime',
-    b: 'showBanner',
-    d: 'showData',
-    o: 'failOnce',
-    n: 'showAssertNumber',
-    m: 'monochrome',
-    c: 'dontCaptureConsole',
-    h: 'hideStreams'
-  };
-
-  let parIsSet = false;
-
-  for (let i = 2; i < Bun.argv.length; ++i) {
-    const arg = Bun.argv[i];
-    if (arg == '-f' || arg == '--flags') {
-      if (++i < Bun.argv.length) {
-        flags += Bun.argv[i];
-      }
-      continue;
-    }
-    if (arg == '-p' || arg == '--par') {
-      if (++i < Bun.argv.length) {
-        parallel = Bun.argv[i];
-        parIsSet = true;
-        if (!parallel || isNaN(parallel)) {
-          parallel = '';
-          parIsSet = false;
-        }
-      }
-      continue;
-    }
-    files.push(arg);
-  }
-
-  flags = (Bun.env.TAPE6_FLAGS || '') + flags;
-  for (let i = 0; i < flags.length; ++i) {
-    const option = flags[i].toLowerCase(),
-      name = optionNames[option];
-    if (typeof name == 'string') options[name] = option !== flags[i];
-  }
-  options.flags = flags;
-
-  if (!parIsSet) {
-    parallel = Bun.env.TAPE6_PAR || parallel;
-  }
-  if (parallel) {
-    parallel = Math.max(0, +parallel);
-    if (parallel === Infinity) parallel = 0;
-  } else {
-    parallel = 0;
-  }
-  if (!parallel) parallel = globalThis.navigator?.hardwareConcurrency || 1;
-};
-
-const init = async () => {
-  const currentReporter = getReporter();
-  if (!currentReporter) {
-    const reporterType = getReporterType(),
-      reporterFile = getReporterFileName(reporterType),
-      CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
-      hasColors = !(
-        options.monochrome ||
-        Bun.env.NO_COLOR ||
-        Bun.env.NODE_DISABLE_COLORS ||
-        Bun.env.FORCE_COLOR === '0'
-      ),
-      customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...options, hasColors},
-      customReporter = new CustomReporter(customOptions);
-    setReporter(customReporter);
-  }
-
-  if (files.length) {
-    files = await resolvePatterns(rootFolder, files);
-  } else {
-    files = await resolveTests(rootFolder, 'bun');
-  }
-};
-
 const main = async () => {
-  config();
-  await init();
-  await selectTimer();
+  const currentOptions = getOptions({
+    '--self': showSelf
+  });
+
+  const [files] = await Promise.all([
+    initFiles(currentOptions.files, rootFolder),
+    initReporter(getReporter, setReporter, currentOptions.flags),
+    selectTimer()
+  ]);
 
   process.on('uncaughtException', (error, origin) => {
     console.error('UNHANDLED ERROR:', origin, error);
     process.exit(1);
   });
 
+  if (!files.length) {
+    console.log('No files found.');
+    process.exit(1);
+  }
+
   const reporter = getReporter(),
-    worker = new TestWorker(reporter, parallel, options);
+    worker = new TestWorker(reporter, currentOptions.parallel, currentOptions.flags);
 
   reporter.report({type: 'test', test: 0});
 

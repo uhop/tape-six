@@ -3,12 +3,7 @@
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {
-  resolveTests,
-  resolvePatterns,
-  getReporterFileName,
-  getReporterType
-} from '../src/utils/config.js';
+import {getOptions, initFiles, initReporter} from '../src/utils/config.js';
 
 import {getReporter, setReporter, setConfiguredFlag, testRunner} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
@@ -17,11 +12,7 @@ import TestWorker from '../src/runners/seq/TestWorker.js';
 
 setConfiguredFlag(true);
 
-const options = {},
-  rootFolder = process.cwd();
-
-let flags = '',
-  files = [];
+const rootFolder = process.cwd();
 
 const showSelf = () => {
   const self = new URL(import.meta.url);
@@ -33,74 +24,16 @@ const showSelf = () => {
   process.exit(0);
 };
 
-const config = () => {
-  if (process.argv.includes('--self')) showSelf();
-
-  const optionNames = {
-    f: 'failureOnly',
-    t: 'showTime',
-    b: 'showBanner',
-    d: 'showData',
-    o: 'failOnce',
-    n: 'showAssertNumber',
-    m: 'monochrome',
-    c: 'dontCaptureConsole',
-    h: 'hideStreams'
-  };
-
-  for (let i = 2; i < process.argv.length; ++i) {
-    const arg = process.argv[i];
-    if (arg == '-f' || arg == '--flags') {
-      if (++i < process.argv.length) {
-        flags += process.argv[i];
-      }
-      continue;
-    }
-    if (arg == '-p' || arg == '--par') {
-      // skip
-      ++i;
-      continue;
-    }
-    files.push(arg);
-  }
-
-  flags = (process.env.TAPE6_FLAGS || '') + flags;
-  for (let i = 0; i < flags.length; ++i) {
-    const option = flags[i].toLowerCase(),
-      name = optionNames[option];
-    if (typeof name == 'string') options[name] = option !== flags[i];
-  }
-  options.flags = flags;
-};
-
-const init = async () => {
-  const currentReporter = getReporter();
-  if (!currentReporter) {
-    const reporterType = getReporterType(),
-      reporterFile = getReporterFileName(reporterType),
-      CustomReporter = (await import('../src/reporters/' + reporterFile)).default,
-      hasColors = !(
-        options.monochrome ||
-        process.env.NO_COLOR ||
-        process.env.NODE_DISABLE_COLORS ||
-        process.env.FORCE_COLOR === '0'
-      ),
-      customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...options, hasColors},
-      customReporter = new CustomReporter(customOptions);
-    setReporter(customReporter);
-  }
-
-  if (files.length) {
-    files = await resolvePatterns(rootFolder, files);
-  } else {
-    files = await resolveTests(rootFolder, 'node');
-  }
-};
-
 const main = async () => {
-  config();
-  await init();
-  await selectTimer();
+  const currentOptions = getOptions({
+    '--self': showSelf
+  });
+
+  const [files] = await Promise.all([
+    initFiles(currentOptions.files, rootFolder),
+    initReporter(getReporter, setReporter, currentOptions.flags),
+    selectTimer()
+  ]);
 
   const console = globalThis.console;
 
@@ -109,8 +42,13 @@ const main = async () => {
     process.exit(1);
   });
 
+  if (!files.length) {
+    console.log('No files found.');
+    process.exit(1);
+  }
+
   const reporter = getReporter(),
-    worker = new TestWorker(reporter, 1, {...options, testRunner});
+    worker = new TestWorker(reporter, 1, {...currentOptions.flags, testRunner});
 
   reporter.report({type: 'test', test: 0});
 
