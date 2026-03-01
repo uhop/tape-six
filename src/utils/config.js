@@ -1,5 +1,6 @@
 import {promises as fsp} from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 
 import {listing, wildToRe} from './listing.js';
 
@@ -131,4 +132,157 @@ export const getTimeoutValue = () => {
   let timeout = Number(timeoutValue);
   if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_START_TIMEOUT;
   return timeout;
+};
+
+// parsing options
+
+export const flagNames = {
+  f: 'failureOnly',
+  t: 'showTime',
+  b: 'showBanner',
+  d: 'showData',
+  o: 'failOnce',
+  s: 'showStack',
+  l: 'showLog',
+  n: 'showAssertNumber',
+  m: 'monochrome',
+  j: 'useJsonL'
+};
+
+export const processArgs = argOptions => {
+  const result = {files: [], flags: {}};
+  let args = [];
+  switch (runtime.name) {
+    case 'browser':
+      return [];
+    case 'deno':
+      args = Deno.args;
+      break;
+    case 'bun':
+      args = Bun.argv.slice(2);
+      break;
+    case 'node':
+      args = process.argv.slice(2);
+      break;
+  }
+
+  const argNames = {};
+  for (const argName of Object.keys(argOptions)) {
+    const option = argOptions[argName];
+    argNames[argName] = option;
+    if (Array.isArray(option?.aliases)) {
+      for (const alias of option.aliases) {
+        argNames[alias] = option;
+      }
+    }
+    result.flags[argName] = option?.initialValue ?? null;
+  }
+
+  for (let i = 0; i < args.length; ++i) {
+    const arg = args[i],
+      [name, ...values] = arg.split('=');
+    let opt = argNames[name],
+      value = values.join('=');
+
+    if (!opt) {
+      result.files.push(arg);
+      continue;
+    }
+
+    if (typeof opt == 'function') {
+      opt = {fn: opt, isValueRequired: true};
+    }
+
+    if (opt.isValueRequired && !values.length) {
+      if (++i < args.length) {
+        value = args[i];
+      } else {
+        value = '';
+      }
+    }
+
+    if (typeof opt.fn == 'function') {
+      opt.fn(result.flags, name, value);
+    } else {
+      result.flags[name] = value;
+    }
+  }
+
+  return result;
+};
+
+export const getOptions = extraOptions => {
+  const args = processArgs({
+    '--flags': {
+      aliases: ['-f'],
+      initialValue: runtime.getEnvVar('TAPE6_FLAGS') || '',
+      isValueRequired: true,
+      fn: (flags, _, value) => {
+        flags['--flags'] += value;
+      }
+    },
+    '--par': {
+      aliases: ['-p'],
+      initialValue: runtime.getEnvVar('TAPE6_PAR') || '',
+      isValueRequired: true
+    },
+    ...extraOptions
+  });
+
+  const flags = args.flags['--flags'],
+    options = {flags: {flags}, parallel: 1, files: args.files, optionFlags: args.flags};
+
+  for (let i = 0; i < flags.length; ++i) {
+    const flag = flags[i].toLowerCase(),
+      name = flagNames[flag];
+    if (typeof name == 'string') options.flags[name] = flag !== flags[i];
+  }
+
+  let parallel = args.flags['--par'];
+
+  if (parallel) {
+    parallel = Math.max(0, +parallel);
+    if (isNaN(parallel) || parallel === Infinity) parallel = 0;
+  } else {
+    parallel = 0;
+  }
+
+  if (!parallel) {
+    if (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) {
+      parallel = navigator.hardwareConcurrency;
+    } else {
+      try {
+        parallel = os.availableParallelism();
+      } catch (e) {
+        void e;
+        parallel = 1;
+      }
+    }
+  }
+  options.parallel = parallel;
+
+  return options;
+};
+
+export const initReporter = async (getReporter, setReporter, flags) => {
+  const currentReporter = getReporter();
+  if (!currentReporter) {
+    const reporterType = getReporterType(),
+      reporterFile = getReporterFileName(reporterType),
+      CustomReporter = (await import('../reporters/' + reporterFile)).default,
+      hasColors = !(
+        flags.monochrome ||
+        process.env.NO_COLOR ||
+        process.env.NODE_DISABLE_COLORS ||
+        process.env.FORCE_COLOR === '0'
+      ),
+      customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...flags, hasColors},
+      customReporter = new CustomReporter(customOptions);
+    setReporter(customReporter);
+  }
+};
+
+export const initFiles = (files, rootFolder) => {
+  if (files.length) return resolvePatterns(rootFolder, files);
+  return resolveTests(rootFolder, 'node');
 };
