@@ -515,6 +515,7 @@ Common combinations: `FO` (failures only + stop at first), `FOT` (+ show time).
 - `TAPE6_PAR` — number of parallel workers.
 - `TAPE6_TAP` — force TAP output format.
 - `TAPE6_JSONL` — force JSONL output format.
+- `TAPE6_MIN` — force minimal output format.
 
 ## Configuring test discovery
 
