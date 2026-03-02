@@ -420,6 +420,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.7.5 _Refactored CLI runners, added `--info` option, renamed `dontCaptureConsole` to `noConsoleCapture`._
 - 1.7.4 _Bug fixes: uncaught exception handling, `StopTest` suppression in parallel runners._
 - 1.7.3 _Bug fixes in reporters, runners, and assertions. Documentation corrections and improvements._
 - 1.7.2 _Minor internal refactoring and fixes._
