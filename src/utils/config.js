@@ -170,7 +170,13 @@ export const processArgs = argOptions => {
 
   const argNames = {};
   for (const argName of Object.keys(argOptions)) {
-    const option = argOptions[argName];
+    let option = argOptions[argName];
+    if (typeof option == 'function') {
+      option = {fn: option, isValueRequired: true};
+    } else {
+      option = {...option};
+    }
+    option.canonicalName = argName;
     argNames[argName] = option;
     if (Array.isArray(option?.aliases)) {
       for (const alias of option.aliases) {
@@ -206,7 +212,7 @@ export const processArgs = argOptions => {
     if (typeof opt.fn == 'function') {
       opt.fn(result.flags, name, value);
     } else {
-      result.flags[name] = value;
+      result.flags[opt.canonicalName] = value;
     }
   }
 
