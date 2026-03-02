@@ -464,6 +464,7 @@ deno run -A tests/test-example.js     # Deno
 npx tape6 --flags FO                  # parallel (worker threads)
 npx tape6-seq --flags FO              # sequential (in-process, no workers)
 npx tape6 --par 4 --flags FO          # limit to 4 workers
+npx tape6 --info --flags FO           # show config and exit without running tests
 ```
 
 **`tape6` vs `tape6-seq`**: The default `tape6` runner spawns worker threads to run test files in parallel — faster, but each file runs in its own isolated context. `tape6-seq` runs all test files sequentially in a single process — slower, but useful for debugging, for tests that share state, or when worker threads are unavailable.

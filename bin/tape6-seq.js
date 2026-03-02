@@ -3,7 +3,7 @@
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {getOptions, initFiles, initReporter} from '../src/utils/config.js';
+import {getOptions, initFiles, initReporter, showInfo} from '../src/utils/config.js';
 
 import {getReporter, setReporter, setConfiguredFlag, testRunner} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
@@ -26,7 +26,8 @@ const showSelf = () => {
 
 const main = async () => {
   const currentOptions = getOptions({
-    '--self': showSelf
+    '--self': showSelf,
+    '--info': {isValueRequired: false}
   });
 
   const [files] = await Promise.all([
@@ -41,6 +42,11 @@ const main = async () => {
     console.error('UNHANDLED ERROR:', origin, error);
     process.exit(1);
   });
+
+  if (currentOptions.optionFlags['--info'] === '') {
+    showInfo(currentOptions, files);
+    process.exit(0);
+  }
 
   if (!files.length) {
     console.log('No files found.');

@@ -48,7 +48,7 @@ export class TTYReporter extends Reporter {
     showData = true,
     showAssertNumber = false,
     hasColors = true,
-    dontCaptureConsole = false,
+    noConsoleCapture = false,
     hideStreams = false,
     originalConsole
   } = {}) {
@@ -105,7 +105,7 @@ export class TTYReporter extends Reporter {
 
     this.overrideLastLine = false;
 
-    while (dontCaptureConsole && this.output.isTTY) {
+    while (noConsoleCapture && this.output.isTTY) {
       const isCurrentTTY = this.output === process.stdout || this.output === process.stderr;
       if (!isCurrentTTY) break;
 

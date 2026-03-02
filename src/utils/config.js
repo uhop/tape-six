@@ -146,7 +146,9 @@ export const flagNames = {
   l: 'showLog',
   n: 'showAssertNumber',
   m: 'monochrome',
-  j: 'useJsonL'
+  j: 'useJsonL',
+  c: 'noConsoleCapture',
+  h: 'hideStreams'
 };
 
 export const processArgs = argOptions => {
@@ -232,6 +234,15 @@ export const getOptions = extraOptions => {
   const flags = args.flags['--flags'],
     options = {flags: {flags}, parallel: 1, files: args.files, optionFlags: args.flags};
 
+  // set back flags
+  if (runtime.name === 'deno') {
+    Deno.env.set('TAPE6_FLAGS', flags);
+  } else if (runtime.name === 'bun') {
+    Bun.env.TAPE6_FLAGS = flags;
+  } else {
+    process.env.TAPE6_FLAGS = flags;
+  }
+
   for (let i = 0; i < flags.length; ++i) {
     const flag = flags[i].toLowerCase(),
       name = flagNames[flag];
@@ -285,4 +296,25 @@ export const initReporter = async (getReporter, setReporter, flags) => {
 export const initFiles = (files, rootFolder, type) => {
   if (files.length) return resolvePatterns(rootFolder, files);
   return resolveTests(rootFolder, type || runtime.name);
+};
+
+export const showInfo = (options, files) => {
+  const reporterType = getReporterType();
+  console.log('Runtime: ', runtime.name);
+  console.log('Reporter:', reporterType);
+  console.log('Parallel:', options.parallel);
+
+  const names = Object.keys(options.flags),
+    width = names.reduce((max, name) => Math.max(max, name.length), 0) + 1;
+  console.log('Flags:', options.flags.flags || '');
+  for (let i = 0; i < names.length; ++i) {
+    const name = names[i];
+    if (name === 'flags') continue;
+    console.log('  ' + (name + ':').padEnd(width), options.flags[name]);
+  }
+
+  console.log('Files (' + files.length + '):');
+  for (const file of files) {
+    console.log('  /' + file);
+  }
 };
