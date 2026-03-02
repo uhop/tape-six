@@ -197,10 +197,6 @@ export const processArgs = argOptions => {
       continue;
     }
 
-    if (typeof opt == 'function') {
-      opt = {fn: opt, isValueRequired: true};
-    }
-
     if (opt.isValueRequired && !values.length) {
       if (++i < args.length) {
         value = args[i];
