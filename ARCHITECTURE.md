@@ -34,7 +34,7 @@ src/                  # Source code
 │   ├── deno/         # Deno: TestWorker.js + worker.js
 │   └── seq/          # Sequential: TestWorker.js + BypassReporter.js
 ├── utils/            # Shared utilities
-│   ├── config.js     # Test file discovery and configuration loading
+│   ├── config.js     # CLI arg parsing, options, test discovery, reporter init
 │   ├── listing.js    # Glob-based test file listing
 │   ├── capture-console.js  # Console capture for test output isolation
 │   ├── timer.js      # Cross-runtime high-resolution timer

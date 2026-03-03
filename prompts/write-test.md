@@ -135,7 +135,7 @@ After writing the test file, verify it:
 
 ## Code style
 
-- Follow Prettier formatting (no semicolons — match existing files)
+- Follow Prettier formatting (semicolons required — match existing files)
 - No unnecessary imports or dependencies
 - Keep tests concise and focused
 - Do not add comments unless they explain non-obvious test logic

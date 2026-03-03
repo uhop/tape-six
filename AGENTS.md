@@ -63,7 +63,7 @@ tape-six/
 - **ES modules** throughout (`"type": "module"` in package.json).
 - **No transpilation** — code runs directly in all target runtimes.
 - **Prettier** for formatting (see `.prettierrc`).
-- No semicolons are enforced by Prettier config — follow existing patterns.
+- Semicolons are enforced by Prettier (default `semi: true`).
 - Imports at the top of files, using `import` syntax.
 - The package name is `tape-six` but internal names, environment variables, and public names use `tape6` (e.g., `TAPE6_FLAGS`, `tape6` CLI).
 

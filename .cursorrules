@@ -20,7 +20,7 @@ tape-six is a TAP-based unit testing library for modern JavaScript (ES6+). Works
 - Prettier: 100 char width, single quotes, no bracket spacing, no trailing commas, arrow parens "avoid" (see `.prettierrc`).
 - 2-space indentation.
 - Imports at top of file, using `import` syntax. No dynamic imports unless necessary.
-- No semicolons — follow existing patterns.
+- Semicolons are enforced by Prettier (default `semi: true`).
 
 ## Architecture quick reference
 

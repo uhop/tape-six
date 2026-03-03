@@ -147,6 +147,12 @@ const server = http.createServer(async (req, res) => {
     const cfg = await getConfig(rootFolder);
     return sendJson(req, res, cfg.importmap || {imports: {}}, method === 'HEAD');
   }
+  if (url.pathname === '/favicon.ico') {
+    const faviconFile = path.join(rootFolder, webAppPath, 'favicon.ico');
+    const stat = await fsp.stat(faviconFile).catch(() => null);
+    if (stat && stat.isFile()) return sendFile(req, res, faviconFile, '.ico', method === 'HEAD');
+    return bailOut(req, res);
+  }
   if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
     // redirect to the web app
     url.pathname = webAppPath;

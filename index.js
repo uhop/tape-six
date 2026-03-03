@@ -38,7 +38,7 @@ const optionNames = {
   n: 'showAssertNumber',
   m: 'monochrome',
   j: 'useJsonL',
-  c: 'dontCaptureConsole',
+  c: 'noConsoleCapture',
   h: 'hideStreams'
 };
 
@@ -74,7 +74,7 @@ const init = async () => {
 
   let originalConsole = null,
     setCurrentReporter = null;
-  if (!options.dontCaptureConsole && (isNode || isBun || isDeno)) {
+  if (!options.noConsoleCapture && (isNode || isBun || isDeno)) {
     const {captureConsole, setCurrentReporter: setReporter} = await import(
       new URL('./src/utils/capture-console.js', import.meta.url)
     );

@@ -464,7 +464,11 @@ deno run -A tests/test-example.js     # Deno
 npx tape6 --flags FO                  # parallel (worker threads)
 npx tape6-seq --flags FO              # sequential (in-process, no workers)
 npx tape6 --par 4 --flags FO          # limit to 4 workers
+npx tape6 --info --flags FO           # show config and exit without running tests
+npx tape6 --flags=FO                  # = form is also supported
 ```
+
+Options that take a value accept both space-separated (`--flags FO`) and `=`-separated (`--flags=FO`) forms. The `=` form does not support quoting (e.g. `--flags="FO"` won't work); use the space form when values need quoting.
 
 **`tape6` vs `tape6-seq`**: The default `tape6` runner spawns worker threads to run test files in parallel — faster, but each file runs in its own isolated context. `tape6-seq` runs all test files sequentially in a single process — slower, but useful for debugging, for tests that share state, or when worker threads are unavailable.
 
@@ -514,6 +518,7 @@ Common combinations: `FO` (failures only + stop at first), `FOT` (+ show time).
 - `TAPE6_PAR` — number of parallel workers.
 - `TAPE6_TAP` — force TAP output format.
 - `TAPE6_JSONL` — force JSONL output format.
+- `TAPE6_MIN` — force minimal output format.
 
 ## Configuring test discovery
 

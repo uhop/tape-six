@@ -286,12 +286,14 @@ Environment-specific subsections: `node`, `deno`, `bun`, `browser`.
 Runs test files in parallel using worker threads.
 
 ```bash
-tape6 [--flags FLAGS] [--par N] [tests...]
+tape6 [--flags FLAGS] [--par N] [--info] [tests...]
 ```
 
 - `--flags FLAGS` — output control flags (see below).
 - `--par N` — number of parallel workers (default: all CPU cores).
+- `--info` — print current configuration and exit without running tests.
 - No arguments: runs tests from configuration.
+- Options accept `--flags FO` or `--flags=FO`. The `=` form does not support quoting.
 
 ### tape6-seq
 
