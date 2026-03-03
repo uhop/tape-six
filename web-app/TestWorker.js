@@ -40,6 +40,7 @@ export default class TestWorker extends EventServer {
     };
   }
   makeTask(fileName) {
+    fileName = fileName.replace(/\\/g, '/');
     const id = String(++this.counter);
     const iframe = document.createElement('iframe');
     iframe.id = 'test-iframe-' + id;
