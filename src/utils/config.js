@@ -315,12 +315,14 @@ export const showInfo = (options, files) => {
     console.log('  ' + (name + ':').padEnd(width), options.flags[name]);
   }
 
-  if (files?.length) {
-    console.log('Files (' + files.length + '):');
-    for (const file of files) {
-      console.log('  /' + file);
+  if (files) {
+    if (files.length) {
+      console.log('Files (' + files.length + '):');
+      for (const file of files) {
+        console.log('  /' + file);
+      }
+    } else {
+      console.log('Files: none');
     }
-  } else {
-    console.log('Files: none');
   }
 };
