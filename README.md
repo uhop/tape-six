@@ -420,6 +420,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.7.7 _Bug fix: Windows path normalization in `tape6-server`, documented `--flags=FO` option form._
 - 1.7.6 _Bug fix: `processArgs` alias canonicalization, dead code removal, doc fix._
 - 1.7.5 _Refactored CLI runners, added `--info` option, renamed `dontCaptureConsole` to `noConsoleCapture`._
 - 1.7.4 _Bug fixes: uncaught exception handling, `StopTest` suppression in parallel runners._
