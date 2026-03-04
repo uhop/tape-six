@@ -65,6 +65,8 @@ if (!webAppPath) {
     rootFolder,
     path.join(path.dirname(fileURLToPath(url)), '../web-app/')
   );
+  if (path.sep === path.win32.sep)
+    webAppPath = webAppPath.replaceAll(path.win32.sep, path.posix.sep);
 }
 
 // common aliases
