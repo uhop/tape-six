@@ -10,6 +10,11 @@ import {getConfig, resolveTests, resolvePatterns} from '../src/utils/config.js';
 
 const fsp = fs.promises;
 
+const toPosix = files =>
+  path.sep === path.win32.sep
+    ? files.map(f => f.replaceAll(path.win32.sep, path.posix.sep))
+    : files;
+
 // simple static server with no dependencies
 
 const showSelf = () => {
@@ -56,7 +61,6 @@ if (!webAppPath) {
   const url = import.meta.url;
   if (!/^file:\/\//i.test(url))
     throw Error('Cannot identify the location of the web application. Use WEBAPP_PATH.');
-  const isWindows = path.sep === '\\';
   webAppPath = path.relative(
     rootFolder,
     path.join(path.dirname(fileURLToPath(url)), '../web-app/')
@@ -131,14 +135,19 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://' + req.headers.host);
   if (url.pathname === '/--tests') {
     // get tests
-    return sendJson(req, res, await resolveTests(rootFolder, 'browser'), method === 'HEAD');
+    return sendJson(
+      req,
+      res,
+      toPosix(await resolveTests(rootFolder, 'browser')),
+      method === 'HEAD'
+    );
   }
   if (url.pathname === '/--patterns') {
     // resolve patterns
     return sendJson(
       req,
       res,
-      await resolvePatterns(rootFolder, url.searchParams.getAll('q')),
+      toPosix(await resolvePatterns(rootFolder, url.searchParams.getAll('q'))),
       method === 'HEAD'
     );
   }
@@ -172,7 +181,7 @@ const server = http.createServer(async (req, res) => {
         stat = await fsp.stat(altFile).catch(() => null);
       if (stat && stat.isFile()) return sendFile(req, res, altFile, '.html', method === 'HEAD');
     } else {
-      url.pathname += path.sep;
+      url.pathname += path.posix.sep;
       return sendRedirect(req, res, url.href);
     }
     return bailOut(req, res);
