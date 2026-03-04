@@ -1,5 +1,6 @@
 #!/usr/bin/env -S deno run --allow-all --ext=js
 
+import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
 import {getOptions, initFiles, initReporter, showInfo} from '../src/utils/config.js';
@@ -40,11 +41,13 @@ const main = async () => {
 
   if (currentOptions.optionFlags['--info'] === '') {
     showInfo(currentOptions, files);
+    await new Promise(r => process.stdout.write('', r));
     Deno.exit(0);
   }
 
   if (!files.length) {
     console.log('No files found.');
+    await new Promise(r => process.stdout.write('', r));
     Deno.exit(1);
   }
 
@@ -66,6 +69,7 @@ const main = async () => {
     fail: hasFailed
   });
 
+  await new Promise(r => process.stdout.write('', r));
   Deno.exit(hasFailed ? 1 : 0);
 };
 

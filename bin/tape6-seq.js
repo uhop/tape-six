@@ -45,11 +45,13 @@ const main = async () => {
 
   if (currentOptions.optionFlags['--info'] === '') {
     showInfo(currentOptions, files);
+    await new Promise(r => process.stdout.write('', r));
     process.exit(0);
   }
 
   if (!files.length) {
     console.log('No files found.');
+    await new Promise(r => process.stdout.write('', r));
     process.exit(1);
   }
 
@@ -71,6 +73,7 @@ const main = async () => {
     fail: hasFailed
   });
 
+  await new Promise(r => process.stdout.write('', r));
   process.exit(hasFailed ? 1 : 0);
 };
 
