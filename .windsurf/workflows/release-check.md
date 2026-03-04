@@ -22,10 +22,20 @@ Run through this checklist before publishing a new version.
 9. Update release history in `README.md`.
 10. Run `npm install` to regenerate `package-lock.json`.
     // turbo
-11. Run the full test suite: `npm test`
+11. Run the full test suite with Node: `npm test`
     // turbo
-12. Run TypeScript check: `npm run ts-check`
+12. Run tests with Bun: `npm run test:bun`
     // turbo
-13. Run lint: `npm run lint`
+13. Run tests with Deno: `npm run test:deno`
     // turbo
-14. Dry-run publish to verify package contents: `npm pack --dry-run`
+14. Run sequential tests with Node: `npm run test:seq`
+    // turbo
+15. Run sequential tests with Bun: `npm run test:seq:bun`
+    // turbo
+16. Run sequential tests with Deno: `npm run test:seq:deno`
+    // turbo
+17. Run TypeScript check: `npm run ts-check`
+    // turbo
+18. Run lint: `npm run lint`
+    // turbo
+19. Dry-run publish to verify package contents: `npm pack --dry-run`
