@@ -14,11 +14,11 @@ Write or update tests using the tape-six testing library.
 
 ## Steps
 
-1. Read the testing guide at `node_modules/tape-six/TESTING.md` for API reference and patterns.
+1. Read the testing guide at `TESTING.md` for API reference and patterns.
 2. Identify the module or feature to test. Read its source code to understand the public API.
 3. Create or update the test file in `tests/test-<name>.js` (or `.ts` for TypeScript projects):
    - Import `test` from `tape-six` (ESM: `import test from 'tape-six'`; CJS: `const {test} = require('tape-six')`).
-   - Import the module under test using the project's package name.
+   - Import the module under test.
    - Write one top-level `test()` per logical group.
    - Use embedded `await t.test()` for sub-cases.
    - Use `t.beforeEach`/`t.afterEach` for shared setup/teardown.
