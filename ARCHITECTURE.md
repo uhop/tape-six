@@ -51,8 +51,7 @@ web-app/              # Browser test UI application
 ├── DomReporter.js    # DOM-based test result reporter
 ├── DashReporter.js   # Dashboard reporter with donut chart
 └── TestWorker.js     # Browser worker (uses iframe isolation)
-tests/                # Test files (test-*.js, test-*.mjs, test-*.cjs)
-ts-tests/             # TypeScript test files
+tests/                # Test files (test-*.js, test-*.mjs, test-*.cjs, test-*.ts)
 wiki/                 # GitHub wiki documentation (git submodule)
 vendors/              # Git submodules
 └── deep6/            # deep6 source (copied to src/deep6/ at build time)

@@ -109,8 +109,7 @@ tape-six/
 ├── bin/              # CLI utilities: tape6, tape6-server, tape6-node, tape6-bun, tape6-deno, tape6-seq
 ├── src/              # Source code (test engine, reporters, runners, utilities)
 ├── web-app/          # Browser test UI application
-├── tests/            # Test files
-├── ts-tests/         # TypeScript test files
+├── tests/            # Test files (JS + TS)
 ├── wiki/             # GitHub wiki documentation (submodule)
 └── vendors/          # Git submodules (deep6)
 ```

@@ -50,8 +50,7 @@ tape-six/
 │   ├── utils/        # Timers, console capture, defer, etc.
 │   └── deep6/        # Copied from vendors/deep6 at build time (gitignored)
 ├── web-app/          # Browser test UI application
-├── tests/            # Test files (test-*.js, test-*.mjs, test-*.cjs)
-├── ts-tests/         # TypeScript test files
+├── tests/            # Test files (test-*.js, test-*.mjs, test-*.cjs, test-*.ts)
 ├── wiki/             # GitHub wiki documentation (submodule)
 ├── vendors/          # Git submodules (deep6)
 ├── prompts/          # AI prompt templates for documentation generation

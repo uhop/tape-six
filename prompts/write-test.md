@@ -10,7 +10,7 @@ Before writing tests:
 ## File conventions
 
 - **JavaScript tests:** place in `tests/` with the naming pattern `test-<feature>.js`
-- **TypeScript tests:** place in `ts-tests/` with the naming pattern `test-<feature>.ts`
+- **TypeScript tests:** place in `tests/` with the naming pattern `test-<feature>.ts`
 - Import from `../index.js` (relative path), not from `tape-six` — this applies to both JS and TS files
 - One file per feature or logical group of related functionality
 
@@ -127,11 +127,11 @@ test('error handling', async t => {
 
 After writing the test file, verify it:
 
-1. Run directly: `node tests/test-<feature>.js` (or `node ts-tests/test-<feature>.ts` for TypeScript)
+1. Run directly: `node tests/test-<feature>.js` (or `node tests/test-<feature>.ts` for TypeScript)
 2. Run with flags: `TAPE6_FLAGS=FO node tests/test-<feature>.js`
 3. Ensure it is picked up by the test runner:
    - JS tests: `npm test` — files must match globs in `package.json` under `tape6.tests`
-   - TS tests: `npm run ts-test` — runs `tape6 --flags FO '/ts-tests/test-*.ts'`
+   - TS tests: `npm run ts-test` — runs `tape6 --flags FO '/tests/test-*.ts'`
 
 ## Code style
 
