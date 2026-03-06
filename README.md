@@ -419,6 +419,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.7.9 _Merged test directories, fixed `.d.ts` typings, added `ts-check` to CI._
 - 1.7.8 _Bug fix: Deno stdout flush before exit to prevent truncated output._
 - 1.7.7 _Bug fix: Windows path normalization in `tape6-server`, documented `--flags=FO` option form._
 - 1.7.6 _Bug fix: `processArgs` alias canonicalization, dead code removal, doc fix._
