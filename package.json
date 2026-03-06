@@ -35,6 +35,9 @@
     "test:seq:deno": "deno run -A ./bin/tape6-seq.js --flags FO",
     "test:puppeteer": "node tests/puppeteer-chrome.js",
     "test:playwright": "node tests/playwright-chrome.js",
+    "ts-test": "node ./bin/tape6.js --flags FO 'tests/test-*.*ts'",
+    "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO 'tests/test-*.*ts'",
+    "ts-test:deno": "deno run -A ./bin/tape6-deno.js --flags FO 'tests/test-*.*ts'",
     "ts-check": "tsc --noEmit"
   },
   "github": "http://github.com/uhop/tape-six",
@@ -86,8 +89,7 @@
       "/tests/test-*.mjs"
     ],
     "cli": [
-      "/tests/test-*.cjs",
-      "/tests/test-*.*ts"
+      "/tests/test-*.cjs"
     ],
     "browser": [
       "/tests/web/test-*.html"
