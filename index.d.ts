@@ -1130,17 +1130,17 @@ export declare const test: Test;
 /**
  * An alias for `test`. When called inside a test body, it delegates to the current tester.
  */
-export declare const suite = test;
+export declare const suite: Test;
 
 /**
  * An alias for `test`. When called inside a test body, it delegates to the current tester.
  */
-export declare const describe = test;
+export declare const describe: Test;
 
 /**
  * An alias for `test`. When called inside a test body, it delegates to the current tester.
  */
-export declare const it = test;
+export declare const it: Test;
 
 /**
  * Registers a function that will be called before all 1st-level embedded tests in the current scope.
