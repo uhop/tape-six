@@ -17,9 +17,9 @@ Write or update tests using the tape-six testing library.
 
 1. Read the testing guide at `TESTING.md` for API reference and patterns.
 2. Identify the module or feature to test. Read its source code to understand the public API.
-3. Create or update the test file in `tests/test-<name>.js` (or `.ts` for TypeScript projects):
-   - Import `test` from `../index.js` (relative path), not from `tape-six`. For CJS tests use a named import: `const {test} = require('../index.js')`.
-   - Import the module under test.
+3. Create or update the test file in `tests/test-<name>.js` (or `.ts` for TypeScript, `.cjs` for CommonJS):
+   - **ESM** (`.js`): `import test from '../index.js'` (relative path), not from `tape-six`. Import the module under test.
+   - **CJS** (`.cjs`): `const {test} = require('../index.js')`. If the module under test uses top-level `await`, `require()` cannot load it — use `await import()` inside async tests instead.
    - Write one top-level `test()` per logical group.
    - Use embedded `await t.test()` for sub-cases.
    - Use `t.beforeEach`/`t.afterEach` for shared setup/teardown.
@@ -29,4 +29,5 @@ Write or update tests using the tape-six testing library.
 4. Run the new test file directly to verify: `node tests/test-<name>.js`
 5. Run the full test suite to check for regressions: `npm test`
    - If debugging, use `npm run test:seq` (runs sequentially, easier to trace issues).
+   - To see which files are being run, add `--flags fo` (overrides the default `--flags FO`).
 6. Report results and any failures.

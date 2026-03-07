@@ -512,6 +512,8 @@ Flags control test output. Uppercase = enabled, lowercase = disabled.
 
 Common combinations: `FO` (failures only + stop at first), `FOT` (+ show time).
 
+When multiple `--flags` are given, the last one wins. To see which files are being run (overriding `--flags FO` from a script), append `--flags fo` — lowercase disables the flags.
+
 ### Environment variables
 
 - `TAPE6_FLAGS` — flags string (alternative to `--flags`).
@@ -541,7 +543,7 @@ Add to `package.json`:
 ```
 
 - `tests` — glob patterns for test files (relative to project root with leading `/`). Common for all environments.
-- `cli` — additional patterns for CLI-only environments (Node, Bun, Deno). Typically used for `.cjs` files.
+- `cli` — additional patterns for CLI-only environments (Node, Bun, Deno). Typically used for `.cjs` files that browsers cannot run. For CLI-only projects (no browser testing), it doesn't matter whether `.cjs` patterns go in `cli` or `tests` — all CLI runners handle both.
 - `node`, `deno`, `bun`, `browser` — additional patterns specific to a given environment. These are **not overrides** — they are added to `tests` (and `cli` for non-browser).
 - `importmap` — import map for browser testing (standard [import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap) format).
 
@@ -742,6 +744,28 @@ test('MyClass', async t => {
     instance.remove('item');
     t.equal(instance.size, 0, 'size decreases');
   });
+});
+```
+
+### Writing a CommonJS test
+
+```cjs
+const {test} = require('tape-six');
+const {myFunction} = require('my-package');
+
+test('myFunction from CJS', t => {
+  t.equal(myFunction(1, 2), 3);
+});
+```
+
+If the module under test uses top-level `await`, `require()` cannot load it. Use `await import()` inside async tests instead:
+
+```cjs
+const {test} = require('tape-six');
+
+test('async module from CJS', async t => {
+  const {myFunction} = await import('my-async-package');
+  t.equal(myFunction(1, 2), 3);
 });
 ```
 
