@@ -54,6 +54,7 @@ tape-six is a TAP-based unit testing library for modern JavaScript (ES6+). Works
 - Vendored deep equality: `src/deep6/` (gitignored, copied at build)
 - Browser UI: `web-app/`
 - Tests: `tests/test-*.js`, `tests/test-*.ts`
+- Skills: `skills/` (Agent Skills shipped via npm)
 - Wiki docs: `wiki/` (git submodule)
 
 ## When reading the codebase

@@ -54,6 +54,7 @@ tape-six/
 ├── wiki/             # GitHub wiki documentation (submodule)
 ├── vendors/          # Git submodules (deep6)
 ├── prompts/          # AI prompt templates for documentation generation
+├── skills/           # Agent Skills (agentskills.io) shipped to consumers via npm
 └── scripts/          # Build helper scripts
 ```
 
