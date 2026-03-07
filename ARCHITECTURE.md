@@ -159,6 +159,8 @@ src/utils/listing.js ← (glob-based file listing)
 - **Run with Bun**: `npm run test:bun`
 - **Run with Deno**: `npm run test:deno`
 - **Run sequentially**: `npm run test:seq`
+- **Run sequentially (Bun)**: `npm run test:seq:bun`
+- **Run sequentially (Deno)**: `npm run test:seq:deno`
 - **Browser (Puppeteer)**: `npm run test:puppeteer` (requires `npm start` in another terminal)
 - **Browser (Playwright)**: `npm run test:playwright` (requires `npm start` in another terminal)
 - **TypeScript check**: `npm run ts-check`

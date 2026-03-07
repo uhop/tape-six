@@ -25,6 +25,9 @@ npm run build
 - **Test (Node):** `npm test` (runs `tape6 --flags FO`)
 - **Test (Bun):** `npm run test:bun`
 - **Test (Deno):** `npm run test:deno`
+- **Test sequential (Node):** `npm run test:seq`
+- **Test sequential (Bun):** `npm run test:seq:bun`
+- **Test sequential (Deno):** `npm run test:seq:deno`
 - **Test (Puppeteer):** `npm run test:puppeteer` (requires `npm start` running in another terminal)
 - **Test (Playwright):** `npm run test:playwright` (requires `npm start` running in another terminal)
 - **Start browser test server:** `npm start` (runs `tape6-server --trace` on port 3000)

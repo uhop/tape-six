@@ -131,7 +131,7 @@ After writing the test file, verify it:
 2. Run with flags: `TAPE6_FLAGS=FO node tests/test-<feature>.js`
 3. Ensure it is picked up by the test runner:
    - JS tests: `npm test` — files must match globs in `package.json` under `tape6.tests`
-   - TS tests: `npm run ts-test` — runs `tape6 --flags FO '/tests/test-*.ts'`
+   - TS tests: `npm run ts-test` — runs `tape6 --flags FO 'tests/test-*.*ts'`
 
 ## Code style
 
