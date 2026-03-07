@@ -1,5 +1,6 @@
 ---
-description: Write or update tape-six tests for a module or feature
+name: write-tests
+description: Write or update tape-six tests for a module or feature. Use when asked to write tests, add test coverage, or create test files.
 ---
 
 # Write Tests
@@ -17,7 +18,7 @@ Write or update tests using the tape-six testing library.
 1. Read the testing guide at `TESTING.md` for API reference and patterns.
 2. Identify the module or feature to test. Read its source code to understand the public API.
 3. Create or update the test file in `tests/test-<name>.js` (or `.ts` for TypeScript projects):
-   - Import `test` from `tape-six` (ESM: `import test from 'tape-six'`; CJS: `const {test} = require('tape-six')`).
+   - Import `test` from `../index.js` (relative path), not from `tape-six`. For CJS tests use a named import: `const {test} = require('../index.js')`.
    - Import the module under test.
    - Write one top-level `test()` per logical group.
    - Use embedded `await t.test()` for sub-cases.
@@ -25,9 +26,7 @@ Write or update tests using the tape-six testing library.
    - Cover: normal operation, edge cases, error conditions.
    - Use `t.equal` for primitives, `t.deepEqual` for objects/arrays, `t.throws` for errors, `await t.rejects` for async errors.
    - All `msg` arguments are optional but recommended for clarity.
-   // turbo
 4. Run the new test file directly to verify: `node tests/test-<name>.js`
-   // turbo
 5. Run the full test suite to check for regressions: `npm test`
    - If debugging, use `npm run test:seq` (runs sequentially, easier to trace issues).
 6. Report results and any failures.

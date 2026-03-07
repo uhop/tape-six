@@ -131,9 +131,8 @@ The whole API is based on two objects: `test` and `Tester`.
 import test from 'tape-six';
 // import {test} from 'tape-six';
 
-// CommonJS:
+// CommonJS (named import is recommended):
 // const {test} = require('tape-six');
-// const {default: test} = require('tape-six');
 ```
 
 To help port tests from other frameworks, `test()` is aliased as `suite()`, `describe()` and `it()`. When called inside a test body, `test()` and its aliases automatically delegate to the current tester's `t.test()` method. The same applies to `test.skip()`, `test.todo()`, and `test.asPromise()`. Using `t.test()` directly is still preferred because it makes the delegation explicit.

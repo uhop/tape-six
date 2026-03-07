@@ -15,9 +15,9 @@ Run through this checklist before publishing a new version.
 5. Check that `wiki/Release-notes.md` is updated with the new version.
 6. Check that `llms.txt` and `llms-full.txt` are up to date with any API changes.
 7. Check that `TESTING.md` is up to date with the current API.
-8. Check that `workflows/write-tests.md` is up to date (shipped to consumers).
+8. Check that `skills/write-tests/SKILL.md` is up to date (shipped to consumers).
 9. Verify `package.json`:
-   - `files` array includes all necessary entries (`index.*`, `bin`, `web-app`, `src`, `llms.txt`, `llms-full.txt`, `TESTING.md`, `workflows`).
+   - `files` array includes all necessary entries (`index.*`, `bin`, `web-app`, `src`, `llms.txt`, `llms-full.txt`, `TESTING.md`, `skills`).
    - `bin` entries cover all CLI utilities.
    - `exports` map is correct.
 10. Check that `index.js` and `index.d.ts` are in sync (all exports, all types).
