@@ -19,7 +19,7 @@ Write or update tests using the tape-six testing library.
 2. Identify the module or feature to test. Read its source code to understand the public API.
 3. Create or update the test file in `tests/test-<name>.js` (or `.ts` for TypeScript, `.cjs` for CommonJS):
    - **ESM** (`.js`): `import test from 'tape-six'` and import the module under test using the project's package name.
-   - **CJS** (`.cjs`): `const {test} = require('tape-six')` and `const {...} = require('my-package')`. If the module under test uses top-level `await`, `require()` cannot load it — use `await import('my-package')` inside async tests instead.
+   - **CJS** (`.cjs`): `const {test} = require('tape-six')` and `const {...} = require('my-package')`. Always use `require()` — it is the correct CJS pattern. **Do NOT use `await import()` unless you have confirmed** (e.g., grep for `^await` at the top level) that the module under test uses top-level `await`, which is rare.
    - Write one top-level `test()` per logical group.
    - Use embedded `await t.test()` for sub-cases.
    - Use `t.beforeEach`/`t.afterEach` for shared setup/teardown.

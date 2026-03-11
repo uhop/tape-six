@@ -749,6 +749,8 @@ test('MyClass', async t => {
 
 ### Writing a CommonJS test
 
+Always use `require()` — it is the correct and idiomatic CJS pattern:
+
 ```cjs
 const {test} = require('tape-six');
 const {myFunction} = require('my-package');
@@ -758,7 +760,9 @@ test('myFunction from CJS', t => {
 });
 ```
 
-If the module under test uses top-level `await`, `require()` cannot load it. Use `await import()` inside async tests instead:
+> **IMPORTANT:** Do NOT use `await import()` as a substitute for `require()`. It is only needed when the module under test uses top-level `await` (which is rare). For local project modules, verify first — e.g., grep for `^await` at the top level of the source file. If it has no top-level `await`, use `require()`.
+
+Rare fallback for modules with top-level `await`:
 
 ```cjs
 const {test} = require('tape-six');
