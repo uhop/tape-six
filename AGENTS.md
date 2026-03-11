@@ -28,8 +28,6 @@ npm run build
 - **Test sequential (Node):** `npm run test:seq`
 - **Test sequential (Bun):** `npm run test:seq:bun`
 - **Test sequential (Deno):** `npm run test:seq:deno`
-- **Test (Puppeteer):** `npm run test:puppeteer` (requires `npm start` running in another terminal)
-- **Test (Playwright):** `npm run test:playwright` (requires `npm start` running in another terminal)
 - **Start browser test server:** `npm start` (runs `tape6-server --trace` on port 3000)
 - **Lint:** `npm run lint` (Prettier check)
 - **Lint fix:** `npm run lint:fix` (Prettier write)
@@ -77,7 +75,7 @@ tape-six/
 - The `Tester` object is passed to test functions and provides all assert methods.
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
 - `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process.
-- Browser tests use `tape6-server` which serves files and a web UI. Automated browser testing uses Puppeteer or Playwright scripts in `tests/`.
+- Browser tests use `tape6-server` which serves files and a web UI. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright). For process-isolated test execution see [tape-six-proc](https://www.npmjs.com/package/tape-six-proc).
 - The `deep6` dependency is vendored via git submodule and copied into the source tree at build time.
 
 ## Writing tests

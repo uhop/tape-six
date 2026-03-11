@@ -37,7 +37,7 @@ with existing unit test libraries:
 - The [DX](https://en.wikipedia.org/wiki/User_experience#Developer_experience) in browsers are usually abysmal.
   - Both console-based debugging and a UI to navigate results are properly supported.
   - Integration with browser automation tools is supported for automated testing.
-    - Examples for [Playwright](https://playwright.dev/) and [Puppeteer](https://pptr.dev/) are provided.
+    - Automated testing with [Puppeteer](https://pptr.dev/) and [Playwright](https://playwright.dev/) via dedicated packages (see [Related packages](#related-packages)).
 
 ## How it looks
 
@@ -414,6 +414,12 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 - [tape6-server](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6-server) &mdash; a custom web server with a web application that helps running tests in browsers.
 
 Test output can be controlled by flags. See [Supported flags](https://github.com/uhop/tape-six/wiki/Supported-flags) for details.
+
+### Related packages
+
+- [tape-six-proc](https://www.npmjs.com/package/tape-six-proc) &mdash; runs test files in separate processes instead of worker threads.
+- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) &mdash; automates browser testing with Puppeteer.
+- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) &mdash; automates browser testing with Playwright.
 
 ## Release notes
 

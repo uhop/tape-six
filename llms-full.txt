@@ -6,7 +6,7 @@
 - Test files are directly executable: `node test.js`, `bun run test.js`, `deno run -A test.js`
 - Parallel test execution via worker threads
 - TAP, TTY (colored), and JSONL output formats
-- Browser testing with built-in web UI and automation support (Puppeteer, Playwright)
+- Browser testing with built-in web UI; headless automation via tape-six-puppeteer / tape-six-playwright
 - Before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
 - `test()` is aliased as `suite()`, `describe()`, and `it()` for easy migration
 - When called inside a test body, top-level functions auto-delegate to the current tester
@@ -266,7 +266,7 @@ Configuration is read from `tape6.json` or the `"tape6"` section of `package.jso
   "tape6": {
     "tests": ["/tests/test-*.*js"],
     "cli": ["/tests/test-*.cjs"],
-    "browser": ["/tests/web/test-*.html"],
+    "browser": ["/tests/browser/test-*.html"],
     "importmap": {
       "imports": {
         "tape-six": "/node_modules/tape-six/index.js",
@@ -277,7 +277,7 @@ Configuration is read from `tape6.json` or the `"tape6"` section of `package.jso
 }
 ```
 
-Environment-specific subsections: `node`, `deno`, `bun`, `browser`.
+Environment-specific subsections: `cli` (CLI-only: Node, Bun, Deno), `node`, `deno`, `bun`, `browser`.
 
 ## Command-line utilities
 
@@ -351,33 +351,15 @@ Browser: `http://localhost:3000/?flags=FO`
 
 1. Start the server: `npm start` (runs `tape6-server --trace`).
 2. Open `http://localhost:3000` for the web UI.
-3. Or automate with Puppeteer/Playwright:
+3. For automated headless testing use dedicated packages:
+   - tape-six-puppeteer (https://www.npmjs.com/package/tape-six-puppeteer)
+   - tape-six-playwright (https://www.npmjs.com/package/tape-six-playwright)
 
-```js
-// Puppeteer example
-import puppeteer from 'puppeteer';
-const browser = await puppeteer.launch({headless: true});
-const page = await browser.newPage();
-page.on('console', msg => console.log(msg.text()));
-await page.exposeFunction('__tape6_reportResults', async text => {
-  await browser.close();
-  process.exit(text === 'success' ? 0 : 1);
-});
-await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=M');
-```
+## Related packages
 
-```js
-// Playwright example
-import {chromium} from 'playwright';
-const browser = await chromium.launch({headless: true});
-const page = await browser.newPage();
-page.on('console', msg => console.log(msg.text()));
-await page.exposeFunction('__tape6_reportResults', async text => {
-  await browser.close();
-  process.exit(text === 'success' ? 0 : 1);
-});
-await page.goto('http://localhost:3000/tests/web/test-simple.html?flags=M');
-```
+- tape-six-proc (https://www.npmjs.com/package/tape-six-proc) — runs test files in separate processes instead of worker threads.
+- tape-six-puppeteer (https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer.
+- tape-six-playwright (https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright.
 
 ## 3rd-party assertion libraries
 

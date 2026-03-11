@@ -33,8 +33,6 @@
     "test:seq": "node ./bin/tape6-seq.js --flags FO",
     "test:seq:bun": "bun run ./bin/tape6-seq.js --flags FO",
     "test:seq:deno": "deno run -A ./bin/tape6-seq.js --flags FO",
-    "test:puppeteer": "node tests/puppeteer-chrome.js",
-    "test:playwright": "node tests/playwright-chrome.js",
     "ts-test": "node ./bin/tape6.js --flags FO 'tests/test-*.*ts'",
     "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO 'tests/test-*.*ts'",
     "ts-test:deno": "deno run -A ./bin/tape6-deno.js --flags FO 'tests/test-*.*ts'",
@@ -92,7 +90,7 @@
       "/tests/test-*.cjs"
     ],
     "browser": [
-      "/tests/web/test-*.html"
+      "/tests/browser/test-*.html"
     ],
     "importmap": {
       "imports": {
@@ -106,8 +104,6 @@
     "@types/chai": "^5.2.3",
     "@types/node": "^25.3.5",
     "chai": "^6.2.2",
-    "playwright": "^1.58.2",
-    "puppeteer": "^24.38.0",
     "typescript": "^5.9.3"
   }
 }

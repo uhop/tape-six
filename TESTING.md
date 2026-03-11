@@ -552,10 +552,11 @@ Example with environment-specific tests:
 ```json
 {
   "tape6": {
+    "tests": ["/tests/test-*.*js"],
+    "cli": ["/tests/test-*.cjs"],
     "node": ["/tests/node/test-*.js"],
     "deno": ["/tests/deno/test-*.js"],
-    "browser": ["/tests/web/test-*.html"],
-    "tests": ["/tests/test-*.*js"],
+    "browser": ["/tests/browser/test-*.html"],
     "importmap": {
       "imports": {
         "tape-six": "/node_modules/tape-six/index.js",
@@ -566,7 +567,7 @@ Example with environment-specific tests:
 }
 ```
 
-In this example, running `tape6` on Node will execute tests matching `/tests/node/test-*.js` + `/tests/test-*.*js`. Running in a browser will execute `/tests/web/test-*.html` + `/tests/test-*.*js`.
+In this example, running `tape6` on Node will execute tests matching `/tests/node/test-*.js` + `/tests/test-*.cjs` (cli) + `/tests/test-*.*js` (tests). Running in a browser will execute `/tests/browser/test-*.html` + `/tests/test-*.*js` (tests) — `cli` patterns are skipped.
 
 ## Browser testing
 
@@ -580,7 +581,7 @@ Browser tests use `tape6-server`, a static file server bundled with `tape-six` t
 {
   "tape6": {
     "tests": ["/tests/test-*.*js"],
-    "browser": ["/tests/web/test-*.html"],
+    "browser": ["/tests/browser/test-*.html"],
     "importmap": {
       "imports": {
         "tape-six": "/node_modules/tape-six/index.js",
@@ -653,7 +654,7 @@ Create an HTML file that loads test scripts directly with an inline import map:
 </html>
 ```
 
-Navigate to the HTML file directly (e.g., `http://localhost:3000/tests/web/test-simple.html`). Results appear in the browser console. This approach does not use the web UI.
+Navigate to the HTML file directly (e.g., `http://localhost:3000/tests/browser/test-simple.html`). Results appear in the browser console. This approach does not use the web UI.
 
 ### Flags and parallel execution in the browser
 
@@ -665,19 +666,12 @@ http://localhost:3000/?flags=FO&par=3
 
 ### Browser automation
 
-Use Puppeteer or Playwright to run browser tests from the command line:
+For automated headless browser testing, use the dedicated packages:
 
-```js
-import puppeteer from 'puppeteer';
-const browser = await puppeteer.launch({headless: true});
-const page = await browser.newPage();
-page.on('console', msg => console.log(msg.text()));
-await page.exposeFunction('__tape6_reportResults', async text => {
-  await browser.close();
-  process.exit(text === 'success' ? 0 : 1);
-});
-await page.goto('http://localhost:3000/?flags=M');
-```
+- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — runs configured browser tests with Puppeteer.
+- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — runs configured browser tests with Playwright.
+
+Both integrate with `tape6-server` and the `__tape6_reportResults` callback to report pass/fail from the command line.
 
 ### Browser limitations
 
@@ -779,6 +773,12 @@ test('async module from CJS', async t => {
 node tests/test-<name>.js    # run your new test file directly
 npm test                      # run full suite to check for regressions
 ```
+
+## Related packages
+
+- [tape-six-proc](https://www.npmjs.com/package/tape-six-proc) — runs test files in separate processes instead of worker threads. Useful when tests need full process isolation.
+- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer. Runs configured browser tests headlessly from the command line.
+- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright. Same as above but using Playwright.
 
 ## Links
 

@@ -26,8 +26,15 @@ Write or update tests using the tape-six testing library.
    - Cover: normal operation, edge cases, error conditions.
    - Use `t.equal` for primitives, `t.deepEqual` for objects/arrays, `t.throws` for errors, `await t.rejects` for async errors.
    - All `msg` arguments are optional but recommended for clarity.
-4. Run the new test file directly to verify: `node tests/test-<name>.js`
-5. Run the full test suite to check for regressions: `npm test`
+4. **Browser-specific tests** — if the project uses browser testing with `tape6-server`. See the "Browser testing" section in `TESTING.md` for full details.
+   - Browsers run `.js` and `.mjs` only — no TypeScript, no CommonJS.
+   - Browsers can also run `.html` shim files (with inline importmap and `<script type="module">`).
+   - Place browser-only files in a subdirectory (e.g., `tests/browser/`) and add patterns to `"browser"` in the `tape6` config.
+   - Run: `npx tape6-server --trace`, then open `http://localhost:3000`.
+5. **Environment-specific tests** — the `tape6` config in `package.json` supports per-environment patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`). All are additive. See "Configuring test discovery" in `TESTING.md`.
+6. **Verify (CLI):** run the new test file directly: `node tests/test-<name>.js`
+   - Run the full suite to check for regressions: `npm test`
    - If debugging, use `npm run test:seq` (runs sequentially, easier to trace issues).
    - To see which files are being run, add `--flags fo` (overrides the default `--flags FO`).
-6. Report results and any failures.
+7. **Verify (browser):** start `npx tape6-server --trace`, then open `http://localhost:3000/?q=/tests/test-<name>.js` to run a specific file. Use multiple `?q=` parameters to run several files. Open `http://localhost:3000/` to run all configured tests.
+8. Report results and any failures.
