@@ -286,12 +286,15 @@ Environment-specific subsections: `cli` (CLI-only: Node, Bun, Deno), `node`, `de
 Runs test files in parallel using worker threads.
 
 ```bash
-tape6 [--flags FLAGS] [--par N] [--info] [tests...]
+tape6 [options...] [tests...]
 ```
 
-- `--flags FLAGS` — output control flags (see below).
-- `--par N` — number of parallel workers (default: all CPU cores).
+- `--flags FLAGS`, `-f FLAGS` — output control flags (see below).
+- `--par N`, `-p N` — number of parallel workers (default: all CPU cores).
 - `--info` — print current configuration and exit without running tests.
+- `--self` — print the path to this script and exit.
+- `--help`, `-h` — show help message and exit.
+- `--version`, `-v` — show version and exit.
 - No arguments: runs tests from configuration.
 - Options accept `--flags FO` or `--flags=FO`. The `=` form does not support quoting.
 
@@ -304,10 +307,17 @@ Sequential in-process runner. Same options as `tape6` but no threads.
 Web server for browser testing:
 
 ```bash
-tape6-server [--trace] [--port N]
+tape6-server [options...]
 ```
 
-Default port: 3000. Navigate to `http://localhost:3000` for the web UI.
+- `--trace` — enable request trace logging.
+- `--self` — print the path to this script and exit.
+- `--help`, `-h` — show help message and exit.
+- `--version`, `-v` — show version and exit.
+
+Configured via environment variables: `HOST` (default: localhost), `PORT` (default: 3000),
+`SERVER_ROOT` (default: cwd), `WEBAPP_PATH`.
+Navigate to `http://localhost:3000` for the web UI.
 
 ### Runtime-specific runners
 
