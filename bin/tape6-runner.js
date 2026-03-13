@@ -3,6 +3,26 @@
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
+import {printVersion, printHelp} from '../src/utils/config.js';
+
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  printHelp(
+    'tape6-runner',
+    'Print the path to a tape6 CLI script',
+    'tape6-runner [options] [runtime]',
+    [
+      ['--help, -h', 'Show this help message and exit'],
+      ['--version, -v', 'Show version and exit']
+    ]
+  );
+  console.log('\nRuntimes: node, deno, bun, seq, server, runner, main (default)');
+  process.exit(0);
+}
+if (process.argv.includes('--version') || process.argv.includes('-v')) {
+  printVersion('tape6-runner');
+  process.exit(0);
+}
+
 const runtimeFiles = {
   node: 'tape6-node.js',
   deno: 'tape6-deno.js',

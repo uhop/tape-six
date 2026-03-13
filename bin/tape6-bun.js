@@ -2,7 +2,15 @@
 
 import {fileURLToPath} from 'node:url';
 
-import {getOptions, initFiles, initReporter, showInfo} from '../src/utils/config.js';
+import {
+  getOptions,
+  initFiles,
+  initReporter,
+  showInfo,
+  printVersion,
+  printHelp,
+  printFlagOptions
+} from '../src/utils/config.js';
 
 import {getReporter, setReporter} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
@@ -21,10 +29,30 @@ const showSelf = () => {
   process.exit(0);
 };
 
+const showVersion = () => {
+  printVersion('tape6-bun');
+  process.exit(0);
+};
+
+const showHelp = () => {
+  printHelp('tape6-bun', 'Tape6 test runner for Bun', 'tape6-bun [options] [files...]', [
+    ['--flags, -f <flags>', 'Set reporter flags (env: TAPE6_FLAGS)'],
+    ['--par, -p <n>', 'Set parallelism level (env: TAPE6_PAR)'],
+    ['--info', 'Show configuration info and exit'],
+    ['--self', 'Print the path to this script and exit'],
+    ['--help, -h', 'Show this help message and exit'],
+    ['--version, -v', 'Show version and exit']
+  ]);
+  printFlagOptions();
+  process.exit(0);
+};
+
 const main = async () => {
   const currentOptions = getOptions({
-    '--self': showSelf,
-    '--info': {isValueRequired: false}
+    '--self': {fn: showSelf, isValueRequired: false},
+    '--info': {isValueRequired: false},
+    '--help': {aliases: ['-h'], fn: showHelp, isValueRequired: false},
+    '--version': {aliases: ['-v'], fn: showVersion, isValueRequired: false}
   });
 
   const [files] = await Promise.all([

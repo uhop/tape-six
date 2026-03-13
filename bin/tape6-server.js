@@ -6,7 +6,13 @@ import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {getConfig, resolveTests, resolvePatterns} from '../src/utils/config.js';
+import {
+  getConfig,
+  resolveTests,
+  resolvePatterns,
+  printVersion,
+  printHelp
+} from '../src/utils/config.js';
 
 const fsp = fs.promises;
 
@@ -26,6 +32,24 @@ const showSelf = () => {
   }
   process.exit(0);
 };
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  printHelp('tape6-server', 'Static file server for browser testing', 'tape6-server [options]', [
+    ['--trace', 'Enable request trace logging'],
+    ['--self', 'Print the path to this script and exit'],
+    ['--help, -h', 'Show this help message and exit'],
+    ['--version, -v', 'Show version and exit']
+  ]);
+  console.log('\nEnvironment:');
+  console.log('  HOST          Server hostname (default: localhost)');
+  console.log('  PORT          Server port (default: 3000)');
+  console.log('  SERVER_ROOT   Root directory for serving files (default: cwd)');
+  console.log('  WEBAPP_PATH   Path to the web app directory');
+  process.exit(0);
+}
+if (process.argv.includes('--version') || process.argv.includes('-v')) {
+  printVersion('tape6-server');
+  process.exit(0);
+}
 if (process.argv.includes('--self')) showSelf();
 
 // MIME source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types

@@ -1,8 +1,57 @@
-import {promises as fsp} from 'node:fs';
+import {promises as fsp, readFileSync} from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import {fileURLToPath} from 'node:url';
 
 import {listing, wildToRe} from './listing.js';
+
+export const printVersion = commandName => {
+  const pkgJsonPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../package.json'
+    ),
+    version = JSON.parse(readFileSync(pkgJsonPath, 'utf8')).version;
+  console.log(commandName + ' ' + version);
+};
+
+export const printHelp = (commandName, description, usage, options) => {
+  const pkgJsonPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../package.json'
+    ),
+    version = JSON.parse(readFileSync(pkgJsonPath, 'utf8')).version;
+  console.log(commandName + ' ' + version + ' \u2014 ' + description + '\n');
+  console.log('Usage: ' + usage + '\n');
+  if (options) {
+    console.log('Options:');
+    const width = options.reduce((max, [flag]) => Math.max(max, flag.length), 0) + 2;
+    for (const [flag, desc] of options) {
+      console.log('  ' + flag.padEnd(width) + desc);
+    }
+  }
+};
+
+const flagDescriptions = {
+  f: 'Show failed tests only',
+  t: 'Show test execution time',
+  b: 'Show the banner',
+  d: 'Show test data',
+  o: 'Stop after first failure',
+  s: 'Show stack traces',
+  l: 'Show console log output',
+  n: 'Show assertion numbers',
+  m: 'Disable colors (monochrome)',
+  j: 'Use JSONL reporter',
+  c: 'Disable console capture',
+  h: 'Hide streams'
+};
+
+export const printFlagOptions = () => {
+  console.log('\nFlags (uppercase = on, lowercase = off):');
+  for (const [flag, desc] of Object.entries(flagDescriptions)) {
+    console.log('  ' + flag.toUpperCase() + '  ' + desc);
+  }
+};
 
 const exclude = (files, pattern) => {
   const excluded = new Set();
