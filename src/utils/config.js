@@ -31,25 +31,25 @@ export const printHelp = (commandName, description, usage, options) => {
   }
 };
 
-const flagDescriptions = {
-  f: 'Show failed tests only',
-  t: 'Show test execution time',
-  b: 'Show the banner',
-  d: 'Show test data',
-  o: 'Stop after first failure',
-  s: 'Show stack traces',
-  l: 'Show console log output',
-  n: 'Show assertion numbers',
-  m: 'Disable colors (monochrome)',
-  j: 'Use JSONL reporter',
-  c: 'Disable console capture',
-  h: 'Hide streams'
+const flagDefs = {
+  f: {name: 'failureOnly', description: 'Show failed tests only'},
+  t: {name: 'showTime', description: 'Show test execution time'},
+  b: {name: 'showBanner', description: 'Show the banner'},
+  d: {name: 'showData', description: 'Show test data'},
+  o: {name: 'failOnce', description: 'Stop after first failure'},
+  s: {name: 'showStack', description: 'Show stack traces'},
+  l: {name: 'showLog', description: 'Show console log output'},
+  n: {name: 'showAssertNumber', description: 'Show assertion numbers'},
+  m: {name: 'monochrome', description: 'Disable colors (monochrome)'},
+  j: {name: 'useJsonL', description: 'Use JSONL reporter'},
+  c: {name: 'noConsoleCapture', description: 'Disable console capture'},
+  h: {name: 'hideStreams', description: 'Hide streams'}
 };
 
 export const printFlagOptions = () => {
   console.log('\nFlags (uppercase = on, lowercase = off):');
-  for (const [flag, desc] of Object.entries(flagDescriptions)) {
-    console.log('  ' + flag.toUpperCase() + '  ' + desc);
+  for (const [flag, {description}] of Object.entries(flagDefs)) {
+    console.log('  ' + flag.toUpperCase() + '  ' + description);
   }
 };
 
@@ -185,20 +185,9 @@ export const getTimeoutValue = () => {
 
 // parsing options
 
-export const flagNames = {
-  f: 'failureOnly',
-  t: 'showTime',
-  b: 'showBanner',
-  d: 'showData',
-  o: 'failOnce',
-  s: 'showStack',
-  l: 'showLog',
-  n: 'showAssertNumber',
-  m: 'monochrome',
-  j: 'useJsonL',
-  c: 'noConsoleCapture',
-  h: 'hideStreams'
-};
+export const flagNames = Object.fromEntries(
+  Object.entries(flagDefs).map(([k, {name}]) => [k, name])
+);
 
 export const processArgs = argOptions => {
   const result = {files: [], flags: {}};
@@ -296,7 +285,7 @@ export const getOptions = extraOptions => {
 
   for (let i = 0; i < flags.length; ++i) {
     const flag = flags[i].toLowerCase(),
-      name = flagNames[flag];
+      name = flagDefs[flag]?.name;
     if (typeof name == 'string') options.flags[name] = flag !== flags[i];
   }
 
