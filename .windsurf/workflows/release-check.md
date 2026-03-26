@@ -21,24 +21,25 @@ Run through this checklist before publishing a new version.
    - `bin` entries cover all CLI utilities.
    - `exports` map is correct.
 10. Check that `index.js` and `index.d.ts` are in sync (all exports, all types).
-11. Bump `version` in `package.json`.
-12. Update release history in `README.md`.
-13. Run `npm install` to regenerate `package-lock.json`.
+11. Check that the copyright year in `LICENSE` includes the current year (e.g., update `2022` → `2022-2026` or `2005-2022` → `2005-2026`).
+12. Bump `version` in `package.json`.
+13. Update release history in `README.md`.
+14. Run `npm install` to regenerate `package-lock.json`.
     // turbo
-14. Run the full test suite with Node: `npm test`
+15. Run the full test suite with Node: `npm test`
     // turbo
-15. Run tests with Bun: `npm run test:bun`
+16. Run tests with Bun: `npm run test:bun`
     // turbo
-16. Run tests with Deno: `npm run test:deno`
+17. Run tests with Deno: `npm run test:deno`
     // turbo
-17. Run sequential tests with Node: `npm run test:seq`
+18. Run sequential tests with Node: `npm run test:seq`
     // turbo
-18. Run sequential tests with Bun: `npm run test:seq:bun`
+19. Run sequential tests with Bun: `npm run test:seq:bun`
     // turbo
-19. Run sequential tests with Deno: `npm run test:seq:deno`
+20. Run sequential tests with Deno: `npm run test:seq:deno`
     // turbo
-20. Run TypeScript check: `npm run ts-check`
+21. Run TypeScript check: `npm run ts-check`
     // turbo
-21. Run lint: `npm run lint`
+22. Run lint: `npm run lint`
     // turbo
-22. Dry-run publish to verify package contents: `npm pack --dry-run`
+23. Dry-run publish to verify package contents: `npm pack --dry-run`
