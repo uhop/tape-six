@@ -104,6 +104,6 @@
     "@types/chai": "^5.2.3",
     "@types/node": "^25.5.0",
     "chai": "^6.2.2",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
