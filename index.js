@@ -46,6 +46,7 @@ const init = async () => {
   const isNode = typeof process == 'object' && process.versions?.node,
     isDeno = typeof Deno == 'object',
     isBun = typeof Bun == 'object',
+    isCli = isNode || isBun || isDeno,
     isBrowser = typeof window == 'object' && !!window.location,
     options = {};
 
@@ -74,7 +75,7 @@ const init = async () => {
 
   let originalConsole = null,
     setCurrentReporter = null;
-  if (!options.noConsoleCapture && (isNode || isBun || isDeno)) {
+  if (!options.noConsoleCapture && isCli) {
     const {captureConsole, setCurrentReporter: setReporter} = await import(
       new URL('./src/utils/capture-console.js', import.meta.url)
     );
@@ -161,7 +162,7 @@ const init = async () => {
     setCurrentReporter?.(reporter);
   }
 
-  return {options, isBrowser, isBun, isDeno, isNode};
+  return {options, isBrowser, isBun, isDeno, isNode, isCli};
 };
 
 const getTestFileName = ({isBrowser, isBun, isDeno, isNode}) => {
@@ -193,7 +194,7 @@ const testRunner = async () => {
     settings = await init();
   }
 
-  const {isBrowser, isBun, isDeno, isNode} = settings,
+  const {isBrowser, isCli} = settings,
     reporter = getReporter(),
     testFileName = getTestFileName(settings);
 
@@ -235,13 +236,9 @@ const testRunner = async () => {
     fail: runHasFailed
   });
 
-  if (!getConfiguredFlag()) {
-    if (isDeno) {
-      runHasFailed && Deno.exit(1);
-    } else if (isBun) {
-      runHasFailed && process.exit(1);
-    } else if (isNode) {
-      runHasFailed && process.exit(1);
+  if (!getConfiguredFlag() && runHasFailed) {
+    if (isCli) {
+      process.exitCode = 1;
     }
   }
   if (isBrowser && typeof __tape6_reportResults == 'function') {

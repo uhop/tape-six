@@ -69,12 +69,16 @@ const main = async () => {
 
   if (currentOptions.optionFlags['--info'] === '') {
     showInfo(currentOptions, files);
-    process.exit(0);
+    await new Promise(r => process.stdout.write('', r));
+    process.exitCode = 0;
+    return;
   }
 
   if (!files.length) {
     console.log('No files found.');
-    process.exit(1);
+    await new Promise(r => process.stdout.write('', r));
+    process.exitCode = 1;
+    return;
   }
 
   const reporter = getReporter(),
@@ -95,7 +99,8 @@ const main = async () => {
     fail: hasFailed
   });
 
-  process.exit(hasFailed ? 1 : 0);
+  await new Promise(r => process.stdout.write('', r));
+  process.exitCode = hasFailed ? 1 : 0;
 };
 
 main().catch(error => console.error('ERROR:', error));
