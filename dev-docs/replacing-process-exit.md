@@ -12,12 +12,12 @@ event loop drains naturally. This lets all pending I/O complete before the proce
 
 ## Runtime support
 
-| Runtime | Set exit code without exiting | Notes |
-|---------|-------------------------------|-------|
-| **Node.js** | `process.exitCode = N` | Stable, well-documented. The process exits with this code when the event loop has nothing left to do. |
-| **Bun** | `process.exitCode = N` | Supported via Node.js compatibility. |
-| **Deno** | `process.exitCode = N` | Works via the Node compat layer (`import process from 'node:process'`). |
-| **Deno** (native) | `Deno.exitCode = N` | Native API, available since Deno 1.23. No need to import `node:process`. |
+| Runtime           | Set exit code without exiting | Notes                                                                                                 |
+| ----------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Node.js**       | `process.exitCode = N`        | Stable, well-documented. The process exits with this code when the event loop has nothing left to do. |
+| **Bun**           | `process.exitCode = N`        | Supported via Node.js compatibility.                                                                  |
+| **Deno**          | `process.exitCode = N`        | Works via the Node compat layer (`import process from 'node:process'`).                               |
+| **Deno** (native) | `Deno.exitCode = N`           | Native API, available since Deno 1.23. No need to import `node:process`.                              |
 
 All three runtimes support `process.exitCode`. For Deno you can optionally use
 `Deno.exitCode` directly, but if you already import `process` from `node:process`,
