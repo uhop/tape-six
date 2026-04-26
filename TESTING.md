@@ -125,14 +125,37 @@ All `msg` arguments are optional. If omitted, a generic message is used.
 | `t.notLooseEqual(a, b, msg)`         | `a != b`                        |                                  |
 | `t.deepLooseEqual(a, b, msg)`        | Deep loose equality             |                                  |
 | `t.notDeepLooseEqual(a, b, msg)`     | Not deeply loosely equal        |                                  |
-| `t.throws(fn, msg)`                  | `fn()` throws                   |                                  |
+| `t.throws(fn, m?, msg)`              | `fn()` throws (matches `m?`)    |                                  |
 | `t.doesNotThrow(fn, msg)`            | `fn()` does not throw           |                                  |
 | `t.matchString(str, re, msg)`        | `str` matches `re`              |                                  |
 | `t.doesNotMatchString(str, re, msg)` | `str` doesn't match `re`        |                                  |
 | `t.match(a, b, msg)`                 | Structural pattern match        |                                  |
 | `t.doesNotMatch(a, b, msg)`          | No structural match             |                                  |
-| `t.rejects(promise, msg)`            | Promise rejects (**await it**)  | `doesNotResolve`                 |
-| `t.resolves(promise, msg)`           | Promise resolves (**await it**) | `doesNotReject`                  |
+| `t.rejects(promise, m?, msg)`        | Rejects (matches `m?`) — `await`| `doesNotResolve`                 |
+| `t.resolves(promise, m?, msg)`       | Resolves (matches `m?`) — `await`| `doesNotReject`                 |
+
+### Matching errors and resolved values
+
+`t.throws`, `t.rejects`, and `t.resolves` accept an optional **matcher** as their second argument. If the second argument is a string, it's still treated as the message (backward compatible).
+
+```js
+t.throws(() => parse(''), TypeError);                  // Error subclass — instanceof
+t.throws(() => parse(''), /unexpected end/);           // RegExp on error.message
+t.throws(() => parse(''), e => e.code === 'EPARSE');   // predicate
+t.throws(() => parse(''), {code: 'EPARSE'});           // deep6 object pattern
+await t.rejects(fetchData(), TypeError, 'wrong type');
+await t.resolves(fetchData(), {status: 200});          // matches resolved value
+```
+
+Matcher rules:
+
+- **Error subclass** (a function whose prototype is Error) → `instanceof` check.
+- **RegExp** → tested against `error.message` for `Error` instances, otherwise against `String(value)`.
+- **Function** (non-Error-class) → predicate; truthy return = match.
+- **Object** (non-null, non-RegExp) → uses deep6's `match()` for partial structural matching.
+- **`null` or any primitive** → strict equality.
+
+Falsy reasons (`null`, `0`, `false`, `''`, `NaN`) are correctly handled: `Promise.reject(null)` is still a rejection, and `throw 0` is still a throw.
 
 ### Async assertions
 
@@ -144,6 +167,67 @@ test('async asserts', async t => {
   await t.resolves(Promise.resolve(42), 'should resolve');
 });
 ```
+
+### Wildcards in deep equality
+
+Use `t.any` (or its alias `t._`) inside an expected value to accept any value at that position. Useful for non-deterministic fields like timestamps or generated IDs:
+
+```js
+test('partial match', t => {
+  const result = {id: 123, name: 'Alice', createdAt: new Date()};
+  t.deepEqual(result, {id: t.any, name: 'Alice', createdAt: t.any});
+});
+```
+
+### Async cancellation with `t.signal`
+
+`t.signal` is an `AbortSignal` that fires when the test ends, times out, or is stopped. Pass it to long-running async work so it cancels cleanly:
+
+```js
+test('aborts on test end', async t => {
+  const res = await fetch(url, {signal: t.signal});
+  t.equal(res.status, 200);
+});
+```
+
+### Test options
+
+`test(name, options, fn)` accepts an options object. Type-recognition makes the form flexible (any of `test(opts, fn)`, `test(name, fn)`, `test(name, opts, fn)` is valid).
+
+| Option                              | Effect                                                            |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `name`                              | Test name (overrides positional)                                  |
+| `timeout`                           | Milliseconds; test fails and `t.signal` aborts if exceeded        |
+| `skip`                              | Skip the test (does not run)                                      |
+| `todo`                              | Run, but failures don't count                                     |
+| `beforeAll` / `before`              | Run once before the test's first embedded test                    |
+| `afterAll` / `after`                | Run once after the test's last embedded test                      |
+| `beforeEach`                        | Run before each embedded test                                     |
+| `afterEach`                         | Run after each embedded test                                      |
+
+```js
+test('with timeout', {timeout: 5000}, async t => {
+  await longOperation();
+});
+```
+
+By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture suite to apply it broadly.
+
+### Other tester methods
+
+- `t.comment(msg)` — emit a TAP comment line.
+- `t.skipTest(msg)` — skip the **current** test from inside it (e.g. when a precondition isn't met at runtime).
+- `t.bailOut(msg)` — stop the entire run. Catastrophic; use sparingly.
+- `t.plan(n)` — currently a documented no-op kept for migration compatibility from `tape` and `node:test`.
+- `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps the values of the top-level identifiers in the expression on failure. Useful for compact arithmetic/state checks. Not usable in CSP-restricted contexts (uses `eval`).
+
+  ```js
+  test('OK evaluator', t => {
+    const a = 1, b = 2, c = 'three';
+    eval(t.OK('a + b + c === "3three"'));
+    // on failure, the report includes: {a: 1, b: 2, c: "three"}
+  });
+  ```
 
 ### Nested (embedded) tests
 
@@ -400,30 +484,6 @@ Note: you can also keep using `node:assert` inside tape-six tests — `Assertion
 | `expect(a).to.be.ok` (Chai)         | `t.ok(a)` or keep `expect`                        |
 | `expect(fn).to.throw()` (Chai)      | `t.throws(fn)` or keep `expect`                   |
 
-### Wildcard matching with `t.any`
-
-Use `t.any` (or `t._`) in deep equality checks to match any value:
-
-```js
-test('partial match', t => {
-  const result = {id: 123, name: 'Alice', createdAt: new Date()};
-  t.deepEqual(result, {id: 123, name: 'Alice', createdAt: t.any});
-});
-```
-
-### Testing exceptions
-
-```js
-test('errors', async t => {
-  t.throws(() => {
-    throw new Error('boom');
-  }, 'should throw');
-  t.doesNotThrow(() => 42, 'should not throw');
-  await t.rejects(Promise.reject(new Error('fail')), 'should reject');
-  await t.resolves(Promise.resolve(42), 'should resolve');
-});
-```
-
 ### 3rd-party assertion libraries
 
 `tape-six` catches `AssertionError` automatically. You can use `chai` or `node:assert`:
@@ -514,6 +574,18 @@ Common combinations: `FO` (failures only + stop at first), `FOT` (+ show time).
 
 When multiple `--flags` are given, the last one wins. To see which files are being run (overriding `--flags FO` from a script), append `--flags fo` — lowercase disables the flags.
 
+### Other CLI options
+
+| Option            | Effect                                                                |
+| ----------------- | --------------------------------------------------------------------- |
+| `--par N`         | Limit `tape6` to `N` parallel workers (default: number of CPU cores). |
+| `--info`          | Print the resolved test config (file lists, env, importmap) and exit. |
+| `--self`          | Print the path to the runner's own entry script (used in scripts).    |
+| `--help`, `-h`    | Show usage.                                                           |
+| `--version`, `-v` | Show version.                                                         |
+
+Options that take a value accept both space-separated (`--par 4`) and `=`-separated (`--par=4`) forms.
+
 ### Environment variables
 
 - `TAPE6_FLAGS` — flags string (alternative to `--flags`).
@@ -521,6 +593,7 @@ When multiple `--flags` are given, the last one wins. To see which files are bei
 - `TAPE6_TAP` — force TAP output format.
 - `TAPE6_JSONL` — force JSONL output format.
 - `TAPE6_MIN` — force minimal output format.
+- `TAPE6_WORKER_START_TIMEOUT` — milliseconds to wait for a worker to register its first test before declaring "no tests found". Default: `5000`. Bump this (e.g., `60000`) for tests with heavy `beforeAll` work like Docker container spawn or large fixture loads.
 
 ## Configuring test discovery
 
