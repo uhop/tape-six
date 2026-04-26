@@ -258,40 +258,45 @@ test.todo = function todo(name, options, testFn) {
   return test({...options, todo: true});
 };
 
-test.asPromise = function asPromise(name, options, testFn) {
-  const currentTester = getTester();
-  if (currentTester) {
-    return currentTester.asPromise(name, options, testFn);
-  }
-  options = processArgs(name, options, testFn);
+const wrapAsPromiseFn = options => {
   if (options.testFn) {
-    const testFn = options.testFn;
+    const fn = options.testFn;
     options.testFn = tester =>
       new Promise((resolve, reject) => {
         try {
-          testFn(tester, resolve, reject);
+          fn(tester, resolve, reject);
         } catch (error) {
           reject(error);
         }
       });
   }
-  return test(options);
+  return options;
+};
+
+test.asPromise = function asPromise(name, options, testFn) {
+  const currentTester = getTester();
+  if (currentTester) {
+    return currentTester.asPromise(name, options, testFn);
+  }
+  return test(wrapAsPromiseFn(processArgs(name, options, testFn)));
 };
 
 // test() (an embedded test runner) is added here to ./Tester.js to avoid circular dependencies
 
+const queueEmbedded = async function (tester, options) {
+  if (tester.lastEmbeddedTest) {
+    const last = tester.lastEmbeddedTest,
+      deferred = makeDeferred();
+    tester.lastEmbeddedTest = deferred.promise;
+    await last;
+    return runTests([{options}]).then(deferred.resolve, deferred.reject);
+  }
+  return (tester.lastEmbeddedTest = runTests([{options}]));
+};
+
 Tester.prototype.test = async function test(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (!this.state?.skip) {
-    if (this.lastEmbeddedTest) {
-      const last = this.lastEmbeddedTest,
-        deferred = makeDeferred();
-      this.lastEmbeddedTest = deferred.promise;
-      await last;
-      return runTests([{options}]).then(deferred.resolve, deferred.reject);
-    }
-    return (this.lastEmbeddedTest = runTests([{options}]));
-  }
+  if (!this.state?.skip) return queueEmbedded(this, options);
   this.comment('SKIP test: ' + options.name);
 };
 
@@ -302,45 +307,13 @@ Tester.prototype.skip = async function skip(name, options, testFn) {
 
 Tester.prototype.todo = async function todo(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (!this.state?.skip) {
-    if (this.lastEmbeddedTest) {
-      const last = this.lastEmbeddedTest,
-        deferred = makeDeferred();
-      this.lastEmbeddedTest = deferred.promise;
-      await last;
-      return runTests([{options: {...options, todo: true}}]).then(
-        deferred.resolve,
-        deferred.reject
-      );
-    }
-    return (this.lastEmbeddedTest = runTests([{options: {...options, todo: true}}]));
-  }
+  if (!this.state?.skip) return queueEmbedded(this, {...options, todo: true});
   this.comment('SKIP test: ' + options.name);
 };
 
 Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
   options = processArgs(name, options, testFn);
-  if (!this.state?.skip) {
-    if (options.testFn) {
-      const testFn = options.testFn;
-      options.testFn = tester =>
-        new Promise((resolve, reject) => {
-          try {
-            testFn(tester, resolve, reject);
-          } catch (error) {
-            reject(error);
-          }
-        });
-    }
-    if (this.lastEmbeddedTest) {
-      const last = this.lastEmbeddedTest,
-        deferred = makeDeferred();
-      this.lastEmbeddedTest = deferred.promise;
-      await last;
-      return runTests([{options}]).then(deferred.resolve, deferred.reject);
-    }
-    return (this.lastEmbeddedTest = runTests([{options}]));
-  }
+  if (!this.state?.skip) return queueEmbedded(this, wrapAsPromiseFn(options));
   this.comment('SKIP test: ' + options.name);
 };
 

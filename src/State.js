@@ -186,29 +186,34 @@ export class State {
       typeof event.diffTime !== 'number' && (event.diffTime = event.time - this.startTime);
     }
 
-    if (
-      event.type === 'assert' &&
-      (event.operator === 'error' || event.operator === 'exception') &&
-      typeof event.data?.actual?.stack == 'string'
-    ) {
-      event.stackList = getStackList(event.data.actual);
-      event.at = event.stackList[0];
-    }
+    // Stack walking is only needed when the event will be reported as a failure.
+    // Reporters (TapReporter, TTYReporter) only read event.at / event.stackList
+    // inside `if (event.fail)` blocks, so for passing assertions this is wasted work.
+    if (isFailed) {
+      if (
+        event.type === 'assert' &&
+        (event.operator === 'error' || event.operator === 'exception') &&
+        typeof event.data?.actual?.stack == 'string'
+      ) {
+        event.stackList = getStackList(event.data.actual);
+        event.at = event.stackList[0];
+      }
 
-    if (event.type === 'assertion-error' && typeof event.data?.error?.stack == 'string') {
-      event.stackList = getStackList(event.data.error);
-      event.at = event.stackList[0];
-    }
+      if (event.type === 'assertion-error' && typeof event.data?.error?.stack == 'string') {
+        event.stackList = getStackList(event.data.error);
+        event.at = event.stackList[0];
+      }
 
-    if (!event.at && typeof event.marker?.stack == 'string') {
-      event.stackList = getStackList(event.marker);
-      event.at =
-        event.stackList[
-          Math.min(
-            typeof event.markerIndex == 'number' ? event.markerIndex : 1,
-            event.stackList.length
-          )
-        ];
+      if (!event.at && typeof event.marker?.stack == 'string') {
+        event.stackList = getStackList(event.marker);
+        event.at =
+          event.stackList[
+            Math.min(
+              typeof event.markerIndex == 'number' ? event.markerIndex : 1,
+              event.stackList.length
+            )
+          ];
+      }
     }
 
     if ((event.type === 'assert' || event.type === 'assertion-error') && event.data) {
