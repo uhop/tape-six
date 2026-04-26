@@ -1,13 +1,30 @@
 import {equal, match, any} from './deep6/index.js';
 import {getTimer} from './utils/timer.js';
 
-const throwHelper = fn => {
+const tryFn = fn => {
   try {
     fn();
+    return {threw: false};
   } catch (error) {
-    return error;
+    return {threw: true, error};
   }
-  return null;
+};
+
+const isErrorClass = fn =>
+  fn === Error || (typeof fn === 'function' && fn.prototype instanceof Error);
+
+const applyMatcher = (actual, matcher) => {
+  if (matcher === undefined) return true;
+  if (typeof matcher === 'function') {
+    if (isErrorClass(matcher)) return actual instanceof matcher;
+    return !!matcher(actual);
+  }
+  if (matcher instanceof RegExp) {
+    const str = actual instanceof Error ? actual.message : String(actual);
+    return matcher.test(str);
+  }
+  if (matcher !== null && typeof matcher === 'object') return match(actual, matcher);
+  return actual === matcher;
 };
 
 export class Tester {
@@ -264,36 +281,41 @@ export class Tester {
     });
   }
 
-  throws(fn, msg) {
+  throws(fn, matcher, msg) {
     if (typeof fn != 'function') throw new TypeError('the first argument should be a function');
-    const result = throwHelper(fn);
+    if (typeof matcher === 'string' && msg === undefined) {
+      msg = matcher;
+      matcher = undefined;
+    }
+    const {threw, error} = tryFn(fn);
+    const matched = threw && applyMatcher(error, matcher);
     this.reporter.report({
       name: msg || 'should throw',
       test: this.testNumber,
       marker: new Error(),
       time: this.timer.now(),
       operator: 'throws',
-      fail: !result,
+      fail: !matched,
       data: {
-        expected: null,
-        actual: result
+        expected: matcher === undefined ? null : matcher,
+        actual: threw ? error : null
       }
     });
   }
 
   doesNotThrow(fn, msg) {
     if (typeof fn != 'function') throw new TypeError('the first argument should be a function');
-    const result = throwHelper(fn);
+    const {threw, error} = tryFn(fn);
     this.reporter.report({
       name: msg || 'should not throw',
       test: this.testNumber,
       marker: new Error(),
       time: this.timer.now(),
       operator: 'doesNotThrow',
-      fail: !!result,
+      fail: threw,
       data: {
         expected: null,
-        actual: result
+        actual: threw ? error : null
       }
     });
   }
@@ -364,49 +386,59 @@ export class Tester {
     });
   }
 
-  rejects(promise, msg) {
+  rejects(promise, matcher, msg) {
     if (!promise || typeof promise.then != 'function')
       throw new TypeError('the first argument should be a promise');
+    if (typeof matcher === 'string' && msg === undefined) {
+      msg = matcher;
+      matcher = undefined;
+    }
     return promise
       .then(
         () => ({resolved: true}),
         error => ({resolved: false, error})
       )
       .then(({resolved, error}) => {
+        const matched = !resolved && applyMatcher(error, matcher);
         this.reporter.report({
           name: msg || 'should be rejected',
           test: this.testNumber,
           marker: new Error(),
           time: this.timer.now(),
           operator: 'rejects',
-          fail: resolved,
+          fail: !matched,
           data: {
-            expected: null,
+            expected: matcher === undefined ? null : matcher,
             actual: resolved ? null : error
           }
         });
       });
   }
 
-  resolves(promise, msg) {
+  resolves(promise, matcher, msg) {
     if (!promise || typeof promise.then != 'function')
       throw new TypeError('the first argument should be a promise');
+    if (typeof matcher === 'string' && msg === undefined) {
+      msg = matcher;
+      matcher = undefined;
+    }
     return promise
       .then(
-        () => ({resolved: true}),
+        value => ({resolved: true, value}),
         error => ({resolved: false, error})
       )
-      .then(({resolved, error}) => {
+      .then(({resolved, value, error}) => {
+        const matched = resolved && applyMatcher(value, matcher);
         this.reporter.report({
           name: msg || 'should not be rejected',
           test: this.testNumber,
           marker: new Error(),
           time: this.timer.now(),
           operator: 'resolves',
-          fail: !resolved,
+          fail: !matched,
           data: {
-            expected: null,
-            actual: resolved ? null : error
+            expected: matcher === undefined ? null : matcher,
+            actual: resolved ? (matcher === undefined ? null : value) : error
           }
         });
       });

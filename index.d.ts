@@ -1,4 +1,20 @@
 /**
+ * Matcher accepted by `throws`, `rejects`, and `resolves`.
+ *
+ * - An `Error` subclass — checks `instanceof`.
+ * - A `RegExp` — tested against the error's `message` (or `String(value)` for non-Errors).
+ * - A predicate function — called with the value; truthy return = match.
+ * - An object pattern — uses deep6's `match` for structural matching.
+ * - `null` or any primitive — strict equality.
+ */
+export type AssertionMatcher =
+  | (new (...args: any[]) => Error)
+  | RegExp
+  | ((value: unknown) => boolean)
+  | object
+  | null;
+
+/**
  * Test options
  */
 export declare interface TestOptions {
@@ -501,6 +517,19 @@ export declare interface Tester {
    * @param message - Optional message to display if the assertion fails
    */
   throws(fn: () => void, message?: string): void;
+  /**
+   * Asserts that `fn` throws an error matching `matcher`.
+   * `matcher` may be:
+   * - an `Error` subclass (checks `instanceof`)
+   * - a `RegExp` (tested against the error's message, or `String(error)` for non-Errors)
+   * - a predicate function (called with the thrown value; truthy return = match)
+   * - an object pattern (uses deep6's `match`)
+   * - `null` or any primitive (strict equality)
+   * @param fn - The function to test
+   * @param matcher - The matcher to apply to the thrown value
+   * @param message - Optional message to display if the assertion fails
+   */
+  throws(fn: () => void, matcher: AssertionMatcher, message?: string): void;
 
   /**
    * Asserts that `fn` does not throw an error.
@@ -547,6 +576,18 @@ export declare interface Tester {
    * @param message - Optional message to display if the assertion fails
    */
   rejects(promise: Promise<unknown>, message?: string): Promise<void>;
+  /**
+   * Asserts that `promise` is rejected with a reason matching `matcher`.
+   * See `throws` for the `matcher` semantics.
+   * @param promise - The promise to test
+   * @param matcher - The matcher to apply to the rejection reason
+   * @param message - Optional message to display if the assertion fails
+   */
+  rejects(
+    promise: Promise<unknown>,
+    matcher: AssertionMatcher,
+    message?: string
+  ): Promise<void>;
 
   /**
    * Asserts that `promise` is resolved.
@@ -554,6 +595,18 @@ export declare interface Tester {
    * @param message - Optional message to display if the assertion fails
    */
   resolves(promise: Promise<unknown>, message?: string): Promise<void>;
+  /**
+   * Asserts that `promise` is resolved with a value matching `matcher`.
+   * See `throws` for the `matcher` semantics (applied to the resolved value).
+   * @param promise - The promise to test
+   * @param matcher - The matcher to apply to the resolved value
+   * @param message - Optional message to display if the assertion fails
+   */
+  resolves(
+    promise: Promise<unknown>,
+    matcher: AssertionMatcher,
+    message?: string
+  ): Promise<void>;
 
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
@@ -818,6 +871,17 @@ export declare interface Tester {
    * @param message - Optional message to display if the assertion fails
    */
   doesNotResolve(promise: Promise<unknown>, message?: string): Promise<void>;
+  /**
+   * Asserts that `promise` is rejected with a reason matching `matcher`. Alias of `rejects`.
+   * @param promise - The promise to test
+   * @param matcher - The matcher to apply to the rejection reason
+   * @param message - Optional message to display if the assertion fails
+   */
+  doesNotResolve(
+    promise: Promise<unknown>,
+    matcher: AssertionMatcher,
+    message?: string
+  ): Promise<void>;
 
   /**
    * Asserts that `promise` is resolved. Alias of `resolves`.
@@ -825,6 +889,17 @@ export declare interface Tester {
    * @param message - Optional message to display if the assertion fails
    */
   doesNotReject(promise: Promise<unknown>, message?: string): Promise<void>;
+  /**
+   * Asserts that `promise` is resolved with a value matching `matcher`. Alias of `resolves`.
+   * @param promise - The promise to test
+   * @param matcher - The matcher to apply to the resolved value
+   * @param message - Optional message to display if the assertion fails
+   */
+  doesNotReject(
+    promise: Promise<unknown>,
+    matcher: AssertionMatcher,
+    message?: string
+  ): Promise<void>;
 
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
