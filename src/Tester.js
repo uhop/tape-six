@@ -369,20 +369,20 @@ export class Tester {
       throw new TypeError('the first argument should be a promise');
     return promise
       .then(
-        () => null,
-        error => error
+        () => ({resolved: true}),
+        error => ({resolved: false, error})
       )
-      .then(result => {
+      .then(({resolved, error}) => {
         this.reporter.report({
           name: msg || 'should be rejected',
           test: this.testNumber,
           marker: new Error(),
           time: this.timer.now(),
           operator: 'rejects',
-          fail: !result,
+          fail: resolved,
           data: {
             expected: null,
-            actual: result
+            actual: resolved ? null : error
           }
         });
       });
@@ -393,20 +393,20 @@ export class Tester {
       throw new TypeError('the first argument should be a promise');
     return promise
       .then(
-        () => null,
-        error => error
+        () => ({resolved: true}),
+        error => ({resolved: false, error})
       )
-      .then(result => {
+      .then(({resolved, error}) => {
         this.reporter.report({
           name: msg || 'should not be rejected',
           test: this.testNumber,
           marker: new Error(),
           time: this.timer.now(),
           operator: 'resolves',
-          fail: !!result,
+          fail: !resolved,
           data: {
             expected: null,
-            actual: result
+            actual: resolved ? null : error
           }
         });
       });
