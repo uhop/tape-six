@@ -325,7 +325,7 @@ export class Tester {
       test: this.testNumber,
       marker: new Error(),
       time: this.timer.now(),
-      operator: 'doesNotMatch',
+      operator: 'doesNotMatchString',
       fail: regexp.test(string),
       data: {
         expected: regexp,
@@ -355,7 +355,7 @@ export class Tester {
       test: this.testNumber,
       marker: new Error(),
       time: this.timer.now(),
-      operator: 'doesNotMatchObject',
+      operator: 'doesNotMatch',
       fail: match(a, b),
       data: {
         expected: b,
