@@ -4,7 +4,7 @@
 [npm-url]: https://npmjs.org/package/tape-six
 
 `tape-six` is a [TAP](https://en.wikipedia.org/wiki/Test_Anything_Protocol)-based library for unit tests.
-It is written in the modern JavaScript for the modern JavaScript and works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/) and browsers. **Zero runtime dependencies.**
+Written in modern JavaScript for modern JavaScript runtimes — works in [Node](https://nodejs.org/), [Deno](https://deno.land/), [Bun](https://bun.sh/), and browsers. **Zero runtime dependencies.**
 
 It runs ES modules (`import`-based code) natively and supports CommonJS modules transparently using the built-in [ESM](https://nodejs.org/api/esm.html).
 
