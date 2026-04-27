@@ -69,7 +69,7 @@ Write or update tape-six tests for a module or feature in this repository.
     - **Server harness** (`../src/server.js`) — `withServer(serverHandler, clientHandler, opts?)` per-test scoped, `setupServer(serverHandler, opts?)` for suite-shared via `beforeAll`/`afterAll` (returns live-getter handle — don't destructure at module load), `startServer(server, opts?)` procedural primitive. Default host `'127.0.0.1'`. Cross-runtime via `node:http`.
     - **Response helpers** (`../src/response.js`) — `asText`/`asJson`/`asBytes`/`header`/`headers` working on both W3C `Response` and Node `http.IncomingMessage`.
     - For mock-server scenarios that record requests: compose your own `beforeEach` to reset state. `setupServer` owns the lifecycle; the caller owns state.
-    - Reference tests: `tests/test-server.js`, `tests/test-response.js`.
+    - Reference tests: `tests/cli/test-server.js`, `tests/cli/test-response.js` (under `tests/cli/` because they import `node:http` and so can't run in the browser worker; the `tape6.cli` patterns in `package.json` pick them up).
 11. **Browser-specific tests** — see "Browser testing" in `TESTING.md`.
     - Browsers run `.js`/`.mjs` only (no TS, no CJS), or `.html` shims with importmap.
     - Place browser-only files in `tests/browser/` and add patterns to `"browser"` in the `tape6` config.

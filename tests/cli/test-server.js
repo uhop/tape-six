@@ -1,7 +1,7 @@
 import http from 'node:http';
 
-import test from '../index.js';
-import {startServer, withServer, setupServer} from '../src/server.js';
+import test from '../../index.js';
+import {startServer, withServer, setupServer} from '../../src/server.js';
 
 const echo = (req, res) => {
   res.writeHead(200, {'Content-Type': 'text/plain'});

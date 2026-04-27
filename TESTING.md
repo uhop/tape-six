@@ -339,6 +339,8 @@ test('suite B', dbOpts, async t => {
 
 Two subpath modules ship for tests that need HTTP-shaped fixtures. Both work on Node, Bun, and Deno via `node:http`. Browsers don't get them — running an HTTP server inside a webpage isn't a use case.
 
+> **Placement matters.** Test files that import `tape-six/server`, `tape-six/response`, or any other node-only API (e.g. `node:http`, `node:fs`, `node:child_process`) **must not** match a `tape6.tests` pattern that's universal to all environments — the browser worker would try to load them and fail with `Worker error` on the missing built-in. Put them in a CLI-only location (e.g. `tests/cli/test-*.js`) and add the matching glob to `tape6.cli` so it covers Node/Bun/Deno but not browsers. See [Configuring test discovery](#configuring-test-discovery).
+
 ### `tape-six/server` — server harness
 
 ```js

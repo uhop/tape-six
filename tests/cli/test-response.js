@@ -1,8 +1,8 @@
 import http from 'node:http';
 
-import test from '../index.js';
-import {withServer} from '../src/server.js';
-import {asText, asJson, asBytes, header, headers} from '../src/response.js';
+import test from '../../index.js';
+import {withServer} from '../../src/server.js';
+import {asText, asJson, asBytes, header, headers} from '../../src/response.js';
 
 const json = body => (_req, res) => {
   res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'});

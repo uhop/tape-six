@@ -95,7 +95,8 @@
       "/tests/test-*.mjs"
     ],
     "cli": [
-      "/tests/test-*.cjs"
+      "/tests/test-*.cjs",
+      "/tests/cli/test-*.js"
     ],
     "browser": [
       "/tests/browser/test-*.html"
