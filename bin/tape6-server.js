@@ -13,6 +13,7 @@ import {
   printVersion,
   printHelp
 } from '../src/utils/config.js';
+import {startServer} from '../src/server.js';
 
 const fsp = fs.promises;
 
@@ -241,24 +242,8 @@ const portToString = port => (typeof port === 'string' ? 'pipe' : 'port') + ' ' 
 const host = process.env.HOST || 'localhost',
   port = normalizePort(process.env.PORT || '3000');
 
-server.listen(port, host);
-
-server.on('error', error => {
-  if (error.syscall !== 'listen') throw error;
-  const bind = portToString(port);
-  switch (error.code) {
-    case 'EACCES':
-      console.log(red('Error: ') + yellow(bind) + red(' requires elevated privileges') + '\n');
-      process.exit(1);
-    case 'EADDRINUSE':
-      console.log(red('Error: ') + yellow(bind) + red(' is already in use') + '\n');
-      process.exit(1);
-  }
-  throw error;
-});
-
-server.on('listening', () => {
-  //const addr = server.address();
+try {
+  await startServer(server, {host, port});
   const bind = portToString(port);
   console.log(
     grey('Listening on ') +
@@ -274,4 +259,19 @@ server.on('listening', () => {
     );
   }
   console.log();
-});
+} catch (error) {
+  if (error.syscall === 'listen') {
+    const bind = portToString(port);
+    if (error.code === 'EACCES') {
+      console.log(red('Error: ') + yellow(bind) + red(' requires elevated privileges') + '\n');
+      process.exitCode = 1;
+    } else if (error.code === 'EADDRINUSE') {
+      console.log(red('Error: ') + yellow(bind) + red(' is already in use') + '\n');
+      process.exitCode = 1;
+    } else {
+      throw error;
+    }
+  } else {
+    throw error;
+  }
+}

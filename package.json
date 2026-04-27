@@ -1,6 +1,6 @@
 {
   "name": "tape-six",
-  "version": "1.7.14",
+  "version": "1.8.0",
   "description": "TAP-inspired unit test library for Node, Deno, Bun, and browsers. ES modules, TypeScript, zero dependencies.",
   "type": "module",
   "main": "index.js",
@@ -8,6 +8,14 @@
   "types": "index.d.ts",
   "exports": {
     ".": "./index.js",
+    "./server": {
+      "types": "./src/server.d.ts",
+      "default": "./src/server.js"
+    },
+    "./response": {
+      "types": "./src/response.d.ts",
+      "default": "./src/response.js"
+    },
     "./bin/*": "./bin/*",
     "./*": "./src/*"
   },
@@ -102,8 +110,8 @@
   },
   "devDependencies": {
     "@types/chai": "^5.2.3",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "chai": "^6.2.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   }
 }

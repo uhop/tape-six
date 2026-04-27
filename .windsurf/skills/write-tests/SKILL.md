@@ -36,12 +36,15 @@ Write or update tape-six tests for a module or feature in this repository.
    - Structural: `t.match(actual, pattern)` / `t.doesNotMatch(actual, pattern)` for partial object matching (uses deep6 `match()`).
 5. **Match error/value shape** (`throws` / `rejects` / `resolves` accept an optional matcher as the second arg):
    ```js
-   t.throws(() => parse(''), TypeError);                  // Error subclass
-   t.throws(() => parse(''), /unexpected end/);           // RegExp on error.message
-   t.throws(() => parse(''), e => e.code === 'EPARSE');   // predicate
-   t.throws(() => parse(''), {code: 'EPARSE'});           // deep6 object pattern
+   t.throws(() => parse(''), TypeError); // Error subclass
+   t.throws(() => parse(''), /unexpected end/); // RegExp on error.message
+   t.throws(
+     () => parse(''),
+     e => e.code === 'EPARSE'
+   ); // predicate
+   t.throws(() => parse(''), {code: 'EPARSE'}); // deep6 object pattern
    await t.rejects(fetchData(), /404/);
-   await t.resolves(fetchData(), {status: 200});          // matches resolved value
+   await t.resolves(fetchData(), {status: 200}); // matches resolved value
    ```
    A string second arg is still treated as the message for backward compatibility.
 6. **Wildcards in deep equality** — use `t.any` (alias `t._`) inside expected values to skip non-deterministic fields:
@@ -59,14 +62,19 @@ Write or update tape-six tests for a module or feature in this repository.
 9. **Misc:**
    - `test.skip(name, fn)` / `test.todo(name, fn)` — `skip` doesn't run; `todo` runs but failures don't fail the suite.
    - `t.comment(msg)` — emit a TAP comment line.
-   - `t.skipTest(msg)` — skip the *current* test from inside it.
+   - `t.skipTest(msg)` — skip the _current_ test from inside it.
    - `t.bailOut(msg)` — stop the entire run (catastrophic).
    - `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps top-level variables on failure. Useful for compact arithmetic/state checks: `eval(t.OK('a + b === 3'))`. Do not use in CSP-restricted contexts.
-10. **Browser-specific tests** — see "Browser testing" in `TESTING.md`.
+10. **Testing HTTP code** — the package exports two subpath modules; in this repo import them via the relative path:
+    - **Server harness** (`../src/server.js`) — `withServer(serverHandler, clientHandler, opts?)` per-test scoped, `setupServer(serverHandler, opts?)` for suite-shared via `beforeAll`/`afterAll` (returns live-getter handle — don't destructure at module load), `startServer(server, opts?)` procedural primitive. Default host `'127.0.0.1'`. Cross-runtime via `node:http`.
+    - **Response helpers** (`../src/response.js`) — `asText`/`asJson`/`asBytes`/`header`/`headers` working on both W3C `Response` and Node `http.IncomingMessage`.
+    - For mock-server scenarios that record requests: compose your own `beforeEach` to reset state. `setupServer` owns the lifecycle; the caller owns state.
+    - Reference tests: `tests/test-server.js`, `tests/test-response.js`.
+11. **Browser-specific tests** — see "Browser testing" in `TESTING.md`.
     - Browsers run `.js`/`.mjs` only (no TS, no CJS), or `.html` shims with importmap.
     - Place browser-only files in `tests/browser/` and add patterns to `"browser"` in the `tape6` config.
     - Run: `npx tape6-server --trace`, then open `http://localhost:3000`. Use `?q=<glob>` to filter, `?flags=FO` and `?par=N` to control output and parallelism.
-11. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`); all additive.
-12. **Verify (CLI):** `node tests/test-<name>.js`, then `npm test` for regressions. Use `npm run test:seq` to debug. Add `--flags fo` to see which files run. Use `npx tape6 --info` to inspect resolved config without running tests. For tests with heavy `beforeAll`, set `TAPE6_WORKER_START_TIMEOUT=60000` (default 5 s).
-13. **Verify (browser):** `npx tape6-server --trace`, then `http://localhost:3000/?q=/tests/test-<name>.js`.
-14. Report results and any failures.
+12. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`); all additive.
+13. **Verify (CLI):** `node tests/test-<name>.js`, then `npm test` for regressions. Use `npm run test:seq` to debug. Add `--flags fo` to see which files run. Use `npx tape6 --info` to inspect resolved config without running tests. For tests with heavy `beforeAll`, set `TAPE6_WORKER_START_TIMEOUT=60000` (default 5 s).
+14. **Verify (browser):** `npx tape6-server --trace`, then `http://localhost:3000/?q=/tests/test-<name>.js`.
+15. Report results and any failures.

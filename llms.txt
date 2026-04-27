@@ -139,6 +139,37 @@ test('suite', async t => {
 test.beforeAll(() => { /* ... */ });
 ```
 
+## Subpath modules
+
+### tape-six/server — HTTP server harness
+
+Helpers for tests that need an ephemeral `node:http` server. Cross-runtime (Node, Bun, Deno; not for browser-side tests).
+
+```js
+import {withServer, startServer, setupServer} from 'tape-six/server';
+```
+
+- `withServer(serverHandler, clientHandler, opts?)` — scoped resource: spin up a server, run the test body with the base URL, tear down in `finally`. The 95% case.
+- `startServer(server, opts?)` — procedural primitive: returns `{server, base, port, host, close}`. For multi-phase tests or non-test code (e.g., `bin/tape6-server`) that wants long-term control. Races `'listening'` against `'error'` so port-busy rejects instead of hanging.
+- `setupServer(serverHandler, opts?)` — registers `beforeAll`/`afterAll` and returns a live-getter context for suite-shared servers. Don't destructure the returned object at module load — properties read live state on each access.
+- Options: `{host = '127.0.0.1', port = 0}`. Default host is explicit IPv4.
+
+`serverHandler` is the per-request callback (Node calls it once per incoming request). `clientHandler` is the per-scope test body (called once with the base URL). Either side may be the SUT.
+
+### tape-six/response — HTTP response helpers
+
+Reading helpers that work uniformly with both `Response` (fetch results) and `http.IncomingMessage` (Node low-level requests).
+
+```js
+import {asText, asJson, asBytes, header, headers} from 'tape-six/response';
+```
+
+- `asText(res)` — body as UTF-8 string.
+- `asJson(res)` — body parsed as JSON.
+- `asBytes(res)` — body as `Uint8Array`.
+- `header(res, name)` — single header value, case-insensitive. Returns `null` if absent.
+- `headers(res)` — all headers as a plain object with lowercase keys.
+
 ## Common patterns
 
 ### Basic test file
@@ -210,6 +241,41 @@ describe('my module', () => {
   it('should work', t => {
     t.ok(true);
   });
+});
+```
+
+### Testing HTTP code with `withServer`
+
+```js
+import test from 'tape-six';
+import {withServer} from 'tape-six/server';
+import {asJson} from 'tape-six/response';
+
+test('GET /users returns the list', t =>
+  withServer(myHandler, async base => {
+    const res = await fetch(`${base}/users`);
+    t.equal(res.status, 200);
+    const body = await asJson(res);
+    t.equal(body.length, 3);
+  }));
+```
+
+Suite-shared server (multiple tests against one instance):
+
+```js
+import test, {beforeEach} from 'tape-six';
+import {setupServer} from 'tape-six/server';
+
+const server = setupServer((req, res) => {
+  recorded.push({method: req.method, url: req.url});
+  res.writeHead(204).end();
+});
+let recorded;
+beforeEach(() => { recorded = []; });
+
+test('records one request', async t => {
+  await fetch(`${server.base}/foo`);
+  t.equal(recorded.length, 1);
 });
 ```
 

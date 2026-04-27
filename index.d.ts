@@ -583,11 +583,7 @@ export declare interface Tester {
    * @param matcher - The matcher to apply to the rejection reason
    * @param message - Optional message to display if the assertion fails
    */
-  rejects(
-    promise: Promise<unknown>,
-    matcher: AssertionMatcher,
-    message?: string
-  ): Promise<void>;
+  rejects(promise: Promise<unknown>, matcher: AssertionMatcher, message?: string): Promise<void>;
 
   /**
    * Asserts that `promise` is resolved.
@@ -602,11 +598,7 @@ export declare interface Tester {
    * @param matcher - The matcher to apply to the resolved value
    * @param message - Optional message to display if the assertion fails
    */
-  resolves(
-    promise: Promise<unknown>,
-    matcher: AssertionMatcher,
-    message?: string
-  ): Promise<void>;
+  resolves(promise: Promise<unknown>, matcher: AssertionMatcher, message?: string): Promise<void>;
 
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.

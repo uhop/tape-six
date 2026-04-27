@@ -110,41 +110,44 @@ test.todo('in progress', t => {
 
 All `msg` arguments are optional. If omitted, a generic message is used.
 
-| Method                               | Checks                          | Common aliases                   |
-| ------------------------------------ | ------------------------------- | -------------------------------- |
-| `t.pass(msg)`                        | Unconditional pass              |                                  |
-| `t.fail(msg)`                        | Unconditional fail              |                                  |
-| `t.ok(val, msg)`                     | `val` is truthy                 | `true`, `assert`                 |
-| `t.notOk(val, msg)`                  | `val` is falsy                  | `false`, `notok`                 |
-| `t.error(err, msg)`                  | `err` is falsy                  | `ifError`, `ifErr`               |
-| `t.equal(a, b, msg)`                 | `a === b`                       | `is`, `strictEqual`, `isEqual`   |
-| `t.notEqual(a, b, msg)`              | `a !== b`                       | `not`, `notStrictEqual`, `isNot` |
-| `t.deepEqual(a, b, msg)`             | Deep strict equality            | `same`, `isEquivalent`           |
-| `t.notDeepEqual(a, b, msg)`          | Not deeply equal                | `notSame`, `notEquivalent`       |
-| `t.looseEqual(a, b, msg)`            | `a == b`                        |                                  |
-| `t.notLooseEqual(a, b, msg)`         | `a != b`                        |                                  |
-| `t.deepLooseEqual(a, b, msg)`        | Deep loose equality             |                                  |
-| `t.notDeepLooseEqual(a, b, msg)`     | Not deeply loosely equal        |                                  |
-| `t.throws(fn, m?, msg)`              | `fn()` throws (matches `m?`)    |                                  |
-| `t.doesNotThrow(fn, msg)`            | `fn()` does not throw           |                                  |
-| `t.matchString(str, re, msg)`        | `str` matches `re`              |                                  |
-| `t.doesNotMatchString(str, re, msg)` | `str` doesn't match `re`        |                                  |
-| `t.match(a, b, msg)`                 | Structural pattern match        |                                  |
-| `t.doesNotMatch(a, b, msg)`          | No structural match             |                                  |
-| `t.rejects(promise, m?, msg)`        | Rejects (matches `m?`) — `await`| `doesNotResolve`                 |
-| `t.resolves(promise, m?, msg)`       | Resolves (matches `m?`) — `await`| `doesNotReject`                 |
+| Method                               | Checks                            | Common aliases                   |
+| ------------------------------------ | --------------------------------- | -------------------------------- |
+| `t.pass(msg)`                        | Unconditional pass                |                                  |
+| `t.fail(msg)`                        | Unconditional fail                |                                  |
+| `t.ok(val, msg)`                     | `val` is truthy                   | `true`, `assert`                 |
+| `t.notOk(val, msg)`                  | `val` is falsy                    | `false`, `notok`                 |
+| `t.error(err, msg)`                  | `err` is falsy                    | `ifError`, `ifErr`               |
+| `t.equal(a, b, msg)`                 | `a === b`                         | `is`, `strictEqual`, `isEqual`   |
+| `t.notEqual(a, b, msg)`              | `a !== b`                         | `not`, `notStrictEqual`, `isNot` |
+| `t.deepEqual(a, b, msg)`             | Deep strict equality              | `same`, `isEquivalent`           |
+| `t.notDeepEqual(a, b, msg)`          | Not deeply equal                  | `notSame`, `notEquivalent`       |
+| `t.looseEqual(a, b, msg)`            | `a == b`                          |                                  |
+| `t.notLooseEqual(a, b, msg)`         | `a != b`                          |                                  |
+| `t.deepLooseEqual(a, b, msg)`        | Deep loose equality               |                                  |
+| `t.notDeepLooseEqual(a, b, msg)`     | Not deeply loosely equal          |                                  |
+| `t.throws(fn, m?, msg)`              | `fn()` throws (matches `m?`)      |                                  |
+| `t.doesNotThrow(fn, msg)`            | `fn()` does not throw             |                                  |
+| `t.matchString(str, re, msg)`        | `str` matches `re`                |                                  |
+| `t.doesNotMatchString(str, re, msg)` | `str` doesn't match `re`          |                                  |
+| `t.match(a, b, msg)`                 | Structural pattern match          |                                  |
+| `t.doesNotMatch(a, b, msg)`          | No structural match               |                                  |
+| `t.rejects(promise, m?, msg)`        | Rejects (matches `m?`) — `await`  | `doesNotResolve`                 |
+| `t.resolves(promise, m?, msg)`       | Resolves (matches `m?`) — `await` | `doesNotReject`                  |
 
 ### Matching errors and resolved values
 
 `t.throws`, `t.rejects`, and `t.resolves` accept an optional **matcher** as their second argument. If the second argument is a string, it's still treated as the message (backward compatible).
 
 ```js
-t.throws(() => parse(''), TypeError);                  // Error subclass — instanceof
-t.throws(() => parse(''), /unexpected end/);           // RegExp on error.message
-t.throws(() => parse(''), e => e.code === 'EPARSE');   // predicate
-t.throws(() => parse(''), {code: 'EPARSE'});           // deep6 object pattern
+t.throws(() => parse(''), TypeError); // Error subclass — instanceof
+t.throws(() => parse(''), /unexpected end/); // RegExp on error.message
+t.throws(
+  () => parse(''),
+  e => e.code === 'EPARSE'
+); // predicate
+t.throws(() => parse(''), {code: 'EPARSE'}); // deep6 object pattern
 await t.rejects(fetchData(), TypeError, 'wrong type');
-await t.resolves(fetchData(), {status: 200});          // matches resolved value
+await t.resolves(fetchData(), {status: 200}); // matches resolved value
 ```
 
 Matcher rules:
@@ -194,16 +197,16 @@ test('aborts on test end', async t => {
 
 `test(name, options, fn)` accepts an options object. Type-recognition makes the form flexible (any of `test(opts, fn)`, `test(name, fn)`, `test(name, opts, fn)` is valid).
 
-| Option                              | Effect                                                            |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| `name`                              | Test name (overrides positional)                                  |
-| `timeout`                           | Milliseconds; test fails and `t.signal` aborts if exceeded        |
-| `skip`                              | Skip the test (does not run)                                      |
-| `todo`                              | Run, but failures don't count                                     |
-| `beforeAll` / `before`              | Run once before the test's first embedded test                    |
-| `afterAll` / `after`                | Run once after the test's last embedded test                      |
-| `beforeEach`                        | Run before each embedded test                                     |
-| `afterEach`                         | Run after each embedded test                                      |
+| Option                 | Effect                                                     |
+| ---------------------- | ---------------------------------------------------------- |
+| `name`                 | Test name (overrides positional)                           |
+| `timeout`              | Milliseconds; test fails and `t.signal` aborts if exceeded |
+| `skip`                 | Skip the test (does not run)                               |
+| `todo`                 | Run, but failures don't count                              |
+| `beforeAll` / `before` | Run once before the test's first embedded test             |
+| `afterAll` / `after`   | Run once after the test's last embedded test               |
+| `beforeEach`           | Run before each embedded test                              |
+| `afterEach`            | Run after each embedded test                               |
 
 ```js
 test('with timeout', {timeout: 5000}, async t => {
@@ -223,7 +226,9 @@ By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture 
 
   ```js
   test('OK evaluator', t => {
-    const a = 1, b = 2, c = 'three';
+    const a = 1,
+      b = 2,
+      c = 'three';
     eval(t.OK('a + b + c === "3three"'));
     // on failure, the report includes: {a: 1, b: 2, c: "three"}
   });
@@ -329,6 +334,125 @@ test('suite B', dbOpts, async t => {
   /* ... */
 });
 ```
+
+## Testing HTTP code
+
+Two subpath modules ship for tests that need HTTP-shaped fixtures. Both work on Node, Bun, and Deno via `node:http`. Browsers don't get them — running an HTTP server inside a webpage isn't a use case.
+
+### `tape-six/server` — server harness
+
+```js
+import {withServer, startServer, setupServer} from 'tape-six/server';
+```
+
+Three exports for three lifetimes. `withServer` is the per-test scoped resource (95% case). `startServer` is the procedural primitive. `setupServer` registers `beforeAll`/`afterAll` for suite-shared servers.
+
+**Per-test server** — start before the test body, tear down in `finally`:
+
+```js
+import test from 'tape-six';
+import {withServer} from 'tape-six/server';
+
+test('GET / returns 200', t =>
+  withServer(myHandler, async base => {
+    const res = await fetch(`${base}/`);
+    t.equal(res.status, 200);
+  }));
+```
+
+`myHandler` is a `(req, res) => void` callback (`http.RequestListener`). `base` is the bound URL, e.g. `"http://127.0.0.1:54321"`. Default host is `'127.0.0.1'` (explicit IPv4); pass `{host, port}` to override.
+
+`withServer` handles the symmetric case where the test makes requests directly. It's also the right tool when the SUT is something else (a CLI spawned in a subprocess) and the handler is a mock — the test body just looks different:
+
+```js
+test('CLI hits the API correctly', t =>
+  withServer(mockApi, async base => {
+    const result = await spawnCli({env: {API_URL: base}});
+    t.equal(result.exitCode, 0);
+    t.equal(recordedRequests.length, 1);
+  }));
+```
+
+Either side may be the SUT. The names `serverHandler` / `clientHandler` reflect role on the wire, not which side is being tested.
+
+**Suite-shared server** — register hooks once, share across many tests:
+
+```js
+import test, {beforeEach} from 'tape-six';
+import {setupServer} from 'tape-six/server';
+
+let recorded;
+const server = setupServer((req, res) => {
+  recorded.push({method: req.method, url: req.url});
+  res.writeHead(204).end();
+});
+beforeEach(() => {
+  recorded = [];
+});
+
+test('records exactly one request', async t => {
+  await fetch(`${server.base}/foo`);
+  t.equal(recorded.length, 1);
+});
+
+test('records the path correctly', async t => {
+  await fetch(`${server.base}/bar`);
+  t.equal(recorded[0].url, '/bar');
+});
+```
+
+The returned handle has live getters — `server.base` reads the current state on each access. **Don't destructure** at module load (`const {base} = setupServer(...)`); `base` is `undefined` until `beforeAll` runs. Per-test state reset (the `recorded = []` above) is user-side via your own `beforeEach`; `setupServer` owns the server lifecycle, you own state.
+
+**Procedural primitive** — for multi-phase tests or non-test code:
+
+```js
+import http from 'node:http';
+import {startServer} from 'tape-six/server';
+
+const lc = await startServer(http.createServer(handler), {host, port});
+try {
+  // ... lc.base, lc.port, lc.host ...
+} finally {
+  await lc.close();
+}
+```
+
+`startServer` accepts a fully-constructed server (so the caller can attach `'clientError'` listeners or configure TLS first). It races `'listening'` against `'error'` so port-busy / `EACCES` rejects with the original error rather than hanging — the failure mode existing helpers across the ecosystem suffer from on busy CI machines.
+
+`close()` is idempotent and calls `server.closeAllConnections()` (when available, Node 18.2+) so keep-alive sockets from `fetch` don't delay teardown.
+
+### `tape-six/response` — response reading helpers
+
+```js
+import {asText, asJson, asBytes, header, headers} from 'tape-six/response';
+```
+
+Five reading helpers that work uniformly on both W3C `Response` (from `fetch`) and Node `http.IncomingMessage` (from `http.request`).
+
+```js
+import test from 'tape-six';
+import {withServer} from 'tape-six/server';
+import {asJson, header} from 'tape-six/response';
+
+test('GET / returns JSON', t =>
+  withServer(handler, async base => {
+    const res = await fetch(`${base}/`);
+    t.equal(res.status, 200);
+    t.match(header(res, 'content-type'), /^application\/json/);
+    const body = await asJson(res);
+    t.deepEqual(body, {ok: true});
+  }));
+```
+
+| Helper              | Returns                  | Notes                               |
+| ------------------- | ------------------------ | ----------------------------------- |
+| `asText(res)`       | `Promise<string>`        | UTF-8                               |
+| `asJson(res)`       | `Promise<unknown>`       | parses JSON                         |
+| `asBytes(res)`      | `Promise<Uint8Array>`    | raw bytes                           |
+| `header(res, name)` | `string \| null`         | case-insensitive single-header read |
+| `headers(res)`      | `Record<string, string>` | all headers, lowercase keys         |
+
+For status code, just use `res.status` (W3C `Response`) or `res.statusCode` (Node `IncomingMessage`) directly — no helper needed.
 
 ## Migrating from other test frameworks
 

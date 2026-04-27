@@ -257,6 +257,108 @@ test('suite', opts, async t => {
 
 Multiple hooks of the same type run in registration order (before) or reverse order (after).
 
+## Subpath modules
+
+Two helper modules ship as separate subpath imports for tests that need HTTP-shaped fixtures. Both are cross-runtime (Node, Bun, Deno via `node:http`); browsers don't need them because running an HTTP server inside a webpage isn't a use case.
+
+### tape-six/server — HTTP server harness
+
+```js
+import {withServer, startServer, setupServer} from 'tape-six/server';
+```
+
+#### `withServer(serverHandler, clientHandler, opts?)` — scoped resource (95% case)
+
+Spins up an `http.Server` with `serverHandler`, runs `clientHandler` with the bound base URL, tears down in `finally`. Cleanup runs whether `clientHandler` resolves, rejects, or throws synchronously. Returns whatever `clientHandler` returns.
+
+```js
+test('GET / returns 200', t =>
+  withServer(handler, async base => {
+    const res = await fetch(`${base}/`);
+    t.equal(res.status, 200);
+  }));
+```
+
+`serverHandler` is the per-request callback Node invokes on each incoming request. `clientHandler` is the per-scope test body, called once with `(base, lifecycle)` — naming reflects role on the wire (server side / client side), not which side is the SUT. Either side may be the code under test.
+
+`clientHandler` may make HTTP requests itself (`fetch(base)`-style), or set up a separate SUT that does (e.g., a spawned CLI given `${base}` as its endpoint env var), or do neither (multi-phase setup + assertions).
+
+#### `startServer(server, opts?)` — procedural primitive
+
+For multi-phase tests that span the lifecycle, or non-test code (e.g. `bin/tape6-server`) that wants long-term control. Accepts a fully-constructed `http.Server` (so callers can attach `'clientError'` handlers, configure TLS, etc., before listen).
+
+```js
+const lc = await startServer(http.createServer(handler), {host, port});
+// ... use lc.base ...
+await lc.close();
+```
+
+Returns a lifecycle handle:
+
+- `server` — the underlying `http.Server`.
+- `base` — bound base URL, e.g. `"http://127.0.0.1:54321"`.
+- `port` — actual bound port (OS-assigned when `port: 0`).
+- `host` — bound host.
+- `close()` — idempotent. Calls `server.closeAllConnections()` (when available) so keep-alive sockets don't delay teardown.
+
+Races `'listening'` against `'error'`: port-busy / `EACCES` rejects with the original error rather than hanging. Existing helpers across the toolkit ecosystem don't do this and have hung CI machines as a result.
+
+#### `setupServer(serverHandler, opts?)` — hook helper
+
+Registers `beforeAll` (start) and `afterAll` (close) and returns a live-getter handle for suite-shared servers:
+
+```js
+const server = setupServer(handler);
+
+test('first', async t => {
+  const res = await fetch(`${server.base}/foo`);
+});
+
+test('second', async t => {
+  const res = await fetch(`${server.base}/bar`);
+});
+```
+
+The returned object is `Object.freeze`d and uses property getters that read the live lifecycle. Don't destructure at module load (`const {base} = setupServer(...)`) — `base` is `undefined` until `beforeAll` runs.
+
+State reset stays user-side. For mock-server scenarios that need per-test state clearing, compose your own `beforeEach`:
+
+```js
+const server = setupServer((req, res) => {
+  recorded.push({method: req.method, url: req.url});
+  res.writeHead(204).end();
+});
+let recorded;
+beforeEach(() => { recorded = []; });
+```
+
+`setupServer` owns the suite lifecycle; the caller owns suite state.
+
+#### Options
+
+```ts
+interface ServerOptions {
+  host?: string;  // default '127.0.0.1' — explicit IPv4 avoids dual-stack ambiguity
+  port?: number;  // default 0 — OS-assigned
+}
+```
+
+### tape-six/response — HTTP response helpers
+
+Reading helpers that work uniformly with both `Response` (fetch results) and Node `http.IncomingMessage`:
+
+```js
+import {asText, asJson, asBytes, header, headers} from 'tape-six/response';
+```
+
+- `asText(res)` → `Promise<string>` — body as UTF-8.
+- `asJson(res)` → `Promise<unknown>` — body parsed as JSON.
+- `asBytes(res)` → `Promise<Uint8Array>` — body as raw bytes.
+- `header(res, name)` → `string | null` — case-insensitive single-header read. Array-valued `IncomingMessage` headers (e.g. `set-cookie`) are joined with `, `.
+- `headers(res)` → `Record<string, string>` — all headers as a plain object with lowercase keys.
+
+For status code, just use `res.status` — same on both `Response` and `IncomingMessage`.
+
 ## Configuring tests
 
 Configuration is read from `tape6.json` or the `"tape6"` section of `package.json`:

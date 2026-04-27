@@ -46,6 +46,8 @@ tape-six/
 │   ├── Tester.js     # Tester class with all assert methods
 │   ├── OK.js         # Expression evaluator helper
 │   ├── State.js      # Reporter state management
+│   ├── server.js     # tape-six/server: withServer/startServer/setupServer (HTTP test fixtures)
+│   ├── response.js   # tape-six/response: asText/asJson/asBytes/header/headers (Response + IncomingMessage)
 │   ├── reporters/    # TAP, TTY, JSONL, Proxy, DOM reporters
 │   ├── runners/      # Runtime-specific test runners
 │   ├── utils/        # Timers, console capture, defer, etc.
@@ -98,6 +100,8 @@ test('example', t => {
 
 - Do not add dependencies unless absolutely necessary — the library is intentionally minimal.
 - All public API is exported from `index.js` and typed in `index.d.ts`. Keep them in sync.
+- Subpath modules (`tape-six/server`, `tape-six/response`) are declared explicitly in `package.json#exports`. Each has its own `.d.ts` sidecar referenced via the `types` condition. New subpath modules should follow the same pattern.
+- All Node built-in imports use the `node:` protocol prefix (`node:http`, `node:fs`, `node:events`). Required for forward compatibility with Bun, Deno, and future runtimes.
 - Wiki documentation lives in the `wiki/` submodule. See `prompts/doc.md` for documentation generation guidelines.
 - Environment variables use the `TAPE6_` prefix.
 - Browser integration exposes `__tape6_reportResults` for automation tools.
