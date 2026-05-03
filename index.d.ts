@@ -1254,4 +1254,29 @@ export declare const before: typeof test.before;
  */
 export declare const after: typeof test.after;
 
+/**
+ * Idempotently install a method on `Tester.prototype` so it appears as a
+ * method on every tester instance (`t.<name>(...)`). Same name + same function
+ * is a no-op (allows duplicate side-effect imports). Same name + a different
+ * function throws so collisions surface loudly.
+ *
+ * Usage from a plugin module (e.g., `tape-six-spawn`):
+ *
+ * ```ts
+ * import {registerTesterMethod} from 'tape-six/Tester.js';
+ *
+ * declare module 'tape-six' {
+ *   interface Tester {
+ *     spawnBin(bin: string, args: string[]): Promise<{code: number; stdout: string; stderr: string}>;
+ *   }
+ * }
+ *
+ * registerTesterMethod('spawnBin', async function (bin, args) { ... });
+ * ```
+ *
+ * @param name - non-empty method name
+ * @param fn - function to install on `Tester.prototype`
+ */
+export declare const registerTesterMethod: (name: string, fn: (...args: any[]) => any) => void;
+
 export default test;

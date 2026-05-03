@@ -257,6 +257,28 @@ test('suite', opts, async t => {
 
 Multiple hooks of the same type run in registration order (before) or reverse order (after).
 
+## Plugins
+
+Tester methods can be added via `registerTesterMethod(name, fn)`. Same name + same fn → no-op (idempotent re-import); same name + different fn → throws (loud collision detection).
+
+```js
+import {registerTesterMethod} from 'tape-six';
+
+registerTesterMethod('spawnBin', async function (bin, args) {
+  // ... implementation, can call this.equal(...), this.reporter.report({...}), etc.
+});
+
+// then in tests:
+test('cli', async t => {
+  const {code} = await t.spawnBin('node', ['-v']);
+  t.equal(code, 0);
+});
+```
+
+`Tester` is declared as an `interface` in `index.d.ts` to make TS module augmentation natural — plugins extend the interface, no full class shape needed. The built-in `t.OK()` evaluator (`src/OK.js`) uses this exact pattern.
+
+Plugin installation is **per-file**. `tape6-seq` runs all files in one process; `tape6` uses workers; `tape6-proc` (from the sister package `tape-six-proc`) uses subprocesses; browser tests run in iframes. Each isolation context has its own module graph, so a plugin import in file A is invisible to file B when they're in different contexts. Every test file that uses a plugin must import it directly. `registerTesterMethod`'s idempotency makes repeated imports safe. See [Writing plugins](https://github.com/uhop/tape-six/wiki/Writing-plugins) for the full guide.
+
 ## Subpath modules
 
 Two helper modules ship as separate subpath imports for tests that need HTTP-shaped fixtures. Both are cross-runtime (Node, Bun, Deno via `node:http`); browsers don't need them because running an HTTP server inside a webpage isn't a use case.

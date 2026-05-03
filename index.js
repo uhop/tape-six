@@ -254,6 +254,8 @@ if (!getConfiguredFlag()) {
   registerNotifyCallback(testRunner);
 }
 
+export {registerTesterMethod} from './src/Tester.js';
+
 export {
   test,
   before,

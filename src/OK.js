@@ -1,4 +1,4 @@
-import {Tester, setAliases} from './Tester.js';
+import {registerTesterMethod, setAliases} from './Tester.js';
 
 // code mostly borrowed from https://github.com/heya/ice/blob/master/assert.js under BSD-3
 
@@ -22,7 +22,7 @@ const listVariables = (code, self) => {
   return '{' + result.join(',') + '}';
 };
 
-Tester.prototype.OK = function OK(condition, msg, options) {
+const OK = function OK(condition, msg, options) {
   if (typeof condition != 'string') {
     throw new TypeError('Condition must be a string');
   }
@@ -44,4 +44,5 @@ Tester.prototype.OK = function OK(condition, msg, options) {
 }))`;
 };
 
+registerTesterMethod('OK', OK);
 setAliases('OK', 'TRUE, ASSERT');

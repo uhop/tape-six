@@ -450,8 +450,28 @@ export class Tester {
 }
 Tester.prototype.any = Tester.prototype._ = any;
 
-export const setAliases = (source, aliases) =>
-  aliases.split(', ').forEach(alias => (Tester.prototype[alias] = Tester.prototype[source]));
+// Idempotent registration of a method on Tester.prototype. Same name + same
+// function → no-op; same name + different function → throws. Lets plugins
+// extend the tester (e.g., spawnBin, withTempDir, waitFor) without colliding
+// silently when two of them claim the same name.
+export const registerTesterMethod = (name, fn) => {
+  if (typeof name !== 'string' || !name)
+    throw new TypeError('registerTesterMethod: name must be a non-empty string');
+  if (typeof fn !== 'function') throw new TypeError('registerTesterMethod: fn must be a function');
+  if (Object.prototype.hasOwnProperty.call(Tester.prototype, name)) {
+    if (Tester.prototype[name] !== fn)
+      throw new Error(
+        `registerTesterMethod: '${name}' is already registered with a different implementation`
+      );
+    return;
+  }
+  Tester.prototype[name] = fn;
+};
+
+export const setAliases = (source, aliases) => {
+  const fn = Tester.prototype[source];
+  aliases.split(', ').forEach(alias => registerTesterMethod(alias, fn));
+};
 
 setAliases('ok', 'true, assert');
 setAliases('notOk', 'false, notok');
