@@ -227,6 +227,19 @@ export const runTests = async tests => {
     await tester.dispose();
     await tester.state?.runAfterAll();
     testers.pop();
+    if (
+      tester.planned !== undefined &&
+      !tester.state?.skip &&
+      tester.state?.localAsserts !== tester.planned
+    ) {
+      tester.reporter.report({
+        type: 'comment',
+        name: `plan != count: expected ${tester.planned}, ran ${tester.state.localAsserts}`,
+        test: testNumber,
+        marker: new Error(),
+        time: tester.timer.now()
+      });
+    }
     tester.reporter.report({
       type: 'end',
       name: options.name,

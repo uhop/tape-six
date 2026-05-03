@@ -105,7 +105,7 @@ The object passed to test functions. Provides assertions and test control.
 
 #### Utilities
 
-- `t.plan(n)` — declare expected assertion count (rarely needed).
+- `t.plan(n)` — record expected direct-assertion count; emits a `# plan != count: expected N, ran M` TAP comment at test end on mismatch (diagnostic, doesn't fail).
 - `t.comment(msg)` — emit a comment.
 - `t.skipTest(msg)` — skip current test with a message.
 - `t.bailOut(msg)` — abort entire test suite.

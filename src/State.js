@@ -101,6 +101,8 @@ export class State {
     this.failOnce = failOnce || parent.failOnce;
     this.offset = parent.asserts || 0;
     this.asserts = this.skipped = this.failed = 0;
+    // direct assertions in this state only — not bumped by updateParent, used by t.plan()
+    this.localAsserts = 0;
     this.stopTest = false;
     this.timer = timer || parent.timer || getTimer();
     this.startTime = this.time = time || this.timer.now();
@@ -178,6 +180,7 @@ export class State {
 
     if (event.type === 'assert' || event.type === 'assertion-error') {
       ++this.asserts;
+      ++this.localAsserts;
       event.skip && ++this.skipped;
       isFailed && ++this.failed;
       event.id = this.asserts + this.offset;

@@ -95,8 +95,11 @@ export declare interface Tester {
   signal: AbortSignal;
 
   /**
-   * Plans the number of assertions that will be run. Unused.
-   * @param n - The number of assertions
+   * Records the expected number of direct assertions. When the test ends, a
+   * `# plan != count: expected N, ran M` TAP comment is emitted if the count
+   * diverges. Diagnostic only — does not fail the test. Subtest assertions
+   * don't count toward the parent's plan.
+   * @param n - The expected number of assertions (non-negative integer)
    */
   plan(n: number): void;
 

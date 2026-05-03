@@ -319,7 +319,7 @@ The following methods are available (all `msg` arguments are optional):
   - `any` &mdash; a symbol that can be used in deep equivalency asserts to match any value.
     See [deep6's any](https://github.com/uhop/deep6/wiki/any) for details.
     - `_` &mdash; an alias of `any`.
-  - `plan(n)` &mdash; sets the number of tests in the test suite. Rarely used.
+  - `plan(n)` &mdash; records the expected number of direct assertions; emits a TAP-comment diagnostic at test end if the count diverges (does not fail the test).
   - `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
   - `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
   - `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness.

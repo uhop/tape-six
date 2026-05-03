@@ -192,7 +192,7 @@ The `Tester` object is passed to test functions. All `msg` arguments are optiona
 
 ### Miscellaneous
 
-- `plan(n)` — set expected number of assertions.
+- `plan(n)` — record expected number of direct assertions. On test end, emits a `# plan != count: expected N, ran M` TAP comment if the count diverges (diagnostic only, doesn't fail the test). Subtest assertions don't count toward the parent's plan.
 - `comment(msg)` — send a comment to the reporter.
 - `skipTest(...args, msg)` — skip current test with a message.
 - `bailOut(msg)` — abort the test suite.

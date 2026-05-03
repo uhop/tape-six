@@ -221,7 +221,7 @@ By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture 
 - `t.comment(msg)` — emit a TAP comment line.
 - `t.skipTest(msg)` — skip the **current** test from inside it (e.g. when a precondition isn't met at runtime).
 - `t.bailOut(msg)` — stop the entire run. Catastrophic; use sparingly.
-- `t.plan(n)` — currently a documented no-op kept for migration compatibility from `tape` and `node:test`.
+- `t.plan(n)` — record the expected number of direct assertions. If the count diverges at test end, a `# plan != count: expected N, ran M` TAP comment is emitted (diagnostic only, doesn't fail the test). Subtest assertions don't count toward the parent's plan.
 - `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps the values of the top-level identifiers in the expression on failure. Useful for compact arithmetic/state checks. Not usable in CSP-restricted contexts (uses `eval`).
 
   ```js

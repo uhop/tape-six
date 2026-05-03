@@ -48,8 +48,10 @@ export class Tester {
     return this.reporter.state;
   }
 
-  plan(_n) {
-    // nothing to do
+  plan(n) {
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 0)
+      throw new TypeError('plan(n) requires a non-negative integer');
+    this.planned = n;
   }
 
   comment(msg) {
