@@ -98,21 +98,21 @@
       "/tests/test-*.cjs",
       "/tests/cli/test-*.js"
     ],
+    "node": [
+      "/tests/node/test-*.js"
+    ],
     "browser": [
       "/tests/browser/test-*.html"
     ],
     "importmap": {
       "imports": {
         "tape-six": "../index.js",
-        "tape-six/": "../src/",
-        "chai": "../node_modules/chai/index.js"
+        "tape-six/": "../src/"
       }
     }
   },
   "devDependencies": {
-    "@types/chai": "^5.2.3",
     "@types/node": "^25.6.0",
-    "chai": "^6.2.2",
     "typescript": "^6.0.3"
   }
 }

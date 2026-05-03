@@ -10,7 +10,7 @@
 - Before/after hooks: `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
 - `test()` is aliased as `suite()`, `describe()`, and `it()` for easy migration
 - When called inside a test body, top-level functions auto-delegate to the current tester
-- Compatible with `AssertionError`-based libraries like `node:assert` and `chai`
+- BYO assertion / mocking / property-based libs: `node:assert`, `chai`, `expect`, `node:test` mock, `sinon`, `fast-check`
 
 ## Quick start
 
@@ -473,19 +473,18 @@ Browser: `http://localhost:3000/?flags=FO`
 - tape-six-puppeteer (https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer.
 - tape-six-playwright (https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright.
 
-## 3rd-party assertion libraries
+## 3rd-party libraries (bring-your-own)
 
-`tape-six` supports `AssertionError`-based assertions. You can use `node:assert` or `chai` inside test functions:
+`tape-six` doesn't bundle assertion / mock / property-based libraries. It catches whatever the test throws — anything throwing a node-compatible `AssertionError` (with `name`, `operator`, `actual`, `expected`) is reported as a regular assertion; other errors are reported as `UNEXPECTED EXCEPTION` (test still fails).
 
-```js
-import test from 'tape-six';
-import {assert, expect} from 'chai';
+**Verified candidates** (full per-lib examples and browser importmap snippets in the wiki):
 
-test('with chai', t => {
-  expect(1).to.be.lessThan(2);
-  assert.deepEqual([1], [1]);
-});
-```
+- `node:assert` — built-in to Node/Bun/Deno, throws `AssertionError`. Cleanest path.
+- `chai` — `expect`/`should`/`assert` styles, throws `AssertionError`. Works in browsers via importmap entry.
+- `expect` (Jest's standalone) — throws plain `Error`, not `AssertionError`. Works but failures render as `UNEXPECTED EXCEPTION` with ANSI-colored messages. Wrap negative cases in `t.throws()`.
+- `node:test` mock — built-in spies/stubs/timers via `import {mock} from 'node:test'`. Doesn't throw; assert on `spy.mock.calls` with `t.*`.
+- `sinon` — same pattern as `node:test` mock. Assert on `spy.callCount` / `spy.firstCall.args`.
+- `fast-check` — property-based testing. Throws plain `Error` on counterexample (with seed + path for repro). Wrap negative cases in `t.throws()`.
 
 ```js
 import test from 'tape-six';
@@ -496,5 +495,19 @@ test('with node:assert', t => {
   assert.deepEqual({a: 1}, {a: 1});
 });
 ```
+
+```js
+import test from 'tape-six';
+import {mock} from 'node:test';
+
+test('with node:test mock', t => {
+  const spy = mock.fn();
+  spy(1, 2);
+  t.equal(spy.mock.calls.length, 1);
+  t.deepEqual(spy.mock.calls[0].arguments, [1, 2]);
+});
+```
+
+Wiki: [3rd-party assertion libraries](https://github.com/uhop/tape-six/wiki/3rd%E2%80%90party-assertion-libraries), [mock libraries](https://github.com/uhop/tape-six/wiki/3rd%E2%80%90party-mock-libraries), [property-based testing](https://github.com/uhop/tape-six/wiki/3rd%E2%80%90party-property-based-testing).
 
 Assertions that throw `AssertionError` are automatically caught and reported.
