@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "tape-six": ["."]
+      "tape-six": ["./"]
     }
   },
   "exclude": ["node_modules"]
