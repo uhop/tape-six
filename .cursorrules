@@ -76,6 +76,7 @@ tape-six/
 - `index.js` is the main entry point. It auto-detects the runtime (Node/Deno/Bun/browser), selects the appropriate reporter, and starts the test runner.
 - `test()` function registers test suites. It is also aliased as `suite()`, `describe()`, and `it()`.
 - The `Tester` object is passed to test functions and provides all assert methods.
+- `Tester` is extensible via `registerTesterMethod(name, fn)` (idempotent for same `fn`, throws on collision with a different `fn`). Plugins live in their own packages and are imported per test file. The built-in `t.OK()` evaluator (`src/OK.js`) is the in-tree worked example.
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
 - `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process.
 - Browser tests use `tape6-server` which serves files and a web UI. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright). For process-isolated test execution see [tape-six-proc](https://www.npmjs.com/package/tape-six-proc).

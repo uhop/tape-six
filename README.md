@@ -425,8 +425,9 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
-- 1.8.0 _New subpath modules `tape-six/server` (withServer/startServer/setupServer — ephemeral HTTP server harness with port-busy-rejects-not-hangs lifecycle, plus a hook helper for suite-shared servers) and `tape-six/response` (asText/asJson/asBytes/header/headers — reading helpers that work uniformly on W3C Response and Node http.IncomingMessage). Cross-runtime via `node:http` (Node, Bun, Deno). `bin/tape6-server.js` migrated to use `startServer` and `process.exitCode`. `node:` protocol prefix consistently applied to all Node built-in imports; added `types: ["node"]` to tsconfig._
-- 1.7.14 _Updated vendored `deep6` to 1.2.0: added `URL` support (unifier/walker/cloner + processors), named exports alongside default exports, fast path for naked objects, performance optimizations, improved TS typings, removed CommonJS build._
+- 1.9.0 _New features: `t.plan(n)` emits a TAP-comment diagnostic on mismatch, `registerTesterMethod(name, fn)` registers tester plugins idempotently. New wiki: 3rd-party library catalog and "Writing plugins" page. Removed `chai` from dev dependencies._
+- 1.8.0 _New subpath modules: `tape-six/server` (HTTP server harness) and `tape-six/response` (response reading helpers for `Response` and `IncomingMessage`)._
+- 1.7.14 _Updated vendored `deep6` to 1.2.0._
 - 1.7.13 _Replaced `process.exit()` / `Deno.exit()` with `process.exitCode` in test runners and `index.js` for graceful stdout flushing. Updated dependencies, GitHub Actions._
 - 1.7.12 _Added `--help`/`-h` and `--version`/`-v` options to all CLI utilities. Added flag documentation to help output._
 - 1.7.11 _Documentation consistency: added missing sequential test commands to AI docs, fixed test glob references._

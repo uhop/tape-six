@@ -110,6 +110,10 @@ The object passed to test functions. Provides assertions and test control.
 - `t.skipTest(msg)` — skip current test with a message.
 - `t.bailOut(msg)` — abort entire test suite.
 
+### Plugins
+
+- `registerTesterMethod(name, fn)` — install a method on `Tester.prototype` from a plugin module. Idempotent for same `fn`; throws on collision with a different `fn`. Plugin imports are per-file (workers / subprocesses / iframes don't share module graphs).
+
 ### Hooks
 
 Hooks can be registered as standalone functions or via test options or Tester methods.
