@@ -22,5 +22,6 @@ Update all AI-facing files after changes to the public API, CLI utilities, or pr
 7. Sync `.windsurfrules`, `.cursorrules`, `.clinerules` if `AGENTS.md` critical rules or code style changed:
    - These three files should be identical copies.
 8. Update `wiki/Home.md` if the overview needs to reflect new features.
-9. Review `prompts/doc.md` for any needed updates to documentation generation guidelines.
+9. If wiki conventions or project link styles have changed, update the
+   `document-wiki-page` skill so future doc generations stay aligned.
 10. Track progress with the todo list and provide a summary when done.

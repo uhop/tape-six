@@ -61,7 +61,6 @@ vendors/              # Git submodules
 └── deep6/            # deep6 source (copied to src/deep6/ at build time)
 scripts/              # Build helper scripts
 └── copyFolder.js     # Copies vendored deep6 into src/
-prompts/              # AI prompt templates for documentation generation
 skills/               # Agent Skills (agentskills.io) shipped to consumers via npm
 └── write-tests/      # Skill for writing tape-six tests
 ```

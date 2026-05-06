@@ -26,6 +26,6 @@ modules, or project structure.
    reference changed.
 9. If `AGENTS.md` changed, run `/sync-ai-rules` to propagate to
    `.windsurfrules` / `.cursorrules` / `.clinerules`.
-10. Review `prompts/doc.md` for any updates needed (tape-six-specific
-    wiki-page-generation prompt; mirror any new conventions).
+10. If wiki conventions or project link styles have changed, update the
+    `document-wiki-page` skill so future doc generations stay aligned.
 11. Provide a summary of what was updated.
