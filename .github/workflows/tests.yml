@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: [master]
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: Node.js ${{matrix.node-version}} on ${{matrix.os}}
@@ -17,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        node-version: [20, 22, 24, 25]
+        node-version: [22, 24, 26]
 
     steps:
       - uses: actions/checkout@v6
