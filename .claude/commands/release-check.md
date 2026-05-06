@@ -16,14 +16,16 @@ Run through this checklist before publishing a new version of tape-six.
    (run `/ai-docs-update` if not).
 5. Check that `TESTING.md` is up to date with the current API.
 6. Check that `index.js` and `index.d.ts` are in sync (all exports, all types).
-7. **Three-skill structure for `write-tests`** — tape-six ships three SKILL.md
-   files for different audiences (see `projects/tape-six/learnings.md` §
-   Three-skill structure in the vault):
-   - `skills/write-tests/SKILL.md` — npm consumers (imports `from 'tape-six'`).
-     Shipped via `package.json` `files` entry `skills`.
-   - `.claude/skills/write-tests/SKILL.md` and
-     `.windsurf/skills/write-tests/SKILL.md` — dev-internal pair, must be
-     byte-identical (imports `from '../index.js'`).
+7. **Three-skill structure** — each tape-six skill (`write-tests`, `run-tests`,
+   plus any future ones) ships three SKILL.md files for different audiences (see
+   `projects/tape-six/learnings.md` § Three-skill structure in the vault):
+   - `skills/<name>/SKILL.md` — npm consumers (write-tests imports `from
+     'tape-six'`; run-tests references the published binary names). Shipped
+     via `package.json` `files` entry `skills`.
+   - `.claude/skills/<name>/SKILL.md` and `.windsurf/skills/<name>/SKILL.md`
+     — dev-internal pair, must be byte-identical (write-tests imports
+     `from '../index.js'`; run-tests references the in-repo `./bin/` paths).
+   Verify the dev-internal pair with `md5sum` for each skill.
 8. Verify `package.json`:
    - `files` array includes all necessary entries (`index.*`, `bin`, `web-app`,
      `src`, `llms.txt`, `llms-full.txt`, `TESTING.md`, `skills`).
