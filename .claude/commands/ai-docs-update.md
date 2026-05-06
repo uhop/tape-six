@@ -1,25 +1,31 @@
 ---
-description: Update AI-facing documentation files after API or architecture changes
+description: Update AI-facing docs (llms.txt, llms-full.txt, ARCHITECTURE.md, AGENTS.md) after API or structural changes
 ---
 
 # AI Documentation Update
 
-Update all AI-facing files after changes to the public API, CLI utilities, or project structure.
+Refresh all AI-facing files after changes to the public API, CLI utilities,
+modules, or project structure.
 
 ## Steps
 
 1. Read `index.js` and `index.d.ts` to identify the current public API.
-2. Read `AGENTS.md` and `ARCHITECTURE.md` for current state.
-3. Update `llms.txt`:
+2. Read `AGENTS.md` and `ARCHITECTURE.md` (if present) for current state.
+3. Identify what changed (new modules, options, renamed exports, new
+   utilities, etc.).
+4. Update `llms.txt`:
    - Ensure the API section matches `index.d.ts`.
    - Update common patterns if new features were added.
-   - Keep it concise — for quick LLM consumption.
-4. Update `llms-full.txt`:
-   - Full API reference with all methods, options, and examples.
-   - Include any new CLI options, environment variables, or flags.
-5. Update `ARCHITECTURE.md` if project structure or module dependencies changed.
-6. Update `AGENTS.md` if critical rules, commands, or architecture quick reference changed.
-7. Sync `.windsurfrules`, `.cursorrules`, `.clinerules` if `AGENTS.md` critical rules or code style changed (these three should be identical copies).
-8. Update `wiki/Home.md` if the overview needs to reflect new features.
-9. Review `prompts/doc.md` for any needed updates.
-10. Track progress with the todo list and provide a summary when done.
+   - Keep it concise — this is for quick LLM consumption.
+5. Update `llms-full.txt`:
+   - Full API reference with all components, options, and examples.
+   - Include any new exports, CLI options, environment variables, or flags.
+6. Update `wiki/Home.md` if the overview or structure changed.
+7. Update `ARCHITECTURE.md` if project structure or module dependencies changed.
+8. Update `AGENTS.md` if critical rules, commands, or architecture quick
+   reference changed.
+9. If `AGENTS.md` changed, run `/sync-ai-rules` to propagate to
+   `.windsurfrules` / `.cursorrules` / `.clinerules`.
+10. Review `prompts/doc.md` for any updates needed (tape-six-specific
+    wiki-page-generation prompt; mirror any new conventions).
+11. Provide a summary of what was updated.
