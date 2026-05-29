@@ -8,15 +8,6 @@
   "types": "index.d.ts",
   "exports": {
     ".": "./index.js",
-    "./server": {
-      "types": "./src/server.d.ts",
-      "default": "./src/server.js"
-    },
-    "./response": {
-      "types": "./src/response.d.ts",
-      "default": "./src/response.js"
-    },
-    "./bin/*": "./bin/*",
     "./*": "./src/*"
   },
   "bin": {

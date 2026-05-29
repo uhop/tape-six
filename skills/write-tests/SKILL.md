@@ -65,23 +65,17 @@ Write or update tests using the tape-six testing library.
    - `t.skipTest(msg)` — skip the _current_ test from inside it.
    - `t.bailOut(msg)` — stop the entire run (catastrophic).
    - `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps top-level variables on failure. Useful for compact arithmetic/state checks: `eval(t.OK('a + b === 3'))`. Do not use in CSP-restricted contexts.
-10. **Testing HTTP code** — for tests that need an ephemeral HTTP server or want to read responses uniformly:
-    - **`tape-six/server`** (`withServer` / `startServer` / `setupServer`) — wraps the `node:http` lifecycle. `withServer(serverHandler, clientHandler, opts?)` is the per-test scoped resource: starts a server, runs the test body with the bound base URL, tears down in `finally`. `setupServer(serverHandler, opts?)` registers `beforeAll`/`afterAll` and returns a live-getter handle for suite-shared servers (don't destructure at module load — properties read live state). `startServer(server, opts?)` is the procedural primitive for multi-phase tests. Default host is `'127.0.0.1'`. Cross-runtime (Node, Bun, Deno).
-    - **`tape-six/response`** (`asText` / `asJson` / `asBytes` / `header` / `headers`) — reading helpers that work uniformly on both W3C `Response` (fetch results) and Node `http.IncomingMessage`.
-    - Per-test mock-server state reset (e.g., clearing a `recorded[]` array) stays user-side: compose your own `beforeEach`. `setupServer` owns the server lifecycle; you own state.
-    - **Placement:** these tests can't run in the browser worker — `node:http` doesn't exist there. Don't drop them into a folder matched by the universal `tape6.tests` glob; put them in a CLI-only path (e.g. `tests/cli/test-*.js`) and ensure the matching glob is in `tape6.cli` instead.
-    - See "Testing HTTP code" in `TESTING.md` for examples.
-11. **Browser-specific tests** — if the project uses browser testing with `tape6-server`. See "Browser testing" in `TESTING.md`.
+10. **Browser-specific tests** — if the project uses browser testing with `tape6-server`. See "Browser testing" in `TESTING.md`.
     - Browsers run `.js` and `.mjs` only — no TypeScript, no CommonJS.
     - Browsers can also run `.html` shim files (with inline importmap and `<script type="module">`).
     - Place browser-only files in `tests/browser/` and add patterns to `"browser"` in the `tape6` config.
     - Run: `npx tape6-server --trace`, then open `http://localhost:3000`. Use `?q=<glob>` to filter, `?flags=FO` and `?par=N` to control output and parallelism.
-12. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`). All are additive. See "Configuring test discovery" in `TESTING.md`.
-13. **Verify (CLI):** run the new test file directly: `node tests/test-<name>.js`
+11. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`). All are additive. See "Configuring test discovery" in `TESTING.md`.
+12. **Verify (CLI):** run the new test file directly: `node tests/test-<name>.js`
     - Run the full suite to check for regressions: `npm test`
     - For debugging, use `npm run test:seq` (sequential, in-process).
     - To see which files are being run, add `--flags fo` (overrides the default `--flags FO`).
     - To inspect the resolved config without running, use `npx tape6 --info`.
     - For tests with heavy `beforeAll` (Docker spawn, big fixture loads), bump the worker startup timer with `TAPE6_WORKER_START_TIMEOUT=60000`. The default is 5 s.
-14. **Verify (browser):** start `npx tape6-server --trace`, then open `http://localhost:3000/?q=/tests/test-<name>.js` to run a specific file. Use multiple `?q=` parameters to run several files. Open `http://localhost:3000/` to run all configured tests.
-15. Report results and any failures.
+13. **Verify (browser):** start `npx tape6-server --trace`, then open `http://localhost:3000/?q=/tests/test-<name>.js` to run a specific file. Use multiple `?q=` parameters to run several files. Open `http://localhost:3000/` to run all configured tests.
+14. Report results and any failures.

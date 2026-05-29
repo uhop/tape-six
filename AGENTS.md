@@ -46,8 +46,8 @@ tape-six/
 │   ├── Tester.js     # Tester class with all assert methods
 │   ├── OK.js         # Expression evaluator helper
 │   ├── State.js      # Reporter state management
-│   ├── server.js     # tape-six/server: withServer/startServer/setupServer (HTTP test fixtures)
-│   ├── response.js   # tape-six/response: asText/asJson/asBytes/header/headers (Response + IncomingMessage)
+│   ├── server.js     # HTTP server test fixtures: withServer/startServer/setupServer (internal; for tape-six-* siblings)
+│   ├── response.js   # HTTP response helpers: asText/asJson/asBytes/header/headers (internal)
 │   ├── reporters/    # TAP, TTY, JSONL, Proxy, DOM reporters
 │   ├── runners/      # Runtime-specific test runners
 │   ├── utils/        # Timers, console capture, defer, etc.
@@ -101,7 +101,7 @@ test('example', t => {
 
 - Do not add dependencies unless absolutely necessary — the library is intentionally minimal.
 - All public API is exported from `index.js` and typed in `index.d.ts`. Keep them in sync.
-- Subpath modules (`tape-six/server`, `tape-six/response`) are declared explicitly in `package.json#exports`. Each has its own `.d.ts` sidecar referenced via the `types` condition. New subpath modules should follow the same pattern.
+- `index.js` is the only public API surface. Beyond it, the `./*` wildcard in `package.json#exports` exposes the rest of `src/` (imported with an explicit `.js` extension, e.g. `tape-six/server.js`). That surface exists for the sibling `tape-six-*` packages — there are no external consumers by design. TypeScript resolves each `.d.ts` sidecar by adjacency plus the `// @ts-self-types` directive at the top of every source file, so no per-entry `exports` condition is needed; a new internal module needs only a `src/<name>.js` + `src/<name>.d.ts` pair.
 - All Node built-in imports use the `node:` protocol prefix (`node:http`, `node:fs`, `node:events`). Required for forward compatibility with Bun, Deno, and future runtimes.
 - Wiki documentation lives in the `wiki/` submodule. Use the `document-wiki-page` skill for documentation generation guidelines.
 - Environment variables use the `TAPE6_` prefix.

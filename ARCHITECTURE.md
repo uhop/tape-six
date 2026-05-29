@@ -21,10 +21,10 @@ src/                  # Source code
 ├── Tester.js         # Tester class: all assert methods, embedded tests, utilities
 ├── OK.js             # Expression evaluator helper for eval(t.OK(...))
 ├── State.js          # Reporter state management (counters, hooks, nesting)
-├── server.js         # tape-six/server: withServer/startServer/setupServer (HTTP test fixtures)
-├── server.d.ts       # Type declarations for tape-six/server
-├── response.js       # tape-six/response: asText/asJson/asBytes/header/headers (Response + IncomingMessage)
-├── response.d.ts     # Type declarations for tape-six/response
+├── server.js         # HTTP server test fixtures: withServer/startServer/setupServer (internal; for tape-six-* siblings)
+├── server.d.ts       # Type declarations for server.js
+├── response.js       # HTTP response helpers: asText/asJson/asBytes/header/headers (internal)
+├── response.d.ts     # Type declarations for response.js
 ├── reporters/        # Output format implementations
 │   ├── Reporter.js   # Base reporter class
 │   ├── TapReporter.js    # TAP protocol output (default fallback)
