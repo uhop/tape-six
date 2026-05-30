@@ -77,6 +77,7 @@ tape-six/
 - `Tester` is extensible via `registerTesterMethod(name, fn)` (idempotent for same `fn`, throws on collision with a different `fn`). Plugins live in their own packages and are imported per test file. The built-in `t.OK()` evaluator (`src/OK.js`) is the in-tree worked example.
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
 - `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process.
+- Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop in-flight workers (not just new scheduling), and an optional per-worker deadline (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and `dev-docs/worker-control-channel.md`.
 - Browser tests use `tape6-server` which serves files and a web UI. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright). For process-isolated test execution see [tape-six-proc](https://www.npmjs.com/package/tape-six-proc).
 - The `deep6` dependency is vendored via git submodule and copied into the source tree at build time.
 

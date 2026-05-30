@@ -241,6 +241,8 @@ npx tape6-server --trace   # start browser test server
 - `TAPE6_JSONL` — force JSONL reporter (any non-empty value).
 - `TAPE6_MIN` — force minimal reporter (any non-empty value).
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
+- `TAPE6_GRACE_TIMEOUT` — ms a worker gets to drain (run cleanup, flush) after the runner asks it to stop, before being force-killed (default: 5000).
+- `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker (default: 0, disabled). Complements the per-test `timeout` option: this one can stop a worker that ignores `t.signal`.
 
 ## Configuration (package.json)
 
