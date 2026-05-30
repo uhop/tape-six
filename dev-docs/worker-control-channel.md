@@ -1,9 +1,15 @@
 # Worker control channel — design note
 
-Status: **the tape-six hub portion is implemented** (2026-05-30); the
-`tape-six-*` provider portions (proc subprocess, puppeteer / playwright
-driver-backed browser) are still to do. Spans **tape-six** (the worker
-abstraction + child-side listener; the in-tree `par` worker-thread, `seq`
+Status: **the tape-six hub and all current worker providers are implemented**
+(2026-05-30) — `tape-six-proc` (subprocess) plus `tape-six-puppeteer` /
+`tape-six-playwright` (driver-backed browser). The driver-backed providers wire
+the Node-side force-kill backstop; their cooperative-drain half goes live
+end-to-end once they depend on the published hub release (tape-six is committed
+but not yet published). Still to come: a DOM-free Web-Worker browser worker for
+in-page force-kill on the standalone (driverless) browser run.
+
+The channel spans **tape-six** (the worker abstraction + child-side listener;
+the in-tree `par` worker-thread, `seq`
 in-process, and standalone-browser iframe transports) and **all `tape-six-*`
 worker providers** that supply a transport — `tape-six-proc` (subprocess),
 `tape-six-puppeteer` / `tape-six-playwright` (driver-backed browser), and any
@@ -11,7 +17,7 @@ future ones. Each provider implements the control channel for its own transport.
 
 ## Implementation status (tape-six hub)
 
-Done, verified on Node / Bun / Deno (`par` and `seq`):
+Done, verified on Node / Bun / Deno (`par`, `seq`, and `proc`):
 
 - `EventServer` (`src/utils/EventServer.js`) owns the contract:
   `destroyTask(id, reason)` with `reason` ∈ `done | failOnce | timeout`;
@@ -25,6 +31,14 @@ Done, verified on Node / Bun / Deno (`par` and `seq`):
   terminate also stops at its first assertion (closes the startup race). The
   per-runtime `worker.js` listeners and the seq / browser transports all route
   through it.
+- Proc child-side listener: `src/utils/control-channel.js`, opened by `index.js`
+  when a child is marked `TAPE6_CONTROL` (set by `tape-six-proc`). It reads the
+  line-delimited control channel off stdin (cross-runtime: `Readable.toWeb`
+  on Node, `Bun.stdin.stream()`, `Deno.stdin.readable`), routes `terminate`
+  through `Reporter.terminate()`, and the pending read keeps the child alive
+  after its top-level `end` so the parent drives exit (closing the Bun
+  stdout-flush race). Control-channel EOF soft-terminates; an unref'd watchdog
+  is the dead-parent backstop.
 - Config: `getGraceTimeout()` (env `TAPE6_GRACE_TIMEOUT`, default 5000) and
   `getWorkerTimeout()` (env `TAPE6_WORKER_TIMEOUT`, default 0 = disabled) in
   `src/utils/config.js`; injected into the worker via `getOptions()`.
@@ -183,7 +197,7 @@ worker:
 | --------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------ |
 | `par` (worker_threads)                                          | `postMessage` / in-process method | `worker.terminate()` ✓                                 |
 | `proc` (subprocess)                                             | stdin command / close stdin       | process kill, SIGTERM→SIGKILL ✓                        |
-| browser — iframe, driver-backed (puppeteer / playwright)        | `postMessage`                     | driver closes page / context from Node ✓ — _not wired_ |
+| browser — iframe, driver-backed (puppeteer / playwright)        | `postMessage`                     | driver closes page / context from Node ✓ — _wired 2026-05-30_ |
 | browser — iframe, standalone (`tape6-server` + a human browser) | `postMessage`                     | **✗ none** until a Web-Worker worker exists            |
 | browser — Web Worker (future)                                   | `postMessage`                     | `worker.terminate()` ✓ — **DOM-free tests only**       |
 
@@ -194,8 +208,9 @@ works) and remove the iframe from the DOM, but a hung, non-cooperative test
 keeps running until the page is torn down. **Where the browser is driven by
 puppeteer / playwright, though, there's a Node-side kill lever:** the driver can
 close the page / context / browser — a real force-kill, just one that lives in
-the driver, not in-page. So a driver-backed browser worker _can_ honor
-`graceTimeout` → kill (close the page); it's simply **not wired yet**. The case
+the driver, not in-page. So a driver-backed browser worker honors
+`graceTimeout` → kill (close the page), **wired in `tape-six-puppeteer` and
+`tape-six-playwright` (2026-05-30)**. The case
 with _no_ backstop is the **standalone** browser run (`tape6-server` + a human
 browser, no driver). The often-cited in-page fix is an **alternative browser
 worker built on a Web Worker** (terminable via `worker.terminate()`) — **but a
@@ -203,9 +218,10 @@ Web Worker has no DOM** (`document`, etc.), so it is _not_ a full browser
 environment: it can run only **DOM-free** tests. That makes it a _partial_
 backstop, not a drop-in for the iframe — a browser run would have to **route DOM
 tests to the page / iframe** (still best-effort on kill) and **DOM-free tests to
-a Web Worker** (terminable). Until a driver-kill or such a Web-Worker worker is
-wired, the iframe worker is best-effort on the kill backstop — documented, not
-hidden.
+a Web Worker** (terminable). The driver-kill backstop is now wired for the
+driver-backed run; for the **standalone** (driverless) run, until such a
+Web-Worker worker exists the iframe worker is best-effort on the kill backstop —
+documented, not hidden.
 
 **That routing needs a new test environment.** Today the environments are
 `tests`, `browser`, `node`, `bun`, `deno`, `cli`. A Web-Worker browser worker
@@ -238,8 +254,8 @@ each implements the control channel for its own transport.
   control EOF / `end` as completion instead of racing child exit; honor
   `graceTimeout` before `worker.kill()`.
 - **`tape-six-puppeteer` / `tape-six-playwright`:** driver-backed browser
-  workers — `postMessage` for drain; the Node-side driver can close the page /
-  context / browser as the force-kill backstop (not wired yet).
+  workers — `postMessage` for drain; the Node-side driver closes the page /
+  context / browser as the force-kill backstop (**wired 2026-05-30**).
 - **Every `tape-six-*` worker provider** implements the same `terminate`
   contract for its own transport; new providers inherit the requirement. A
   future Web-Worker-based browser worker (terminable via `worker.terminate()`)
