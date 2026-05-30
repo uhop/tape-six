@@ -173,15 +173,33 @@ export const getReporterFileName = type => {
 };
 
 export const DEFAULT_START_TIMEOUT = 5_000;
+export const DEFAULT_GRACE_TIMEOUT = 5_000;
 
-export const getTimeoutValue = () => {
-  if (runtime.name === 'browser') return DEFAULT_START_TIMEOUT;
-  const timeoutValue = runtime.getEnvVar('TAPE6_WORKER_START_TIMEOUT');
-  if (!timeoutValue) return DEFAULT_START_TIMEOUT;
-  let timeout = Number(timeoutValue);
-  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) timeout = DEFAULT_START_TIMEOUT;
+// Read a positive-millisecond env var, falling back to `fallback` when it is
+// unset, non-numeric, non-positive, or Infinity. Always returns `fallback` in
+// the browser, where these env vars don't exist.
+const readTimeoutEnv = (name, fallback) => {
+  if (runtime.name === 'browser') return fallback;
+  const value = runtime.getEnvVar(name);
+  if (!value) return fallback;
+  const timeout = Number(value);
+  if (isNaN(timeout) || timeout <= 0 || timeout === Infinity) return fallback;
   return timeout;
 };
+
+// Per-worker startup budget: how long a freshly spawned worker has to emit its
+// first event before it's declared dead on arrival.
+export const getTimeoutValue = () =>
+  readTimeoutEnv('TAPE6_WORKER_START_TIMEOUT', DEFAULT_START_TIMEOUT);
+
+// Grace period a worker gets to drain (run cleanup hooks, flush) after a
+// `terminate` is issued, before the parent force-kills it where the transport
+// allows. See dev-docs/worker-control-channel.md.
+export const getGraceTimeout = () => readTimeoutEnv('TAPE6_GRACE_TIMEOUT', DEFAULT_GRACE_TIMEOUT);
+
+// Optional wall-clock budget per worker/file (Layer 2 termination). 0 disables
+// it — the default — so a worker deadline fires only when explicitly set.
+export const getWorkerTimeout = () => readTimeoutEnv('TAPE6_WORKER_TIMEOUT', 0);
 
 // parsing options
 
@@ -311,6 +329,11 @@ export const getOptions = extraOptions => {
     }
   }
   options.parallel = parallel;
+
+  // Control-channel budgets ride along in the options bag handed to the
+  // TestWorker (EventServer). Children ignore them; only the parent acts.
+  options.flags.graceTimeout = getGraceTimeout();
+  options.flags.workerTimeout = getWorkerTimeout();
 
   return options;
 };

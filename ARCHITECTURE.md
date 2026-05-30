@@ -126,6 +126,19 @@ Each runtime-specific runner:
 
 `tape6-server` serves files for browser-based testing and provides a web UI.
 
+### Worker control channel
+
+`EventServer` is the base of every runner's `TestWorker`. Beyond the data plane
+(worker → reporter events) it owns a one-command control plane (runner → worker
+`terminate`), exposed as `destroyTask(id, reason)` where `reason` is `done`
+(the task finished), `failOnce` (a worker hit failOnce / bail — stop the rest),
+or `timeout` (the optional per-worker deadline, env `TAPE6_WORKER_TIMEOUT`, ran
+out). The worker drains cooperatively — `Reporter.terminate()` arms `stopTest`
+and fires the abort signal so the running test unwinds and its cleanup hooks run
+— and is force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms.
+Each `tape-six-*` provider implements the same contract for its own transport.
+See `dev-docs/worker-control-channel.md`.
+
 ### Deep equality
 
 The `deep6` library (vendored via git submodule) provides:

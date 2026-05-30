@@ -36,13 +36,26 @@ const reportToParent = fileName => {
   };
 };
 
+let currentReporter = null,
+  pendingTerminate = false;
+
 parentPort.on('message', async msg => {
+  // Control plane: drain on `terminate`. The reporter arms stopTest + fires the
+  // abort signal so a running test unwinds (cleanup runs); a terminate that
+  // lands before the reporter exists is remembered and applied at startup.
+  if (msg?.type === 'terminate') {
+    pendingTerminate = true;
+    currentReporter?.terminate();
+    return;
+  }
   try {
     const [{setReporter}, {ProxyReporter}] = await Promise.all([
       import(new URL('test.js', msg.srcName)),
       import(new URL('./reporters/ProxyReporter.js', msg.srcName))
     ]);
-    setReporter(new ProxyReporter({...msg.options, reportTo: reportToParent(msg.fileName)}));
+    currentReporter = new ProxyReporter({...msg.options, reportTo: reportToParent(msg.fileName)});
+    setReporter(currentReporter);
+    if (pendingTerminate) currentReporter.terminate();
     await import(msg.testName);
   } catch (error) {
     parentPort.postMessage({type: 'test', test: 0});

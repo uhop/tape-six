@@ -7,6 +7,7 @@ export default class TestWorker extends EventServer {
 
     this.importmap = options?.importmap;
     this.counter = 0;
+    this.graceTimers = {};
 
     window.__tape6_reporter = (id, event) => {
       this.report(id, event);
@@ -83,8 +84,33 @@ export default class TestWorker extends EventServer {
     }
     return id;
   }
-  destroyTask(id) {
+  destroyTask(id, reason = 'done') {
+    if (reason === 'done') {
+      this.#removeIframe(id);
+      return;
+    }
+    // Cooperative drain only — in-page JS can't force-kill a hung iframe script.
+    // postMessage `terminate` so a cooperative test unwinds and runs its cleanup
+    // hooks; if it doesn't exit within graceTimeout, remove the iframe as a
+    // best-effort backstop. A driver-backed run (puppeteer / playwright) can do
+    // a real kill from Node — not wired here. See dev-docs/worker-control-channel.md.
+    if (this.graceTimers[id]) return;
     const iframe = document.getElementById('test-iframe-' + id);
-    iframe && iframe.parentElement.removeChild(iframe);
+    if (!iframe) return;
+    try {
+      iframe.contentWindow?.postMessage({type: 'tape6-terminate', reason}, '*');
+    } catch (e) {
+      void e;
+    }
+    this.graceTimers[id] = setTimeout(() => this.#removeIframe(id), this.graceTimeout);
+  }
+  #removeIframe(id) {
+    const grace = this.graceTimers[id];
+    if (grace) {
+      clearTimeout(grace);
+      delete this.graceTimers[id];
+    }
+    const iframe = document.getElementById('test-iframe-' + id);
+    iframe && iframe.parentElement && iframe.parentElement.removeChild(iframe);
   }
 }

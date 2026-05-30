@@ -13,6 +13,7 @@ export default class TestWorker extends EventServer {
     super(reporter, numberOfTasks, options);
     this.counter = 0;
     this.idToWorker = {};
+    this.graceTimers = {};
   }
   makeTask(fileName) {
     const testName = new URL(fileName, baseName),
@@ -71,7 +72,32 @@ export default class TestWorker extends EventServer {
     });
     return id;
   }
-  destroyTask(id) {
+  destroyTask(id, reason = 'done') {
+    const worker = this.idToWorker[id];
+    if (!worker) return;
+    if (reason === 'done') {
+      // The test already finished; worker_threads have no flush race, so just
+      // tear the worker down.
+      this.#kill(id);
+      return;
+    }
+    // Cooperative drain (abort): ask the child to fire its abort signal and run
+    // cleanup hooks, then force-kill as a backstop after graceTimeout in case
+    // the test ignores the signal and never settles.
+    if (this.graceTimers[id]) return; // already draining
+    try {
+      worker.postMessage({type: 'terminate', reason});
+    } catch (e) {
+      void e;
+    }
+    this.graceTimers[id] = setTimeout(() => this.#kill(id), this.graceTimeout);
+  }
+  #kill(id) {
+    const grace = this.graceTimers[id];
+    if (grace) {
+      clearTimeout(grace);
+      delete this.graceTimers[id];
+    }
     const worker = this.idToWorker[id];
     if (worker) {
       worker.terminate();
