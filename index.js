@@ -172,6 +172,23 @@ const init = async () => {
     });
   }
 
+  if (isCli) {
+    // Control plane (proc transport): a child spawned by tape-six-proc is
+    // marked with TAPE6_CONTROL. Open the stdin control channel so the parent
+    // can drain / terminate it, and so it stays alive after `end` until told to
+    // exit — see dev-docs/worker-control-channel.md.
+    const controlled =
+      (isDeno && Deno.env.get('TAPE6_CONTROL')) ||
+      (isBun && Bun.env.TAPE6_CONTROL) ||
+      (isNode && process.env.TAPE6_CONTROL);
+    if (controlled) {
+      const {listenControlChannel} = await import(
+        new URL('./src/utils/control-channel.js', import.meta.url)
+      );
+      listenControlChannel(getReporter);
+    }
+  }
+
   return {options, isBrowser, isBun, isDeno, isNode, isCli};
 };
 
