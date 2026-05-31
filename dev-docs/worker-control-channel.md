@@ -193,13 +193,13 @@ test, the other guarantees the worker dies.
 `terminate` delivery (the drain request) and the force-kill backstop differ per
 worker:
 
-| worker                                                          | drain delivery                    | force-kill after `graceTimeout`                        |
-| --------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------ |
-| `par` (worker_threads)                                          | `postMessage` / in-process method | `worker.terminate()` ✓                                 |
-| `proc` (subprocess)                                             | stdin command / close stdin       | process kill, SIGTERM→SIGKILL ✓                        |
+| worker                                                          | drain delivery                    | force-kill after `graceTimeout`                               |
+| --------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------- |
+| `par` (worker_threads)                                          | `postMessage` / in-process method | `worker.terminate()` ✓                                        |
+| `proc` (subprocess)                                             | stdin command / close stdin       | process kill, SIGTERM→SIGKILL ✓                               |
 | browser — iframe, driver-backed (puppeteer / playwright)        | `postMessage`                     | driver closes page / context from Node ✓ — _wired 2026-05-30_ |
-| browser — iframe, standalone (`tape6-server` + a human browser) | `postMessage`                     | **✗ none** until a Web-Worker worker exists            |
-| browser — Web Worker (future)                                   | `postMessage`                     | `worker.terminate()` ✓ — **DOM-free tests only**       |
+| browser — iframe, standalone (`tape6-server` + a human browser) | `postMessage`                     | **✗ none** until a Web-Worker worker exists                   |
+| browser — Web Worker (future)                                   | `postMessage`                     | `worker.terminate()` ✓ — **DOM-free tests only**              |
 
 **Browser: in-page JS can't force-kill an iframe — but the driver can.** A
 script already running in an `iframe`'s realm cannot be force-stopped by other

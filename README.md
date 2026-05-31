@@ -122,6 +122,8 @@ See how it can be used in [tests/](https://github.com/uhop/tape-six/tree/master/
 
 For AI assistants: see [llms.txt](https://github.com/uhop/tape-six/blob/master/llms.txt) and [llms-full.txt](https://github.com/uhop/tape-six/blob/master/llms-full.txt) for LLM-optimized documentation.
 
+When you use `tape-six` as a dependency, point your AI coding agent at the guides shipped inside `node_modules/tape-six/`: [`TESTING.md`](https://github.com/uhop/tape-six/blob/master/TESTING.md) and the `skills/` directory (`write-tests`, `run-tests`). They are written so an agent can write and run `tape-six` tests correctly without fetching anything.
+
 The whole API is based on two objects: `test` and `Tester`.
 
 ### `test`
@@ -425,7 +427,8 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
-- 1.9.0 _New features: `t.plan(n)` emits a TAP-comment diagnostic on mismatch, `registerTesterMethod(name, fn)` registers tester plugins idempotently. New wiki: 3rd-party library catalog and "Writing plugins" page. Removed `chai` from dev dependencies._
+- 1.10.0 _Worker control channel stops in-flight workers, draining cleanup before a force-kill._
+- 1.9.0 _New features: `t.plan(n)` emits a TAP-comment diagnostic on mismatch, `registerTesterMethod(name, fn)` registers tester plugins idempotently._
 - 1.8.0 _New subpath modules: `tape-six/server` (HTTP server harness) and `tape-six/response` (response reading helpers for `Response` and `IncomingMessage`)._
 - 1.7.14 _Updated vendored `deep6` to 1.2.0._
 - 1.7.13 _Replaced `process.exit()` / `Deno.exit()` with `process.exitCode` in test runners and `index.js` for graceful stdout flushing. Updated dependencies, GitHub Actions._
