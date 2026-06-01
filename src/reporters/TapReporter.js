@@ -41,7 +41,7 @@ export class TapReporter extends Reporter {
   } = {}) {
     super({failOnce});
     this.console = originalConsole || console;
-    this.write = write || (hasColors ? this.logger : this.console.log.bind(this.console));
+    this.write = write || (hasColors ? this.logger : (...args) => this.writeOut(...args));
     this.renumberAsserts = renumberAsserts;
     this.useJson = useJson;
     this.assertCounter = 0;

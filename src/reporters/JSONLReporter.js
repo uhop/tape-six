@@ -38,7 +38,7 @@ export class JSONLReporter extends Reporter {
         break;
     }
     const jsonEvent = JSON.stringify(event);
-    this.console.log(this.prefix ? this.prefix + jsonEvent : jsonEvent);
+    this.writeOut(this.prefix ? this.prefix + jsonEvent : jsonEvent);
     this.state?.postprocess(event, suppressStopTest);
   }
 }

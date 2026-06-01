@@ -9,7 +9,7 @@ export class MinReporter extends Reporter {
     event = this.state?.preprocess(event) || event;
     const handler = Reporter.EVENT_MAP[event.type];
     typeof handler == 'string' && this[handler]?.(event);
-    this.console.log(
+    this.writeOut(
       'Test:',
       event.test,
       'Type:',

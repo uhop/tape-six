@@ -1,6 +1,11 @@
 import State from '../State.js';
 import {getTimer} from '../utils/timer.js';
 
+// Bun's native console.log to a subprocess-piped stdout drops data / stalls under
+// load (a Bun bug — see vault note tape-six-proc-bun-summary-suppressed). On Bun the
+// reporters write via process.stdout.write instead; Node/Deno keep console.log.
+const isBun = typeof Bun == 'object' && !!Bun?.version;
+
 export class Reporter {
   constructor({failOnce = false, timer} = {}) {
     this.failOnce = failOnce;
@@ -8,6 +13,17 @@ export class Reporter {
     this.depth = 0;
     this.timer = timer || getTimer();
     this.terminating = false;
+  }
+
+  // Emit one record to stdout, mirroring console.log's arguments. On Bun,
+  // console.log to a subprocess-piped stdout is lossy / stalls under load, so route
+  // through process.stdout.write there; Node/Deno keep the proven console.log path.
+  writeOut(...args) {
+    if (isBun) {
+      process.stdout.write(args.map(a => (typeof a == 'string' ? a : String(a))).join(' ') + '\n');
+    } else {
+      (this.console || console).log(...args);
+    }
   }
 
   get signal() {
