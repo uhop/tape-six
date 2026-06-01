@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.10.1 _A workaround for a Bun's bug with streams._
 - 1.10.0 _Worker control channel stops in-flight workers, draining cleanup before a force-kill._
 - 1.9.0 _New features: `t.plan(n)` emits a TAP-comment diagnostic on mismatch, `registerTesterMethod(name, fn)` registers tester plugins idempotently._
 - 1.8.0 _New subpath modules: `tape-six/server` (HTTP server harness) and `tape-six/response` (response reading helpers for `Response` and `IncomingMessage`)._
