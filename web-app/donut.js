@@ -3,20 +3,6 @@ const TWO_PI = 2 * Math.PI;
 const tmpl = (template, dict) => template.replace(/\$\{([^\}]*)\}/g, (_, name) => dict[name]);
 
 export const makeSegment = (args, options) => {
-  // args is {startAngle, angle, index, className}
-  // optional index points to a data point
-  // optional className is a CSS class
-  // default startAngle=0 (in radians)
-  // default angle=2*PI (in radians)
-
-  // options is {center, innerRadius, radius, gap, precision, document}
-  // default center is {x=0, y=0}
-  // default innerRadius=0
-  // default radius=100
-  // default gap=0 (gap between segments in pixels)
-  // default precision=6 (digits after decimal point)
-  // default document is document
-
   const node = (options.document || document).createElementNS('http://www.w3.org/2000/svg', 'path'),
     center = options.center || {x: 0, y: 0},
     innerRadius = Math.max(options.innerRadius || 0, 0),
@@ -40,14 +26,11 @@ export const makeSegment = (args, options) => {
 
   if (angle >= TWO_PI) {
     data.tr = (2 * radius).toFixed(precision);
-    // generate a circle
     if (innerRadius <= 0) {
-      // a circle
       path = tmpl('M${cx} ${cy}m -${r} 0a${r} ${r} 0 1 0 ${tr} 0a${r} ${r} 0 1 0 -${tr} 0z', data);
     } else {
       data.r0 = innerRadius.toFixed(precision);
       data.tr0 = (2 * innerRadius).toFixed(precision);
-      // a donut
       path = tmpl(
         'M${cx} ${cy}m -${r} 0a${r} ${r} 0 1 0 ${tr} 0a${r} ${r} 0 1 0 -${tr} 0zM${cx} ${cy}m -${r0} 0a${r0} ${r0} 0 1 1 ${tr0} 0a${r0} ${r0} 0 1 1 -${tr0} 0z',
         data
@@ -66,7 +49,6 @@ export const makeSegment = (args, options) => {
     data.x2 = (radius * Math.cos(finish) + cx).toFixed(precision);
     data.y2 = (radius * Math.sin(finish) + cy).toFixed(precision);
     if (innerRadius <= 0) {
-      // a pie slice
       path = tmpl('M${cx} ${cy}L${x1} ${y1}A${r} ${r} 0 ${lg} 1 ${x2} ${y2}L${cx} ${cy}z', data);
     } else {
       start = startAngle + innerGapAngle;
@@ -79,7 +61,6 @@ export const makeSegment = (args, options) => {
       data.y3 = (innerRadius * Math.sin(finish) + cy).toFixed(precision);
       data.x4 = (innerRadius * Math.cos(start) + cx).toFixed(precision);
       data.y4 = (innerRadius * Math.sin(start) + cy).toFixed(precision);
-      // a segment
       path = tmpl(
         'M${x1} ${y1}A${r} ${r} 0 ${lg} 1 ${x2} ${y2}L${x3} ${y3}A${r0} ${r0} 0 ${lg} 0 ${x4} ${y4}L${x1} ${y1}z',
         data
@@ -97,24 +78,6 @@ export const makeSegment = (args, options) => {
 };
 
 export const processPieRun = (data, options) => {
-  // data is [datum, datum...]
-  // datum is {value, className, skip, hide}
-  // value is a positive number
-  // className is an optional CSS class name
-  // skip is a flag (default: false) to skip this segment completely
-  // hide is a flag (default: false) to suppress rendering
-
-  // options is {center, innerRadius, radius, startAngle, minSizeInPx, skipIfLessInPx, emptyClass, precision}
-  // default center is {x=0, y=0}
-  // default innerRadius=0
-  // default radius=100
-  // default startAngle=0 (in radians)
-  // default gap=0 (gap between segments in pixels)
-  // default precision=6 (digits after decimal point)
-  // minSizeInPx is to make non-empty segments at least this big (default: 0).
-  // skipIfLessInPx is a threshold (default: 0), when to skip too small segments.
-  // emptyClass is a CSS class name for an empty run
-
   const radius = Math.max(options.radius || 100, options.innerRadius || 0, 0),
     gap = Math.max(options.gap || 0, 0),
     minSizeInPx = Math.max(options.minSizeInPx || 0, 0),
@@ -128,7 +91,6 @@ export const processPieRun = (data, options) => {
       document: options.document
     };
 
-  // sanitize data
   data.forEach((datum, index) => {
     if (!datum.skip && (isNaN(datum.value) || datum.value === null || datum.value <= 0)) {
       datum.skip = true;
@@ -140,7 +102,6 @@ export const processPieRun = (data, options) => {
 
   let node;
   if (total <= 0) {
-    // empty run
     node = makeSegment(
       {
         index: -1, // to denote that it is not an actionable node
@@ -168,7 +129,6 @@ export const processPieRun = (data, options) => {
     return [node];
   }
 
-  // find too small segments
   const sizes = data.map(datum => {
     let angle = 0;
     if (!datum.skip) {
@@ -179,7 +139,6 @@ export const processPieRun = (data, options) => {
 
   let minAngle, newTotal, changeRatio;
   if (minSizeInPx > 0) {
-    // adjust angles
     minAngle = (minSizeInPx + gap) / radius;
     sizes.forEach((size, index) => {
       const datum = data[index];
@@ -200,7 +159,6 @@ export const processPieRun = (data, options) => {
       }
     });
   } else if (skipIfLessInPx > 0) {
-    // suppress angles
     minAngle = skipIfLessInPx / radius;
     sizes.forEach((size, index) => {
       const datum = data[index];
@@ -217,7 +175,6 @@ export const processPieRun = (data, options) => {
     });
   }
 
-  // generate shape objects
   const shapes = [];
   let startAngle = options.startAngle || 0;
   data.forEach((datum, index) => {

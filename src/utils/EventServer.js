@@ -29,7 +29,6 @@ export default class EventServer {
     this.retained = {};
     this.readyQueue = [];
 
-    // control plane bookkeeping
     this.liveTasks = new Set();
     this.deadlineTimers = {};
     this.stopRequested = false;
@@ -76,7 +75,6 @@ export default class EventServer {
       }
     }
     if (this.passThroughId === id) {
-      // dump ready events
       for (const events of this.readyQueue) {
         for (const event of events) {
           this.reporter.report(event, true);
@@ -88,12 +86,10 @@ export default class EventServer {
       const events = this.retained[id];
       if (events) {
         if (this.passThroughId === null) {
-          // dump events
           for (const event of events) {
             this.reporter.report(event, true);
           }
         } else {
-          // add to the ready queue
           this.readyQueue.push(events);
         }
         delete this.retained[id];
@@ -149,7 +145,6 @@ export default class EventServer {
     }
   }
   makeTask(fileName) {
-    // TBD in children
     // should return a task id as a string
   }
   destroyTask(id, reason) {

@@ -22,8 +22,6 @@ const toPosix = files =>
     ? files.map(f => f.replaceAll(path.win32.sep, path.posix.sep))
     : files;
 
-// simple static server with no dependencies
-
 const showSelf = () => {
   const self = new URL(import.meta.url);
   if (self.protocol === 'file:') {
@@ -53,7 +51,6 @@ if (process.argv.includes('--version') || process.argv.includes('-v')) {
 }
 if (process.argv.includes('--self')) showSelf();
 
-// MIME source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 const mimeTable = {
     css: 'text/css',
     csv: 'text/csv',
@@ -94,11 +91,9 @@ if (!webAppPath) {
     webAppPath = webAppPath.replaceAll(path.win32.sep, path.posix.sep);
 }
 
-// common aliases
 const mimeAliases = {mjs: 'js', cjs: 'js', htm: 'html', jpeg: 'jpg'};
 Object.keys(mimeAliases).forEach(name => (mimeTable[name] = mimeTable[mimeAliases[name]]));
 
-// escape codes to use
 const join = (...args) => args.map(value => value || '').join(''),
   paint = hasColors
     ? (prefix, suffix = '\x1B[39m') =>
@@ -112,8 +107,6 @@ const join = (...args) => args.map(value => value || '').join(''),
   blue = paint('\x1B[44;97m', '\x1B[49;39m');
 
 const link = (url, text = url) => paint('\x1B]8;;' + url + '\x1B\\', '\x1B]8;;\x1B\\')(text);
-
-// sending helpers
 
 const sendFile = (req, res, fileName, ext, justHeaders) => {
   if (!ext) {
@@ -153,15 +146,12 @@ const bailOut = (req, res, code = 404) => {
   traceCalls && console.log(red(code) + ' ' + grey(req.method) + ' ' + grey(req.url));
 };
 
-// server
-
 const server = http.createServer(async (req, res) => {
   const method = req.method.toUpperCase();
   if (method !== 'GET' && method !== 'HEAD') return bailOut(req, res, 405);
 
   const url = new URL(req.url, 'http://' + req.headers.host);
   if (url.pathname === '/--tests') {
-    // get tests
     return sendJson(
       req,
       res,
@@ -170,7 +160,6 @@ const server = http.createServer(async (req, res) => {
     );
   }
   if (url.pathname === '/--patterns') {
-    // resolve patterns
     return sendJson(
       req,
       res,
@@ -179,7 +168,6 @@ const server = http.createServer(async (req, res) => {
     );
   }
   if (url.pathname === '/--importmap') {
-    // get import map contents
     const cfg = await getConfig(rootFolder);
     return sendJson(req, res, cfg.importmap || {imports: {}}, method === 'HEAD');
   }
@@ -190,7 +178,6 @@ const server = http.createServer(async (req, res) => {
     return bailOut(req, res);
   }
   if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
-    // redirect to the web app
     url.pathname = webAppPath;
     return sendRedirect(req, res, url.href);
   }
@@ -227,8 +214,6 @@ server.on('clientError', (error, socket) => {
   if (error.code === 'ECONNRESET' || !socket.writable) return;
   socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 });
-
-// general setup
 
 const normalizePort = val => {
   const port = parseInt(val);

@@ -282,13 +282,10 @@ const testRunner = async () => {
   if (isBrowser && typeof __tape6_reportResults == 'function') {
     __tape6_reportResults(runHasFailed ? 'failure' : 'success');
   }
-
-  // registerNotifyCallback(testRunner); // register self again
 };
 
 setTestRunner(testRunner);
 if (!getConfiguredFlag()) {
-  // if nobody is running the show
   registerNotifyCallback(testRunner);
 }
 

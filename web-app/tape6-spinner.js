@@ -3,7 +3,6 @@ class Tape6Spinner extends HTMLElement {
     super();
     this.nextState = '';
     this.inTransition = false;
-    // create squares
     let child = null;
     for (let depth = this.getAttribute('depth') || 3; depth > 0; --depth) {
       const node1 = document.createElement('div');
@@ -18,7 +17,6 @@ class Tape6Spinner extends HTMLElement {
     node.className = 'square black';
     child && node.appendChild(child);
     this.appendChild(node);
-    // watch for transitions
     this.addEventListener('transitionend', this);
   }
   handleEvent(event) {

@@ -83,14 +83,12 @@ export const resolvePatterns = async (rootFolder, patterns) => {
 export const getConfig = async (rootFolder, traceFn) => {
   let cfg = null;
 
-  // check tape6.json
   try {
     cfg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'tape6.json')));
   } catch (error) {
     traceFn && traceFn('Cannot read tape6.json');
   }
 
-  // check package.json, "tape6" section
   if (!cfg) {
     try {
       const pkg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'package.json')));
@@ -100,7 +98,6 @@ export const getConfig = async (rootFolder, traceFn) => {
     }
   }
 
-  // check well-known files
   if (!cfg) cfg = {tests: ['/tests/test-*.js', '/tests/test-*.mjs'], cli: ['/tests/test-*.cjs']};
 
   return cfg;
@@ -109,7 +106,6 @@ export const getConfig = async (rootFolder, traceFn) => {
 export const resolveTests = async (rootFolder, type, traceFn) => {
   const cfg = await getConfig(rootFolder, traceFn);
 
-  // determine test patterns
   let patterns = [];
   if (cfg[type]) {
     if (Array.isArray(cfg[type])) {
@@ -133,7 +129,6 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
     patterns.push(cfg.tests);
   }
 
-  // resolve patterns
   return resolvePatterns(rootFolder, patterns);
 };
 
@@ -200,8 +195,6 @@ export const getGraceTimeout = () => readTimeoutEnv('TAPE6_GRACE_TIMEOUT', DEFAU
 // Optional wall-clock budget per worker/file (Layer 2 termination). 0 disables
 // it — the default — so a worker deadline fires only when explicitly set.
 export const getWorkerTimeout = () => readTimeoutEnv('TAPE6_WORKER_TIMEOUT', 0);
-
-// parsing options
 
 export const flagNames = Object.fromEntries(
   Object.entries(flagDefs).map(([k, {name}]) => [k, name])
@@ -292,7 +285,6 @@ export const getOptions = extraOptions => {
   const flags = args.flags['--flags'],
     options = {flags: {flags}, parallel: 1, files: args.files, optionFlags: args.flags};
 
-  // set back flags
   if (runtime.name === 'deno') {
     Deno.env.set('TAPE6_FLAGS', flags);
   } else if (runtime.name === 'bun') {

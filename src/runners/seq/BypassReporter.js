@@ -1,4 +1,3 @@
-// Faking Reporter
 export class BypassReporter {
   constructor(reporter, reportTo) {
     this.reporter = reporter;

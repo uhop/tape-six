@@ -93,8 +93,6 @@ export class Tester {
     });
   }
 
-  // asserts
-
   pass(msg) {
     this.reporter.report({
       name: msg || 'pass',
@@ -459,8 +457,6 @@ export class Tester {
         });
       });
   }
-
-  // missing: T (eval)
 }
 Tester.prototype.any = Tester.prototype._ = any;
 

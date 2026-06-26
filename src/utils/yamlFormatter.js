@@ -71,7 +71,6 @@ const format = (value, options, level, offset, lines) => {
     return;
   }
 
-  // array
   if (Array.isArray(value)) {
     if (level + 1 > options.maxDepth) {
       lines.push(offset + '[]');
@@ -96,7 +95,6 @@ const format = (value, options, level, offset, lines) => {
     return;
   }
 
-  // regular object
   if (level + 1 > options.maxDepth) {
     lines.push(offset + '{}');
     return;

@@ -38,9 +38,7 @@ export const getTesters = () => testers;
 export const getTester = () => (testers.length ? testers[testers.length - 1] : null);
 
 const processArgs = (name, options, testFn) => {
-  // normalize arguments
   if (typeof name == 'string') {
-    // nothing
   } else if (typeof options == 'string') {
     [name, options] = [options, name];
   } else if (typeof testFn == 'string') {
@@ -49,12 +47,10 @@ const processArgs = (name, options, testFn) => {
     [name, options, testFn] = [null, name, options];
   }
   if (typeof options == 'object') {
-    // nothing
   } else {
     [options, testFn] = [testFn, options];
   }
 
-  // normalize options
   options = {...options};
   if (name && typeof name == 'string') {
     options.name = name;
@@ -329,8 +325,6 @@ Tester.prototype.asPromise = async function asPromise(name, options, testFn) {
   if (!this.state?.skip) return queueEmbedded(this, wrapAsPromiseFn(options));
   this.comment('SKIP test: ' + options.name);
 };
-
-// before/after hooks
 
 const addToHook = name => fn => {
   if (testers.length) {

@@ -18,7 +18,6 @@ export default class TestWorker extends EventServer {
       id = String(++this.counter),
       worker = new Worker(new URL('./worker.js', import.meta.url), {
         type: 'module'
-        // deno: {permissions: 'inherit'}
       });
     this.idToWorker[id] = worker;
     worker.addEventListener('message', event => {

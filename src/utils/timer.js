@@ -4,21 +4,16 @@ export const getTimer = () => timer;
 export const setTimer = newTimer => (timer = newTimer);
 
 export const selectTimer = async () => {
-  // set HR timer
   if (typeof performance == 'object' && performance && typeof performance.now == 'function') {
-    // browser or Deno
     setTimer({now: () => performance.now() + performance.timeOrigin});
     return;
   }
   if (typeof process == 'object' && typeof process.exit == 'function') {
-    // Node
     try {
       const {performance} = await import('node:perf_hooks');
       setTimer({now: () => performance.now() + performance.timeOrigin});
       return;
-    } catch (error) {
-      // squelch
-    }
+    } catch (error) {}
   }
   setTimer(Date);
 };

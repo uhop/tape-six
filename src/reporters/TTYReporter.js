@@ -5,8 +5,6 @@ import {signature} from '../State.js';
 import {normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from '../utils/box.js';
 import {formatNumber, formatTime} from '../utils/formatters.js';
 
-// colors
-
 const join = (...args) => args.filter(value => value).join('');
 const to6 = x => Math.min(5, Math.round((Math.max(0, Math.min(255, x)) / 255) * 6));
 const buildColor = (r, g, b) => 16 + 36 * to6(r) + 6 * to6(g) + to6(b);
@@ -15,8 +13,6 @@ const successStyle = `\x1B[48;5;${buildColor(0, 32, 0)};1;97m`,
   failureStyle = `\x1B[48;5;${buildColor(64, 0, 0)};1;97m`,
   skippedStyle = `\x1B[48;5;${buildColor(0, 0, 64)};1;97m`,
   reset = '\x1B[0m';
-
-// misc
 
 const consoleDict = {
   log: 'log',
@@ -34,8 +30,6 @@ const getType = value => {
   }
   return className ? type + '/' + className : type;
 };
-
-// main
 
 export class TTYReporter extends Reporter {
   constructor({
@@ -80,7 +74,6 @@ export class TTYReporter extends Reporter {
     this.lines = 0;
     this.testStack = [];
 
-    // colors
     this.red = this.paint('\x1B[31m');
     this.green = this.paint('\x1B[92m');
     this.blue = this.paint('\x1B[94m');
@@ -97,8 +90,6 @@ export class TTYReporter extends Reporter {
     this.skipped = this.paint(skippedStyle, reset);
     this.stdoutPaint = this.paint('\x1B[90m');
     this.stderrPaint = this.paint('\x1B[31m');
-
-    // watching for console output
 
     this.consoleWasUsed = false;
     this.consoleSkipChecks = false;
@@ -416,7 +407,6 @@ export class TTYReporter extends Reporter {
     );
 
     box2[0] = this.brightWhite(box2[0]);
-    // box2[1] = this.brightYellow(box2[1]);
     box2[2] = this.green(box2[2]);
     box2[3] = this.red(box2[3]);
     box2[4] = this.blue(box2[4]);

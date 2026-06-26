@@ -63,7 +63,6 @@ const replacer =
       if (value instanceof Map)
         return {type: 'Map', value: Object.fromEntries(value), [signature]: signature};
 
-      // break circular references
       if (seen.has(value)) return {type: 'Circular', [signature]: signature};
       seen.add(value);
     }
@@ -75,14 +74,10 @@ const serialize = object => {
   try {
     const result = JSON.stringify(object, replacer());
     if (typeof result == 'string') return result;
-  } catch (error) {
-    // squelch
-  }
+  } catch (error) {}
   try {
     return JSON.stringify({type: 'String', value: String(object)});
-  } catch (error) {
-    // squelch
-  }
+  } catch (error) {}
   return JSON.stringify({
     type: 'Problem',
     value: 'cannot convert value to JSON or string',

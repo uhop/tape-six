@@ -1,27 +1,13 @@
 let deferImplementation = globalThis.setTimeout;
 
-// initialize the variable
 do {
-  // The selection below doesn't work
-  // if (typeof queueMicrotask == 'function') {
-  //   deferImplementation = globalThis.queueMicrotask;
-  //   console.log('\nSelected: queueMicrotask()\n');
-  //   break;
-  // }
-
-  // The selection below doesn't work in Bun
-  // if (typeof process == 'object' && typeof process?.nextTick == 'function') {
-  //   deferImplementation = process.nextTick;
-  //   break;
-  // }
-
+  // queueMicrotask / process.nextTick were tried and rejected (the latter unreliable on Bun).
   if (typeof setImmediate == 'function') {
     deferImplementation = setImmediate;
     break;
   }
 
   if (typeof window != 'object') break;
-  // below are browser-only implementations
 
   if (typeof window.requestIdleCallback == 'function') {
     deferImplementation = window.requestIdleCallback;

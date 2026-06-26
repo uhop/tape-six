@@ -38,16 +38,12 @@ const clear = async folderName => {
 };
 
 const ensure = async folderName => {
-  // check if the directory exists
   try {
     const stat = await fsp.stat(folderName);
     if (!stat.isDirectory()) throw Error('This is not a directory: ' + folderName);
     return;
-  } catch {
-    // squelch
-  }
+  } catch {}
 
-  // create the directory
   try {
     await fsp.mkdir(folderName, {recursive: true});
   } catch (error) {
@@ -95,9 +91,7 @@ const main = async (src, dst) => {
     const dstStat = await fsp.stat(dst);
     if (!dstStat.isDirectory()) throw Error('The destination is not a directory: ' + dst);
     clearFlag && (await clear(dst));
-  } catch {
-    // squelch
-  }
+  } catch {}
 
   await copy(src, dst);
 };

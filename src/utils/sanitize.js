@@ -27,14 +27,13 @@ export const sanitize = (value, processed, seen = new Set()) => {
     return value.map(v => sanitize(v, false, seen));
   }
 
-  // simple object
   const result = {};
   for (let [k, v] of Object.entries(value)) {
     if (isProhibited(v, seen)) continue;
     result[k] = sanitize(v, true, seen);
   }
 
-  // was it an error? => copy non-enumerable properties
+  // Error's message/stack are non-enumerable, so the loop above skips them.
   if (value instanceof Error) {
     if (value.name && !result.name) result.name = value.name;
     if (value.message && !result.message) result.message = value.message;

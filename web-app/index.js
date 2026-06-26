@@ -106,7 +106,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const donut = document.querySelector('tape6-donut');
   donut.show([{value: 0, className: 'nothing'}], {
     center: {x: 100, y: 100},
-    // gap: 4,
     innerRadius: 40,
     radius: 90,
     startAngle: Math.PI / 2,
