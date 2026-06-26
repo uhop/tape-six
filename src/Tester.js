@@ -133,6 +133,20 @@ export class Tester {
     });
   }
 
+  reportAssertion(assertion) {
+    const {ok, message, marker, operator, expected, actual} = assertion || {};
+    const hasData = expected !== undefined || actual !== undefined;
+    this.reporter.report({
+      name: message || 'invariant',
+      test: this.testNumber,
+      marker: marker instanceof Error ? marker : new Error(),
+      time: this.timer.now(),
+      operator: operator || 'ok',
+      fail: !ok,
+      data: hasData ? {expected, actual} : {expected: true, actual: ok}
+    });
+  }
+
   notOk(value, msg) {
     this.reporter.report({
       name: msg || 'should be falsy',

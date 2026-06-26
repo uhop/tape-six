@@ -437,6 +437,15 @@ export declare interface Tester {
   ok(value: unknown, message?: string): void;
 
   /**
+   * Reports an assertion from an externally captured source `marker`, so the
+   * reported location points at the caller rather than this method. Integration
+   * primitive for the `tape-six-invariant` host adapter; not a user-facing
+   * assertion. With no `operator`/`expected`/`actual` it behaves like `assert`.
+   * @param assertion - the assertion descriptor (verdict, message, marker, info)
+   */
+  reportAssertion(assertion: TesterAssertion): void;
+
+  /**
    * Asserts that `value` is not truthy.
    * @param value - The value to test
    * @param message - Optional message to display if the assertion fails
@@ -1278,5 +1287,32 @@ export declare const after: typeof test.after;
  * @param fn - function to install on `Tester.prototype`
  */
 export declare const registerTesterMethod: (name: string, fn: (...args: any[]) => any) => void;
+
+/**
+ * Descriptor passed to `Tester.reportAssertion`. The verdict comes from `ok`;
+ * `operator`/`expected`/`actual` are optional reporter metadata (omit them for
+ * a plain truthy assertion). Formed by integration code, not end users.
+ */
+export declare interface TesterAssertion {
+  /** Pass/fail verdict — a falsy value fails the assertion. */
+  ok: unknown;
+  /** Message shown on failure. */
+  message?: string;
+  /** An `Error` whose stack locates the assertion's source. */
+  marker?: Error;
+  /** Operator label for the reporter (defaults to `'ok'`). */
+  operator?: string;
+  /** Expected value, for the reporter's diff. */
+  expected?: unknown;
+  /** Actual value, for the reporter's diff. */
+  actual?: unknown;
+}
+
+/**
+ * Returns the innermost currently-running tester (top of the active test
+ * stack), or `null` when no test is executing. Lets ambient code — such as the
+ * `tape-six-invariant` host adapter — route assertions to the current test.
+ */
+export declare const getTester: () => Tester | null;
 
 export default test;

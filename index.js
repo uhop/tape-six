@@ -10,6 +10,7 @@ import {
   getConfiguredFlag,
   setTestRunner,
   registerNotifyCallback,
+  getTester,
   before,
   after,
   beforeAll,
@@ -28,6 +29,16 @@ import {
 import {selectTimer} from './src/utils/timer.js';
 import defer from './src/utils/defer.js';
 import TapReporter from './src/reporters/TapReporter.js';
+
+// Must be at module load, not init(): tape-six-invariant snapshots hasHost at
+// import. See dev-docs/sister-assert-library.md.
+globalThis[Symbol.for('tape6.invariant.host.v1')] ||= {
+  version: 1,
+  report(assertion) {
+    const tester = getTester();
+    if (tester) tester.reportAssertion(assertion);
+  }
+};
 
 const optionNames = {
   f: 'failureOnly',
@@ -291,6 +302,7 @@ export {
   afterAll,
   beforeEach,
   afterEach,
+  getTester,
   test as suite,
   test as describe,
   test as it
