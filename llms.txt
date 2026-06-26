@@ -113,6 +113,8 @@ The object passed to test functions. Provides assertions and test control.
 ### Plugins
 
 - `registerTesterMethod(name, fn)` — install a method on `Tester.prototype` from a plugin module. Idempotent for same `fn`; throws on collision with a different `fn`. Plugin imports are per-file (workers / subprocesses / iframes don't share module graphs).
+- `getTester()` — the innermost running `Tester` (top of the active test stack), or `null` outside a test. Lets ambient code route assertions to the current test.
+- `Tester.reportAssertion({ok, message?, marker?, operator?, expected?, actual?})` — report an assertion with an externally captured `marker` so the source location points at the caller; defaults to an `assert`/`ok`-shaped result. Integration primitive (e.g. the planned `tape-six-invariant` host at `globalThis[Symbol.for('tape6.invariant.host.v1')]`), not a user-facing assertion.
 
 ### Hooks
 

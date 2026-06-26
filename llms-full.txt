@@ -279,6 +279,15 @@ test('cli', async t => {
 
 Plugin installation is **per-file**. `tape6-seq` runs all files in one process; `tape6` uses workers; `tape6-proc` (from the sister package `tape-six-proc`) uses subprocesses; browser tests run in iframes. Each isolation context has its own module graph, so a plugin import in file A is invisible to file B when they're in different contexts. Every test file that uses a plugin must import it directly. `registerTesterMethod`'s idempotency makes repeated imports safe. See [Writing plugins](https://github.com/uhop/tape-six/wiki/Writing-plugins) for the full guide.
 
+### Ambient integrations
+
+Beyond `registerTesterMethod`, two exports let code that does not receive `t` route assertions into the running test:
+
+- `getTester()` returns the innermost running `Tester` (top of the active test stack), or `null` outside a test.
+- `Tester.reportAssertion({ok, message?, marker?, operator?, expected?, actual?})` reports an assertion using an externally captured `marker`, so the reported source location is the caller's, not the adapter's. With no `operator`/`expected`/`actual` it behaves like `assert`/`ok`.
+
+`index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` (`{version, report(assertion)}`) at module load. This is the coordination point for the planned zero-dependency `tape-six-invariant` package, whose `check()` calls materialize as real assertions on the current test under a tape6 run and are inert/configurable otherwise. See `dev-docs/sister-assert-library.md`.
+
 ## Configuring tests
 
 Configuration is read from `tape6.json` or the `"tape6"` section of `package.json`:

@@ -80,7 +80,7 @@ skills/               # Agent Skills (agentskills.io) shipped to consumers via n
 ### Two main objects
 
 - **`test()`** — registers test suites. Aliased as `suite()`, `describe()`, `it()`. Supports `test.skip()`, `test.todo()`, `test.asPromise()`.
-- **`Tester`** — passed to test functions. Provides all assert methods (`ok`, `equal`, `deepEqual`, `throws`, `rejects`, etc.), embedded test methods (`t.test()`, `t.skip()`, `t.todo()`), hooks (`t.beforeAll()`, `t.afterAll()`, `t.beforeEach()`, `t.afterEach()`), and utilities (`t.plan()`, `t.comment()`, `t.any`). Extensible via `registerTesterMethod(name, fn)` from plugins; `Tester` is declared as an `interface` in `index.d.ts` so TS module-augmentation works naturally.
+- **`Tester`** — passed to test functions. Provides all assert methods (`ok`, `equal`, `deepEqual`, `throws`, `rejects`, etc.), embedded test methods (`t.test()`, `t.skip()`, `t.todo()`), hooks (`t.beforeAll()`, `t.afterAll()`, `t.beforeEach()`, `t.afterEach()`), and utilities (`t.plan()`, `t.comment()`, `t.any`). Extensible via `registerTesterMethod(name, fn)` from plugins; `Tester` is declared as an `interface` in `index.d.ts` so TS module-augmentation works naturally. Ambient integrations use `getTester()` (current `Tester` or `null`) and `Tester.reportAssertion({ok, message, marker, …})` to report into the running test; `index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` (see `dev-docs/sister-assert-library.md`).
 
 ### Hooks
 

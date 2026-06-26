@@ -10,7 +10,7 @@ For detailed usage docs and API references see the [wiki](https://github.com/uho
 This project uses git submodules:
 
 ```bash
-git clone --recursive git@github.com:uhop/tape-six.git
+git clone --recursive https://github.com/uhop/tape-six.git
 cd tape-six
 npm install
 npm run build
@@ -68,6 +68,7 @@ tape-six/
 - Semicolons are enforced by Prettier (default `semi: true`).
 - Imports at the top of files, using `import` syntax.
 - The package name is `tape-six` but internal names, environment variables, and public names use `tape6` (e.g., `TAPE6_FLAGS`, `tape6` CLI).
+- **No narrating comments** — comments are short _why_-markers only (a non-trivial decision/constraint, an algorithm reference, or required JSDoc), never a restatement of _what_ the code does.
 
 ## Architecture
 
@@ -75,6 +76,7 @@ tape-six/
 - `test()` function registers test suites. It is also aliased as `suite()`, `describe()`, and `it()`.
 - The `Tester` object is passed to test functions and provides all assert methods.
 - `Tester` is extensible via `registerTesterMethod(name, fn)` (idempotent for same `fn`, throws on collision with a different `fn`). Plugins live in their own packages and are imported per test file. The built-in `t.OK()` evaluator (`src/OK.js`) is the in-tree worked example.
+- Ambient integrations resolve the current test with `getTester()` (innermost running `Tester`, or `null` outside a test) and report through `Tester.reportAssertion({ok, message?, marker?, operator?, expected?, actual?})` — a marker-preserving assertion primitive whose `marker` keeps the source location at the caller. `index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` for the planned zero-dep `tape-six-invariant` package; see `dev-docs/sister-assert-library.md`.
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
 - `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process.
 - Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop in-flight workers (not just new scheduling), and an optional per-worker deadline (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and `dev-docs/worker-control-channel.md`.
