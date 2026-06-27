@@ -3,7 +3,7 @@
 Status: **core additions landed 2026-06-26; the package itself is not yet
 built.** The three tape-six core hooks (host slot, `getTester` export,
 `Tester.reportAssertion`) are in `index.js` / `src/Tester.js` / `index.d.ts`. The
-sister package (working name `tape-six-invariant`) — a separate, zero-dependency
+sister package `tape-six-invariant` — a separate, zero-dependency
 module carrying `assert`-style invariant checks that **materialize** into real
 tape6 assertions when a tape6 run is hosting them, and are inert (or a
 configurable behavior) otherwise — remains to be written. The library never
@@ -201,9 +201,8 @@ the full `Tester` assertion API can come later, forming richer descriptors for
 
 ## Open questions
 
-- Package name (`tape-six-invariant` vs `tape-six-assert` vs a standalone
-  evocative name). Function name (`check` vs `invariant` vs `assert` — `assert`
-  may mislead since the default is inert, not throwing).
+- Function name (`check` vs `invariant` vs `assert` — `assert` may mislead since
+  the default is inert, not throwing). (Package name settled: `tape-six-invariant`.)
 - Whether the lazy-message thunk is in v1 or deferred.
 
 ## Prior art
