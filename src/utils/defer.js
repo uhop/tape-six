@@ -39,6 +39,6 @@ do {
   }
 } while (false);
 
-const defer = fn => deferImplementation(fn);
+export const defer = fn => deferImplementation(fn);
 
 export default defer;

@@ -18,7 +18,7 @@ import BypassReporter from './BypassReporter.js';
 
 const baseName = pathToFileURL(process.cwd() + sep);
 
-export default class TestWorker extends EventServer {
+export class TestWorker extends EventServer {
   constructor(reporter, _numberOfTasks, options) {
     super(reporter, 1, options);
     this.testRunner = options.testRunner;
@@ -116,3 +116,5 @@ export default class TestWorker extends EventServer {
     this.close(id);
   }
 }
+
+export default TestWorker;

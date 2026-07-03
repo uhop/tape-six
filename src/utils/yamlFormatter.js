@@ -129,7 +129,7 @@ const format = (value, options, level, offset, lines) => {
   }
 };
 
-const yamlFormatter = (object, options) => {
+export const yamlFormatter = (object, options) => {
   options = {...defaultOptions, ...options};
   const lines = [],
     string = options.string || ' ',

@@ -1,4 +1,4 @@
-export default async function echo() {
+export async function echo() {
   return {
     name: 'echo',
     prefix: '/--echo',
@@ -16,3 +16,5 @@ export default async function echo() {
     }
   };
 }
+
+export default echo;

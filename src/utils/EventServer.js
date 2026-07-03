@@ -14,7 +14,7 @@ const DEFAULT_GRACE_TIMEOUT = 5_000;
 //                        every in-flight worker is terminated ('failOnce').
 // An optional per-worker wall-clock deadline (workerTimeout, Layer 2) fires the
 // same command on expiry ('timeout'). See dev-docs/worker-control-channel.md.
-export default class EventServer {
+export class EventServer {
   constructor(reporter, numberOfTasks = 1, options = {}) {
     this.reporter = reporter;
     this.numberOfTasks = numberOfTasks;
@@ -154,3 +154,5 @@ export default class EventServer {
     //                           graceTimeout where the transport allows
   }
 }
+
+export default EventServer;
