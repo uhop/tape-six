@@ -9,6 +9,9 @@ on:
         default: 26
         type: number
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: Node.js ${{inputs.node-version}} (special test)
