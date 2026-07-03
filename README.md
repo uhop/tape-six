@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.12.0 _`tape6-server` is now pluggable, embeddable server for hermetic integration tests, runtime plugin registration, and an opt-in HTTP/2 mode._
 - 1.11.0 _Invariant host hooks for the new zero-dependency `tape-six-invariant` companion package. Workaround for a Deno 2.9.0 `node_modules/.bin` symlink regression._
 - 1.10.1 _A workaround for a Bun's bug with streams._
 - 1.10.0 _Worker control channel stops in-flight workers, draining cleanup before a force-kill._
