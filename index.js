@@ -175,9 +175,7 @@ const init = async () => {
 
   if (isBrowser && typeof window.addEventListener == 'function') {
     // Control plane: the parent page posts `tape6-terminate` to drain a running
-    // test (failOnce / bail / worker deadline). The reporter arms stopTest +
-    // fires the abort signal so the test unwinds. There is no in-page
-    // force-kill — see dev-docs/worker-control-channel.md.
+    // test; there is no in-page force-kill — see dev-docs/worker-control-channel.md.
     window.addEventListener('message', event => {
       if (event.data?.type === 'tape6-terminate') getReporter()?.terminate();
     });

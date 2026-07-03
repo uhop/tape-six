@@ -89,11 +89,9 @@ export default class TestWorker extends EventServer {
       this.#removeIframe(id);
       return;
     }
-    // Cooperative drain only — in-page JS can't force-kill a hung iframe script.
-    // postMessage `terminate` so a cooperative test unwinds and runs its cleanup
-    // hooks; if it doesn't exit within graceTimeout, remove the iframe as a
-    // best-effort backstop. A driver-backed run (puppeteer / playwright) can do
-    // a real kill from Node — not wired here. See dev-docs/worker-control-channel.md.
+    // in-page JS can't force-kill a hung iframe script — iframe removal after
+    // graceTimeout is a best-effort backstop; a real kill needs a driver
+    // (puppeteer / playwright). See dev-docs/worker-control-channel.md.
     if (this.graceTimers[id]) return;
     const iframe = document.getElementById('test-iframe-' + id);
     if (!iframe) return;

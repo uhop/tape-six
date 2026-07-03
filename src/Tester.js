@@ -460,10 +460,7 @@ export class Tester {
 }
 Tester.prototype.any = Tester.prototype._ = any;
 
-// Idempotent registration of a method on Tester.prototype. Same name + same
-// function → no-op; same name + different function → throws. Lets plugins
-// extend the tester (e.g., spawnBin, withTempDir, waitFor) without colliding
-// silently when two of them claim the same name.
+// plugin extension point — a same-name collision must fail loudly, not silently override
 export const registerTesterMethod = (name, fn) => {
   if (typeof name !== 'string' || !name)
     throw new TypeError('registerTesterMethod: name must be a non-empty string');

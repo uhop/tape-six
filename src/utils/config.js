@@ -170,9 +170,6 @@ export const getReporterFileName = type => {
 export const DEFAULT_START_TIMEOUT = 5_000;
 export const DEFAULT_GRACE_TIMEOUT = 5_000;
 
-// Read a positive-millisecond env var, falling back to `fallback` when it is
-// unset, non-numeric, non-positive, or Infinity. Always returns `fallback` in
-// the browser, where these env vars don't exist.
 const readTimeoutEnv = (name, fallback) => {
   if (runtime.name === 'browser') return fallback;
   const value = runtime.getEnvVar(name);
@@ -192,8 +189,7 @@ export const getTimeoutValue = () =>
 // allows. See dev-docs/worker-control-channel.md.
 export const getGraceTimeout = () => readTimeoutEnv('TAPE6_GRACE_TIMEOUT', DEFAULT_GRACE_TIMEOUT);
 
-// Optional wall-clock budget per worker/file (Layer 2 termination). 0 disables
-// it — the default — so a worker deadline fires only when explicitly set.
+// Optional wall-clock budget per worker/file (Layer 2 termination); 0 (default) disables it.
 export const getWorkerTimeout = () => readTimeoutEnv('TAPE6_WORKER_TIMEOUT', 0);
 
 export const flagNames = Object.fromEntries(
@@ -322,8 +318,7 @@ export const getOptions = extraOptions => {
   }
   options.parallel = parallel;
 
-  // Control-channel budgets ride along in the options bag handed to the
-  // TestWorker (EventServer). Children ignore them; only the parent acts.
+  // children ignore these; only the parent (EventServer) acts on them
   options.flags.graceTimeout = getGraceTimeout();
   options.flags.workerTimeout = getWorkerTimeout();
 

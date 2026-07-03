@@ -67,7 +67,7 @@ let traceCalls = false,
 const normalizePort = val => {
   const port = parseInt(val);
   if (isNaN(port)) return val; // named pipe
-  if (port >= 0) return port; // port number
+  if (port >= 0) return port;
   return false;
 };
 

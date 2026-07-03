@@ -99,9 +99,7 @@ export const listenControlChannel = async getReporter => {
   }
   if (buffer) handleLine(buffer);
 
-  // Control-channel EOF. If no explicit terminate arrived (parent died / pipe
-  // broke), soft-terminate so a still-running test drains. Then fall through:
-  // the loop empties and the runtime exits naturally, flushing stdout.
+  // EOF — soft-terminate per the header contract
   if (!terminated) getReporter()?.terminate();
   armWatchdog(graceTimeout, getExitCode);
 };

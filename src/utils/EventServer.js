@@ -5,15 +5,9 @@ import defer from './defer.js';
 // (TAPE6_GRACE_TIMEOUT) via getOptions(); see src/utils/config.js.
 const DEFAULT_GRACE_TIMEOUT = 5_000;
 
-// EventServer owns two planes. The DATA plane (worker -> reporter) is the
-// report()/close() event-ordering machinery. The CONTROL plane
-// (reporter/runner -> worker) is a single command, `terminate`, delivered per
-// transport by destroyTask(id, reason). Two triggers fire it:
-//   - normal completion: close() terminates the just-finished worker ('done');
-//   - stop / bail-out:   when reporter.state.stopTest is set (failOnce / bail),
-//                        every in-flight worker is terminated ('failOnce').
-// An optional per-worker wall-clock deadline (workerTimeout, Layer 2) fires the
-// same command on expiry ('timeout'). See dev-docs/worker-control-channel.md.
+// Two planes: DATA (worker -> reporter, the report()/close() event-ordering
+// machinery) and CONTROL (reporter/runner -> worker, a single `terminate`
+// delivered per transport by destroyTask). See dev-docs/worker-control-channel.md.
 export class EventServer {
   constructor(reporter, numberOfTasks = 1, options = {}) {
     this.reporter = reporter;
@@ -112,9 +106,7 @@ export class EventServer {
   execute(files) {
     files.forEach(fileName => this.createTask(fileName));
   }
-  // Spawn one worker and register it for control-plane tracking. Routes both
-  // the initial batch (createTask) and queue drains (close) so liveTasks and
-  // the optional deadline cover every task, not just the first numberOfTasks.
+  // createTask and close() both route here so liveTasks + the deadline cover every task
   #startTask(fileName) {
     const id = this.makeTask(fileName);
     if (id == null) return id;
@@ -134,9 +126,6 @@ export class EventServer {
       delete this.deadlineTimers[id];
     }
   }
-  // Terminate every in-flight worker (abort) on top of the existing "stop
-  // scheduling new files." Fires at most once per run; callers decide when a
-  // stop / bail-out signal has been observed.
   #requestStop() {
     if (this.stopRequested) return;
     this.stopRequested = true;

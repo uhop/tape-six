@@ -15,9 +15,6 @@ export class Reporter {
     this.terminating = false;
   }
 
-  // Emit one record to stdout, mirroring console.log's arguments. On Bun,
-  // console.log to a subprocess-piped stdout is lossy / stalls under load, so route
-  // through process.stdout.write there; Node/Deno keep the proven console.log path.
   writeOut(...args) {
     if (isBun) {
       process.stdout.write(args.map(a => (typeof a == 'string' ? a : String(a))).join(' ') + '\n');
@@ -34,14 +31,9 @@ export class Reporter {
     this.state?.abort();
   }
 
-  // Control plane: a `terminate` command reached this worker (failOnce / bail
-  // drain, or a worker deadline). Arm stopTest and fire the abort signal across
-  // the live state chain so a running test unwinds — StopTest at the next
-  // assertion, t.signal rejects signal-aware awaits — and remember it so any
-  // test that starts afterwards stops at its first assertion too (closing the
-  // race where `terminate` lands while the worker is still starting up). The
-  // test's cleanup (finally / afterEach / afterAll) still runs. See
-  // dev-docs/worker-control-channel.md.
+  // `terminating` is remembered so a test that starts after the terminate stops
+  // too — closes the race where `terminate` lands mid-startup. Cleanup
+  // (finally / afterEach / afterAll) still runs. See dev-docs/worker-control-channel.md.
   terminate() {
     this.terminating = true;
     for (let state = this.state; state; state = state.parent) {
@@ -61,8 +53,7 @@ export class Reporter {
       timer: this.timer
     });
     ++this.depth;
-    // A terminate landed before this test started — stop it at its first
-    // assertion rather than letting it run to completion.
+    // a terminate landed before this test started
     if (this.terminating) {
       this.state.stopTest = true;
       this.state.abort();

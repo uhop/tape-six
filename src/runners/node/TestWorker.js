@@ -76,14 +76,11 @@ export class TestWorker extends EventServer {
     const worker = this.idToWorker[id];
     if (!worker) return;
     if (reason === 'done') {
-      // The test already finished; worker_threads have no flush race, so just
-      // tear the worker down.
+      // worker_threads have no flush race
       this.#kill(id);
       return;
     }
-    // Cooperative drain (abort): ask the child to fire its abort signal and run
-    // cleanup hooks, then force-kill as a backstop after graceTimeout in case
-    // the test ignores the signal and never settles.
+    // force-kill backstop: the test may ignore the abort signal and never settle
     if (this.graceTimers[id]) return; // already draining
     try {
       worker.postMessage({type: 'terminate', reason});

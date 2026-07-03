@@ -40,9 +40,7 @@ let currentReporter = null,
   pendingTerminate = false;
 
 parentPort.on('message', async msg => {
-  // Control plane: drain on `terminate`. The reporter arms stopTest + fires the
-  // abort signal so a running test unwinds (cleanup runs); a terminate that
-  // lands before the reporter exists is remembered and applied at startup.
+  // a terminate can land before the reporter exists — remember it, apply at startup
   if (msg?.type === 'terminate') {
     pendingTerminate = true;
     currentReporter?.terminate();

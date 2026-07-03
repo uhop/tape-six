@@ -184,9 +184,8 @@ export class State {
       typeof event.diffTime !== 'number' && (event.diffTime = event.time - this.startTime);
     }
 
-    // Stack walking is only needed when the event will be reported as a failure.
-    // Reporters (TapReporter, TTYReporter) only read event.at / event.stackList
-    // inside `if (event.fail)` blocks, so for passing assertions this is wasted work.
+    // reporters read event.at / event.stackList only for failures — stack
+    // walking on passing assertions is wasted work
     if (isFailed) {
       if (
         event.type === 'assert' &&

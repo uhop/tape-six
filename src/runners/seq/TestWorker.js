@@ -62,10 +62,8 @@ export class TestWorker extends EventServer {
   }
   destroyTask(id, reason = 'done') {
     if (reason !== 'done') {
-      // Abort trigger (failOnce / bail / worker deadline). The test runs in this
-      // same process, so "terminate" is just reporter.terminate(): arm stopTest
-      // + fire the abort signal. The run unwinds and closes itself with 'done',
-      // where the reset below happens.
+      // same process, no force-kill — the aborted run closes itself with 'done',
+      // where the reset below happens
       this.reporter.terminate();
       return;
     }
