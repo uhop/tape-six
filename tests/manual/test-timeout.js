@@ -1,5 +1,6 @@
 import test from '../../index.js';
-import timeout from '../../src/utils/timeout.js';
+
+const timeout = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 test('Timeout test', {timeout: 20}, async t => {
   t.pass();

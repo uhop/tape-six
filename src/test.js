@@ -1,7 +1,6 @@
 import {selectTimer} from './utils/timer.js';
 import {isAssertionError, isStopTest} from './State.js';
 import makeDeferred from './utils/makeDeferred.js';
-import timeout from './utils/timeout.js';
 import {formatTime} from './utils/formatters.js';
 import defer from './utils/defer.js';
 
@@ -153,10 +152,14 @@ export const runTests = async tests => {
         if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
           const result = options.testFn(tester);
           if (result && typeof result == 'object' && typeof result.then == 'function') {
+            // the timer must be cleared when the test wins the race — a stray
+            // ref'd timer keeps the process alive until the full timeout expires
+            let timer = null;
             const timedOut = await Promise.race([
               result.then(() => false),
-              timeout(options.timeout).then(() => true)
+              new Promise(resolve => (timer = setTimeout(resolve, options.timeout, true)))
             ]);
+            clearTimeout(timer);
             if (timedOut) {
               tester.reporter.report({
                 type: 'comment',

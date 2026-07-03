@@ -1,6 +1,7 @@
 import test from '../index.js';
 import EventServer from '../src/utils/EventServer.js';
-import timeout from '../src/utils/timeout.js';
+
+const timeout = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Fake reporter: flips state.stopTest when it sees a stopTest / bail-out event,
 // mirroring how the real reporters propagate stopTest through preprocess. That
