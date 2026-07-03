@@ -8,11 +8,7 @@
  * - `null` or any primitive — strict equality.
  */
 export type AssertionMatcher =
-  | (new (...args: any[]) => Error)
-  | RegExp
-  | ((value: unknown) => boolean)
-  | object
-  | null;
+  (new (...args: any[]) => Error) | RegExp | ((value: unknown) => boolean) | object | null;
 
 /**
  * Test options

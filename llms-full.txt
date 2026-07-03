@@ -335,20 +335,99 @@ Sequential in-process runner. Same options as `tape6` but no threads.
 
 ### tape6-server
 
-Web server for browser testing:
+Pluggable test server for browser testing: static files + web UI + fixture plugins.
 
 ```bash
 tape6-server [options...]
 ```
 
+- `--plugin path` — register a plugin module (repeatable; path relative to the server root).
+- `--h2` — serve HTTPS with HTTP/2 + HTTP/1.1 via ALPN (Node-only server mode).
+- `--no-remote-plugins` — disable `PUT`/`DELETE` on `/--plugins`.
 - `--trace` — enable request trace logging.
 - `--self` — print the path to this script and exit.
 - `--help`, `-h` — show help message and exit.
 - `--version`, `-v` — show version and exit.
 
 Configured via environment variables: `HOST` (default: localhost), `PORT` (default: 3000),
-`SERVER_ROOT` (default: cwd), `WEBAPP_PATH`.
+`SERVER_ROOT` (default: cwd), `WEBAPP_PATH`, `TAPE6_PROTOCOL` (`h1`/`h2`),
+`TAPE6_CERT`/`TAPE6_KEY` (TLS cert/key paths for h2; auto-generates a self-signed cert via
+openssl when omitted).
 Navigate to `http://localhost:3000` for the web UI.
+
+Request routing: reserved control endpoints (`/--tests`, `/--patterns`, `/--importmap`,
+`/--plugins`) → plugins by longest prefix → static files (GET/HEAD only; plugins see all verbs).
+
+## Test server plugins and embedding
+
+Fixture plugins let real-wire tests (streaming, SSE, stateful ETag resources, upload sinks)
+run against `tape6-server`. A plugin module default-exports an async factory returning a
+handler record:
+
+```js
+export default async function fixtures(api, options) {
+  // api: {rootFolder, config, base, protocol, log, trace}
+  return {
+    name: 'fixtures', // registry key (defaults to the module/function name)
+    prefix: '/--fixtures/', // claimed namespace, longest-prefix routed
+    fetch(request, api) {
+      // WHATWG Request → Response | (async) iterable | undefined (= pass to the next plugin)
+      return Response.json({ok: true});
+    },
+    close() {} // optional teardown: runs on deregistration and server shutdown
+  };
+}
+```
+
+- Request bodies are Web streams (`duplex: 'half'`); `Response` stream bodies are written
+  unbuffered; client disconnect fires `request.signal`.
+- `fetch` may return an (async) iterable instead of a `Response`: `Uint8Array` chunks pass
+  through, strings are UTF-8 encoded, other values become JSONL lines. A module may
+  default-export a bare (async) generator function:
+
+```js
+export default async function* numbers({url}) {
+  const n = Number(new URL(url).searchParams.get('n')) || 10;
+  for (let i = 0; i < n; ++i) yield {n: i}; // streamed as application/x-ndjson
+}
+```
+
+- `raw(req, res, api)` is an escape hatch on raw Node objects; returning exactly `false`
+  passes the request on.
+- A tiny reference plugin ships in-tree: `tape-six/test-server/plugins/echo.js` mounts
+  `/--echo` and reflects method/query/headers/body as JSON.
+
+Registration channels:
+
+- **Static:** `package.json` → `"tape6": {"server": {"plugins": ["path", {"module": "path", "options": {}}]}}`
+  or the repeatable `--plugin` CLI flag.
+- **Dynamic (wire):** `GET /--plugins` lists `{name, prefix, source}`; `PUT /--plugins` with
+  `{"module": "path", "options": {}}` mounts a module (resolved against the server root and
+  contained to it; re-PUT replaces by name and closes the old instance); `DELETE
+  /--plugins/<name>` deregisters. Disable mutations with `--no-remote-plugins`.
+
+Embedding (hermetic Node/Bun/Deno integration tests; kernel-assigned ports make parallel test
+files collision-free):
+
+```js
+import {createTestServer, withTestServer} from 'tape-six/test-server.js';
+
+const {base, close} = await createTestServer({rootFolder, plugins: [myPlugin], port: 0});
+// ... fetch(base + '/--fixtures/...') ...
+await close();
+
+// or scoped:
+await withTestServer({rootFolder, plugins: [myPlugin]}, async base => {
+  // server closes when the handler settles
+});
+```
+
+Inline plugins (factories, records, generator functions) are accepted in the `plugins` array
+and via `server.register(spec)`. Other config keys under `tape6.server`: `protocol`
+(`"h1"`/`"h2"`), `cert`/`key` (TLS paths), `remotePlugins` (boolean), `webAppPath`.
+
+Stateful fixtures should key state by an explicit `scope` (query param or `X-Scope` header)
+minted per test, so parallel workers sharing one server don't collide.
 
 ### Runtime-specific runners
 
@@ -389,6 +468,8 @@ Browser: `http://localhost:3000/?flags=FO`
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
 - `TAPE6_GRACE_TIMEOUT` — ms a worker gets to drain (run cleanup, flush) after the runner asks it to stop, before being force-killed (default: 5000).
 - `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker (default: 0, disabled). The complement to the per-test `timeout` option: this one can stop a worker that ignores `t.signal`.
+- `TAPE6_PROTOCOL` — test server protocol: `h1` (default) or `h2`.
+- `TAPE6_CERT` / `TAPE6_KEY` — TLS certificate/key paths for the test server's h2 mode.
 
 ## Browser testing
 

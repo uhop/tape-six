@@ -235,6 +235,25 @@ npx tape6-seq              # run sequentially (no worker threads)
 npx tape6-server --trace   # start browser test server
 ```
 
+### Test server (fixtures + embedding)
+
+`tape6-server` is pluggable: fixture plugins mount under URL prefixes (`--plugin path`,
+config `tape6.server.plugins`, or `PUT /--plugins` at runtime) and handle requests with a
+WHATWG `fetch(request) → Response | (async) iterable | undefined` contract; an (async)
+generator function streams JSONL. `--h2` switches to HTTPS with HTTP/2 (Node-only). For
+hermetic integration tests embed it on an OS-assigned port:
+
+```js
+import {createTestServer, withTestServer} from 'tape-six/test-server.js';
+
+await withTestServer({plugins: [myPlugin]}, async base => {
+  const res = await fetch(base + '/--fixtures/data?n=3');
+  // ...
+});
+```
+
+Full plugin contract: llms-full.txt § Test server plugins and embedding.
+
 ## Environment variables
 
 - `TAPE6_FLAGS` — flags string.
@@ -245,6 +264,8 @@ npx tape6-server --trace   # start browser test server
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
 - `TAPE6_GRACE_TIMEOUT` — ms a worker gets to drain (run cleanup, flush) after the runner asks it to stop, before being force-killed (default: 5000).
 - `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker (default: 0, disabled). Complements the per-test `timeout` option: this one can stop a worker that ignores `t.signal`.
+- `TAPE6_PROTOCOL` — test server protocol: `h1` (default) or `h2`.
+- `TAPE6_CERT` / `TAPE6_KEY` — TLS certificate/key paths for the test server's h2 mode.
 
 ## Configuration (package.json)
 

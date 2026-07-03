@@ -1,26 +1,11 @@
 #!/usr/bin/env node
 
-import http from 'node:http';
-import fs from 'node:fs';
-import path from 'node:path';
 import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 
-import {
-  getConfig,
-  resolveTests,
-  resolvePatterns,
-  printVersion,
-  printHelp
-} from '../src/utils/config.js';
-import {startServer} from '../src/server.js';
-
-const fsp = fs.promises;
-
-const toPosix = files =>
-  path.sep === path.win32.sep
-    ? files.map(f => f.replaceAll(path.win32.sep, path.posix.sep))
-    : files;
+import {printVersion, printHelp} from '../src/utils/config.js';
+import {createTestServer} from '../src/test-server.js';
+import {detectColors, makePaint} from '../src/test-server/trace.js';
 
 const showSelf = () => {
   const self = new URL(import.meta.url);
@@ -32,17 +17,23 @@ const showSelf = () => {
   process.exit(0);
 };
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
-  printHelp('tape6-server', 'Static file server for browser testing', 'tape6-server [options]', [
+  printHelp('tape6-server', 'Pluggable test server for browser testing', 'tape6-server [options]', [
+    ['--plugin path', 'Register a plugin module (repeatable)'],
+    ['--h2', 'Serve HTTPS with HTTP/2 (+ HTTP/1.1 via ALPN); Node only'],
+    ['--no-remote-plugins', 'Disable PUT/DELETE on /--plugins'],
     ['--trace', 'Enable request trace logging'],
     ['--self', 'Print the path to this script and exit'],
     ['--help, -h', 'Show this help message and exit'],
     ['--version, -v', 'Show version and exit']
   ]);
   console.log('\nEnvironment:');
-  console.log('  HOST          Server hostname (default: localhost)');
-  console.log('  PORT          Server port (default: 3000)');
-  console.log('  SERVER_ROOT   Root directory for serving files (default: cwd)');
-  console.log('  WEBAPP_PATH   Path to the web app directory');
+  console.log('  HOST            Server hostname (default: localhost)');
+  console.log('  PORT            Server port (default: 3000)');
+  console.log('  SERVER_ROOT     Root directory for serving files (default: cwd)');
+  console.log('  WEBAPP_PATH     Path to the web app directory');
+  console.log('  TAPE6_PROTOCOL  Protocol: h1 or h2 (default: h1)');
+  console.log('  TAPE6_CERT      Path to a TLS certificate (h2)');
+  console.log('  TAPE6_KEY       Path to its private key (h2)');
   process.exit(0);
 }
 if (process.argv.includes('--version') || process.argv.includes('-v')) {
@@ -51,169 +42,27 @@ if (process.argv.includes('--version') || process.argv.includes('-v')) {
 }
 if (process.argv.includes('--self')) showSelf();
 
-const mimeTable = {
-    css: 'text/css',
-    csv: 'text/csv',
-    eot: 'application/vnd.ms-fontobject',
-    gif: 'image/gif',
-    html: 'text/html',
-    ico: 'image/vnd.microsoft.icon',
-    jpg: 'image/jpeg',
-    js: 'text/javascript',
-    json: 'application/json',
-    otf: 'font/otf',
-    png: 'image/png',
-    svg: 'image/svg+xml',
-    ttf: 'font/ttf',
-    txt: 'text/plain',
-    webp: 'image/webp',
-    woff: 'font/woff',
-    woff2: 'font/woff2',
-    xml: 'application/xml'
-  },
-  defaultMime = 'application/octet-stream',
-  rootFolder = process.env.SERVER_ROOT || process.cwd(),
-  traceCalls = process.argv.includes('--trace'),
-  hasColors =
-    process.stdout.isTTY &&
-    (typeof process.stdout.hasColors == 'function' ? process.stdout.hasColors() : true);
-
-let webAppPath = process.env.WEBAPP_PATH;
-if (!webAppPath) {
-  const url = import.meta.url;
-  if (!/^file:\/\//i.test(url))
-    throw Error('Cannot identify the location of the web application. Use WEBAPP_PATH.');
-  webAppPath = path.relative(
-    rootFolder,
-    path.join(path.dirname(fileURLToPath(url)), '../web-app/')
-  );
-  if (path.sep === path.win32.sep)
-    webAppPath = webAppPath.replaceAll(path.win32.sep, path.posix.sep);
-}
-
-const mimeAliases = {mjs: 'js', cjs: 'js', htm: 'html', jpeg: 'jpg'};
-Object.keys(mimeAliases).forEach(name => (mimeTable[name] = mimeTable[mimeAliases[name]]));
-
-const join = (...args) => args.map(value => value || '').join(''),
-  paint = hasColors
-    ? (prefix, suffix = '\x1B[39m') =>
-        text =>
-          join(prefix, text, suffix)
-    : () => text => text,
-  grey = paint('\x1B[2;37m', '\x1B[22;39m'),
-  red = paint('\x1B[41;97m', '\x1B[49;39m'),
-  green = paint('\x1B[32m'),
-  yellow = paint('\x1B[93m'),
-  blue = paint('\x1B[44;97m', '\x1B[49;39m');
-
-const link = (url, text = url) => paint('\x1B]8;;' + url + '\x1B\\', '\x1B]8;;\x1B\\')(text);
-
-const sendFile = (req, res, fileName, ext, justHeaders) => {
-  if (!ext) {
-    ext = path.extname(fileName).toLowerCase();
-  }
-  let mime = ext && mimeTable[ext.substring(1)];
-  if (!mime || typeof mime != 'string') {
-    mime = defaultMime;
-  }
-  res.writeHead(200, {'Content-Type': mime});
-  if (justHeaders) {
-    res.end();
-  } else {
-    fs.createReadStream(fileName).pipe(res);
-  }
-  traceCalls && console.log(green('200') + ' ' + grey(req.method) + ' ' + grey(req.url));
-};
-
-const sendJson = (req, res, json, justHeaders) => {
-  res.writeHead(200, {'Content-Type': 'application/json'});
-  if (justHeaders) {
-    res.end();
-  } else {
-    res.end(JSON.stringify(json));
-  }
-  traceCalls && console.log(green('200') + ' ' + grey(req.method) + ' ' + grey(req.url));
-};
-
-const sendRedirect = (req, res, to, code = 307) => {
-  res.writeHead(code, {Location: to});
-  res.end();
-  traceCalls && console.log(blue(code) + ' ' + grey(req.method) + ' ' + grey(req.url));
-};
-
-const bailOut = (req, res, code = 404) => {
-  res.writeHead(code).end();
-  traceCalls && console.log(red(code) + ' ' + grey(req.method) + ' ' + grey(req.url));
-};
-
-const server = http.createServer(async (req, res) => {
-  const method = req.method.toUpperCase();
-  if (method !== 'GET' && method !== 'HEAD') return bailOut(req, res, 405);
-
-  const url = new URL(req.url, 'http://' + req.headers.host);
-  if (url.pathname === '/--tests') {
-    return sendJson(
-      req,
-      res,
-      toPosix(await resolveTests(rootFolder, 'browser')),
-      method === 'HEAD'
-    );
-  }
-  if (url.pathname === '/--patterns') {
-    return sendJson(
-      req,
-      res,
-      toPosix(await resolvePatterns(rootFolder, url.searchParams.getAll('q'))),
-      method === 'HEAD'
-    );
-  }
-  if (url.pathname === '/--importmap') {
-    const cfg = await getConfig(rootFolder);
-    return sendJson(req, res, cfg.importmap || {imports: {}}, method === 'HEAD');
-  }
-  if (url.pathname === '/favicon.ico') {
-    const faviconFile = path.join(rootFolder, webAppPath, 'favicon.ico');
-    const stat = await fsp.stat(faviconFile).catch(() => null);
-    if (stat && stat.isFile()) return sendFile(req, res, faviconFile, '.ico', method === 'HEAD');
-    return bailOut(req, res);
-  }
-  if (url.pathname === '/' || url.pathname === '/index' || url.pathname === '/index.html') {
-    url.pathname = webAppPath;
-    return sendRedirect(req, res, url.href);
-  }
-
-  if (path.normalize(url.pathname).includes('..')) return bailOut(req, res, 403);
-
-  const fileName = path.join(rootFolder, url.pathname),
-    ext = path.extname(fileName).toLowerCase(),
-    stat = await fsp.stat(fileName).catch(() => null);
-  if (stat && stat.isFile()) return sendFile(req, res, fileName, ext, method === 'HEAD');
-
-  if (stat && stat.isDirectory()) {
-    if (fileName.length && fileName[fileName.length - 1] == path.sep) {
-      const altFile = path.join(fileName, 'index.html'),
-        stat = await fsp.stat(altFile).catch(() => null);
-      if (stat && stat.isFile()) return sendFile(req, res, altFile, '.html', method === 'HEAD');
-    } else {
-      url.pathname += path.posix.sep;
-      return sendRedirect(req, res, url.href);
+const plugins = [];
+let traceCalls = false,
+  h2 = false,
+  remotePlugins = true;
+{
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; ++i) {
+    const arg = args[i];
+    if (arg === '--trace') {
+      traceCalls = true;
+    } else if (arg === '--h2') {
+      h2 = true;
+    } else if (arg === '--no-remote-plugins') {
+      remotePlugins = false;
+    } else if (arg === '--plugin') {
+      if (++i < args.length) plugins.push(args[i]);
+    } else if (arg.startsWith('--plugin=')) {
+      plugins.push(arg.substring('--plugin='.length));
     }
-    return bailOut(req, res);
   }
-
-  if (!ext && fileName.length && fileName[fileName.length - 1] != path.sep) {
-    const altFile = fileName + '.html',
-      stat = await fsp.stat(altFile).catch(() => null);
-    if (stat && stat.isFile()) return sendFile(req, res, altFile, '.html', method === 'HEAD');
-  }
-
-  bailOut(req, res);
-});
-
-server.on('clientError', (error, socket) => {
-  if (error.code === 'ECONNRESET' || !socket.writable) return;
-  socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
-});
+}
 
 const normalizePort = val => {
   const port = parseInt(val);
@@ -225,24 +74,47 @@ const normalizePort = val => {
 const portToString = port => (typeof port === 'string' ? 'pipe' : 'port') + ' ' + port;
 
 const host = process.env.HOST || 'localhost',
-  port = normalizePort(process.env.PORT || '3000');
+  port = normalizePort(process.env.PORT || '3000'),
+  rootFolder = process.env.SERVER_ROOT || process.cwd(),
+  protocol = h2 ? 'h2' : process.env.TAPE6_PROTOCOL || undefined;
+
+const hasColors = detectColors(),
+  paint = makePaint(hasColors),
+  grey = paint('\x1B[2;37m', '\x1B[22;39m'),
+  red = paint('\x1B[41;97m', '\x1B[49;39m'),
+  yellow = paint('\x1B[93m');
+
+const link = (url, text = url) => paint('\x1B]8;;' + url + '\x1B\\', '\x1B]8;;\x1B\\')(text);
 
 try {
-  await startServer(server, {host, port});
-  const bind = portToString(port);
+  const testServer = await createTestServer({
+    rootFolder,
+    webAppPath: process.env.WEBAPP_PATH,
+    host,
+    port,
+    protocol,
+    plugins,
+    remotePlugins,
+    trace: traceCalls
+  });
+  const bind = portToString(testServer.port);
   console.log(
     grey('Listening on ') +
       yellow(host || 'all network interfaces') +
+      yellow(' (' + testServer.protocol + ')') +
       grey(' at ') +
       yellow(bind) +
       grey(', serving static files from ') +
       yellow(rootFolder)
   );
-  if (host && bind) {
+  const mounted = testServer.plugins();
+  if (mounted.length) {
     console.log(
-      grey('Open ') + link('http://' + host + ':' + port + '/') + grey(' in your browser')
+      grey('Plugins: ') +
+        yellow(mounted.map(p => p.name + (p.prefix ? ' (' + p.prefix + ')' : '')).join(', '))
     );
   }
+  console.log(grey('Open ') + link(testServer.base + '/') + grey(' in your browser'));
   console.log();
 } catch (error) {
   if (error.syscall === 'listen') {

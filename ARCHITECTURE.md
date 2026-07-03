@@ -14,7 +14,7 @@ bin/                  # CLI utilities (all directly executable)
 ├── tape6-bun.js      # Bun parallel test runner
 ├── tape6-deno.js     # Deno parallel test runner
 ├── tape6-seq.js      # Sequential in-process runner (no threads)
-├── tape6-server.js   # Static web server for browser-based testing
+├── tape6-server.js   # Pluggable test server CLI (thin shell over src/test-server.js)
 └── tape6-runner.js   # Helper: returns paths to tape6-* executables
 src/                  # Source code
 ├── test.js           # Core: test registration, execution, hooks, argument processing
@@ -25,6 +25,17 @@ src/                  # Source code
 ├── server.d.ts       # Type declarations for server.js
 ├── response.js       # HTTP response helpers: asText/asJson/asBytes/header/headers (internal)
 ├── response.d.ts     # Type declarations for response.js
+├── test-server.js    # Embeddable test server: createTestServer/withTestServer (public)
+├── test-server.d.ts  # Type declarations for test-server.js (incl. the plugin contract)
+├── test-server/      # Test server internals
+│   ├── adapter.js    # node req/res ⇄ WHATWG Request/Response bridge + iterable sugar
+│   ├── registry.js   # PluginRegistry: normalization, longest-prefix routing, lifecycle
+│   ├── control.js    # Control endpoints: /--tests, /--patterns, /--importmap, /--plugins
+│   ├── statics.js    # Static file serving (GET/HEAD only)
+│   ├── certs.js      # TLS cert ladder for the h2 mode (env/config → openssl self-signed)
+│   ├── trace.js      # Request trace logging + shared paint helpers
+│   └── plugins/
+│       └── echo.js   # The /--echo reference plugin
 ├── reporters/        # Output format implementations
 │   ├── Reporter.js   # Base reporter class
 │   ├── TapReporter.js    # TAP protocol output (default fallback)
@@ -126,6 +137,24 @@ Each runtime-specific runner:
 
 `tape6-server` serves files for browser-based testing and provides a web UI.
 
+### Test server
+
+`bin/tape6-server.js` is a thin CLI shell over `src/test-server.js`, which exports
+`createTestServer()` (embeddable; `port: 0` gives parallel test files collision-free servers)
+and `withTestServer()` (scoped wrapper). Request routing: reserved control endpoints
+(`/--tests`, `/--patterns`, `/--importmap`, `/--plugins`) → fixture plugins by longest URL
+prefix → static files (GET/HEAD only; plugins see all verbs).
+
+Plugins speak WHATWG `Request`/`Response` behind a small adapter (streamed bodies,
+`duplex: 'half'` request streams, client disconnect wired to `request.signal`); `fetch` may
+return an (async) iterable for streamed output (objects become JSONL), and `raw(req, res)` is
+the escape hatch on raw Node objects. Registration is static (`tape6.server.plugins` config +
+`--plugin`) and dynamic (`PUT`/`DELETE /--plugins`, contained to rootFolder-relative modules;
+`--no-remote-plugins` disables). `--h2` switches to `http2.createSecureServer({allowHTTP1:
+true})` with a cert ladder (`TAPE6_CERT`/`TAPE6_KEY` → cached openssl self-signed) — Node-only
+server mode, needed for browser `fetch()` upload streaming (Chromium, h2/h3-only). Full
+design: `dev-docs/pluggable-test-server.md`.
+
 ### Worker control channel
 
 `EventServer` is the base of every runner's `TestWorker`. Beyond the data plane
@@ -162,6 +191,9 @@ bin/tape6.js → bin/tape6-node.js → src/runners/node/TestWorker.js
              → bin/tape6-deno.js → src/runners/deno/TestWorker.js
 
 bin/tape6-seq.js → src/runners/seq/TestWorker.js
+
+bin/tape6-server.js → src/test-server.js → src/test-server/* (adapter, registry, control, statics, certs, trace)
+                                         → src/server.js (startServer)
 
 src/utils/config.js ← (used by all bin/* runners for test discovery)
 src/utils/listing.js ← (glob-based file listing)

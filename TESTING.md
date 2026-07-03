@@ -649,7 +649,7 @@ In this example, running `tape6` on Node will execute tests matching `/tests/nod
 
 ## Browser testing
 
-Browser tests use `tape6-server`, a static file server bundled with `tape-six` that provides a web UI for running tests.
+Browser tests use `tape6-server`, a pluggable test server bundled with `tape-six` that serves static files and provides a web UI for running tests. Fixture plugins can be mounted under URL prefixes (`--plugin`, the `tape6.server.plugins` config, or `PUT /--plugins` at runtime), the core is embeddable in tests via `createTestServer()` from `tape-six/test-server.js`, and `--h2` switches to HTTP/2 (Node-only). See the [tape6-server wiki page](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6%E2%80%90server) for the plugin contract.
 
 ### Setup
 

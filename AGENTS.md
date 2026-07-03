@@ -48,6 +48,8 @@ tape-six/
 │   ├── State.js      # Reporter state management
 │   ├── server.js     # HTTP server test fixtures: withServer/startServer/setupServer (internal; for tape-six-* siblings)
 │   ├── response.js   # HTTP response helpers: asText/asJson/asBytes/header/headers (internal)
+│   ├── test-server.js # Embeddable test server: createTestServer/withTestServer + plugin contract
+│   ├── test-server/  # Test server internals (adapter, registry, control, statics, certs) + plugins/echo.js
 │   ├── reporters/    # TAP, TTY, JSONL, Proxy, DOM reporters
 │   ├── runners/      # Runtime-specific test runners
 │   ├── utils/        # Timers, console capture, defer, etc.
@@ -80,7 +82,7 @@ tape-six/
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
 - `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process.
 - Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop in-flight workers (not just new scheduling), and an optional per-worker deadline (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and `dev-docs/worker-control-channel.md`.
-- Browser tests use `tape6-server` which serves files and a web UI. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright). For process-isolated test execution see [tape-six-proc](https://www.npmjs.com/package/tape-six-proc).
+- Browser tests use `tape6-server` which serves files and a web UI. It is pluggable: fixture plugins mount under URL prefixes with a WHATWG `fetch(request) → Response | (async) iterable | undefined` contract (static config `tape6.server.plugins` / `--plugin`, or `PUT /--plugins` at runtime), and the core is embeddable via `createTestServer({port: 0})` from `src/test-server.js`; `--h2` serves HTTP/2 (Node-only). See `dev-docs/pluggable-test-server.md`. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright). For process-isolated test execution see [tape-six-proc](https://www.npmjs.com/package/tape-six-proc).
 - The `deep6` dependency is vendored via git submodule and copied into the source tree at build time.
 
 ## Writing tests
