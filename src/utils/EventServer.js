@@ -1,3 +1,5 @@
+// @ts-self-types="./EventServer.d.ts"
+
 import defer from './defer.js';
 
 // Fallback used when no graceTimeout is supplied through options (e.g. the
