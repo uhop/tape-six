@@ -58,7 +58,8 @@ src/                  # Source code
 │   ├── yamlFormatter.js   # YAML formatting for TAP diagnostics
 │   ├── box.js        # Box drawing for TTY reporter
 │   ├── sanitize.js   # String sanitization utilities
-│   └── EventServer.js     # Event-based communication for workers
+│   ├── EventServer.js     # Event-based communication for workers
+│   └── EventServer.d.ts   # Type declarations for EventServer.js
 └── deep6/            # Vendored deep equality library (copied at build time, gitignored)
 web-app/              # Browser test UI application
 ├── index.html        # Main HTML page
