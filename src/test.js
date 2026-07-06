@@ -1,3 +1,5 @@
+// @ts-self-types="./test.d.ts"
+
 import {selectTimer} from './utils/timer.js';
 import {isAssertionError, isStopTest} from './State.js';
 import makeDeferred from './utils/makeDeferred.js';

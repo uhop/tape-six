@@ -1,3 +1,5 @@
+// @ts-self-types="./config.d.ts"
+
 import {promises as fsp, readFileSync} from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';

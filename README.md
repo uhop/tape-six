@@ -117,7 +117,7 @@ tape-six/
 
 ## Docs
 
-The documentation can be found in the [wiki](https://github.com/uhop/tape-six/wiki).
+Full documentation is in the **[wiki](https://github.com/uhop/tape-six/wiki)** &mdash; browse the [index](https://github.com/uhop/tape-six/wiki/Home), or [search it](https://uhop.github.io/wiki-search/app/?wiki=uhop/tape-six) by name.
 See how it can be used in [tests/](https://github.com/uhop/tape-six/tree/master/tests).
 
 For AI assistants: see [llms.txt](https://github.com/uhop/tape-six/blob/master/llms.txt) and [llms-full.txt](https://github.com/uhop/tape-six/blob/master/llms-full.txt) for LLM-optimized documentation.

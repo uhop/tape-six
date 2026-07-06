@@ -1,3 +1,5 @@
+// @ts-self-types="./timer.d.ts"
+
 let timer = Date;
 
 export const getTimer = () => timer;

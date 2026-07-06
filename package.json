@@ -68,8 +68,6 @@
     "url": "https://github.com/uhop/tape-six/issues"
   },
   "homepage": "https://github.com/uhop/tape-six#readme",
-  "llms": "https://raw.githubusercontent.com/uhop/tape-six/master/llms.txt",
-  "llmsFull": "https://raw.githubusercontent.com/uhop/tape-six/master/llms-full.txt",
   "files": [
     "index.*",
     "bin",

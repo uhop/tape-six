@@ -1,3 +1,5 @@
+// @ts-self-types="./State.d.ts"
+
 import {getTimer} from './utils/timer.js';
 
 export const signature = 'tape6-!@#$%^&*';

@@ -7,7 +7,7 @@ Thank you for your interest in contributing!
 This project uses git submodules. Clone and build:
 
 ```bash
-git clone --recursive git@github.com:uhop/tape-six.git
+git clone --recursive https://github.com/uhop/tape-six.git
 cd tape-six
 npm install
 npm run build

@@ -1,3 +1,5 @@
+// @ts-self-types="./makeDeferred.d.ts"
+
 class Deferred {
   constructor() {
     this.promise = new Promise((resolve, reject) => {
