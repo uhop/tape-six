@@ -18,9 +18,11 @@ bin/                  # CLI utilities (all directly executable)
 └── tape6-runner.js   # Helper: returns paths to tape6-* executables
 src/                  # Source code
 ├── test.js           # Core: test registration, execution, hooks, argument processing
+├── test.d.ts         # Type declarations for test.js
 ├── Tester.js         # Tester class: all assert methods, embedded tests, utilities
 ├── OK.js             # Expression evaluator helper for eval(t.OK(...))
 ├── State.js          # Reporter state management (counters, hooks, nesting)
+├── State.d.ts        # Type declarations for State.js
 ├── server.js         # HTTP server test fixtures: withServer/startServer/setupServer (internal; for tape-six-* siblings)
 ├── server.d.ts       # Type declarations for server.js
 ├── response.js       # HTTP response helpers: asText/asJson/asBytes/header/headers (internal)
@@ -50,9 +52,16 @@ src/                  # Source code
 │   └── seq/          # Sequential: TestWorker.js + BypassReporter.js
 ├── utils/            # Shared utilities
 │   ├── config.js     # CLI arg parsing, options, test discovery, reporter init
+│   ├── config.d.ts   # Type declarations for config.js
+│   ├── controlFetch.js    # Control-plane client: 3s deadline + scoped TLS trust ladder (for tape-six-* browser providers)
+│   ├── controlFetch.d.ts  # Type declarations for controlFetch.js
+│   ├── control-channel.js # Control plane, child side (proc transport): stdin terminate protocol
 │   ├── listing.js    # Glob-based test file listing
 │   ├── capture-console.js  # Console capture for test output isolation
+│   ├── makeDeferred.js    # Promise.withResolvers, with a fallback for older runtimes
+│   ├── makeDeferred.d.ts  # Type declarations for makeDeferred.js
 │   ├── timer.js      # Cross-runtime high-resolution timer
+│   ├── timer.d.ts    # Type declarations for timer.js
 │   ├── defer.js      # Cross-runtime microtask/macrotask defer
 │   ├── formatters.js # Value formatting for reporter output
 │   ├── yamlFormatter.js   # YAML formatting for TAP diagnostics
@@ -156,6 +165,14 @@ true})` with a cert ladder (`TAPE6_CERT`/`TAPE6_KEY` → cached openssl self-sig
 server mode, needed for browser `fetch()` upload streaming (Chromium, h2/h3-only). Full
 design: `dev-docs/pluggable-test-server.md`.
 
+The client half of the control plane ships as `src/utils/controlFetch.js`
+(`createControlFetch`, `isProtocolMismatch`): every control request carries a 3s hard
+deadline (a dying listener can accept and never answer), and `https:` requests walk a TLS
+trust ladder scoped to control requests only — `TAPE6_CERT` pinned as CA, else the cached
+self-signed cert (`node_modules/.cache/tape6/cert.pem`, written by `certs.js`), else relaxed
+verification. The endpoints and the cert-cache location are core's contract; the
+`tape-six-*` browser providers import this client instead of hand-mirroring it.
+
 ### Worker control channel
 
 `EventServer` is the base of every runner's `TestWorker`. Beyond the data plane
@@ -198,6 +215,7 @@ bin/tape6-server.js → src/test-server.js → src/test-server/* (adapter, regis
 
 src/utils/config.js ← (used by all bin/* runners for test discovery)
 src/utils/listing.js ← (glob-based file listing)
+src/utils/controlFetch.js ← (control-plane client; imported by tape-six-puppeteer / tape-six-playwright)
 ```
 
 ## Testing
