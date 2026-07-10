@@ -28,7 +28,8 @@ export interface EventServerReporter {
 /**
  * Options consumed by the base class. Runners pass their own keys through
  * (`flags`, `importmap`, `serverUrl`, `browser`, ...) — hence the index
- * signature.
+ * signature; `any`, not `unknown`, so checked-JS siblings read pass-through
+ * keys without casts (2026-07-10 decision, applies to all sidecar bags).
  */
 export interface EventServerOptions {
   /**
@@ -41,7 +42,7 @@ export interface EventServerOptions {
    * `TAPE6_WORKER_TIMEOUT` via `getOptions()`.
    */
   workerTimeout?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 /**

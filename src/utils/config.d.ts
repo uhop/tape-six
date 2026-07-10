@@ -27,7 +27,7 @@ export interface Tape6Config {
   cli?: string | string[];
   browser?: string | string[];
   importmap?: {imports: Record<string, string>};
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 /** Read `tape6.json`, else `package.json#tape6`, else the default patterns. */
@@ -74,19 +74,19 @@ export interface ArgOption {
   initialValue?: string | null;
   isValueRequired?: boolean;
   /** Custom handler; mutate `flags` directly. */
-  fn?: (flags: Record<string, unknown>, name: string, value: string) => void;
+  fn?: (flags: Record<string, any>, name: string, value: string) => void;
 }
 
 /** A bare function is shorthand for `{fn, isValueRequired: true}`. */
 export type ArgOptions = Record<
   string,
-  ArgOption | ((flags: Record<string, unknown>, name: string, value: string) => void)
+  ArgOption | ((flags: Record<string, any>, name: string, value: string) => void)
 >;
 
 /** Parse CLI args into files + flag values. CLI-only: in a browser returns an empty array. */
 export const processArgs: (argOptions: ArgOptions) => {
   files: string[];
-  flags: Record<string, unknown>;
+  flags: Record<string, any>;
 };
 
 export interface RunnerFlags {
@@ -107,7 +107,7 @@ export interface RunnerFlags {
   /** Consumed by the parent (`EventServer`) only; children ignore them. */
   graceTimeout?: number;
   workerTimeout?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface RunnerOptions {
@@ -115,7 +115,7 @@ export interface RunnerOptions {
   parallel: number;
   files: string[];
   /** Raw parsed option values, keyed by canonical option name. */
-  optionFlags: Record<string, unknown>;
+  optionFlags: Record<string, any>;
 }
 
 /**
