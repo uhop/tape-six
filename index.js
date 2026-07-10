@@ -225,60 +225,67 @@ const getTestFileName = ({isBrowser, isBun, isDeno, isNode}) => {
 let settings = null;
 
 const testRunner = async () => {
-  if (!settings) {
-    await selectTimer();
-    settings = await init();
-  }
-
-  const {isBrowser, isCli} = settings,
-    reporter = getReporter(),
-    testFileName = getTestFileName(settings);
-
-  reporter.report({
-    type: 'test',
-    test: 0,
-    name: testFileName ? 'FILE: /' + testFileName : ''
-  });
-
-  reporter.state.beforeAll = getBeforeAll();
-  clearBeforeAll();
-  reporter.state.afterAll = getAfterAll();
-  clearAfterAll();
-  reporter.state.beforeEach = getBeforeEach();
-  clearBeforeEach();
-  reporter.state.afterEach = getAfterEach();
-  clearAfterEach();
-  reporter.state.isBeforeAllUsed = false;
-
-  const currentState = reporter.state;
-
-  for (;;) {
-    const tests = getTests();
-    if (!tests.length) break;
-    clearTests();
-    const canContinue = await runTests(tests);
-    if (!canContinue) break;
-    await new Promise(resolve => defer(resolve));
-  }
-
-  await currentState?.runAfterAll();
-
-  const runHasFailed = reporter.state && reporter.state.failed > 0;
-
-  reporter.report({
-    type: 'end',
-    test: 0,
-    name: testFileName ? 'FILE: /' + testFileName : '',
-    fail: runHasFailed
-  });
-
-  if (!getConfiguredFlag() && runHasFailed) {
-    if (isCli) {
-      process.exitCode = 1;
+  // ref'd keep-alive — a bare run holds no other ref'd handle, so a test awaiting
+  // only an unref'd timer (AbortSignal.timeout on Node/Bun) would exit 0 mid-suite
+  const keepAlive = setInterval(() => {}, 2 ** 31 - 1);
+  try {
+    if (!settings) {
+      await selectTimer();
+      settings = await init();
     }
-  }
-  if (isBrowser && typeof __tape6_reportResults == 'function') {
-    __tape6_reportResults(runHasFailed ? 'failure' : 'success');
+
+    const {isBrowser, isCli} = settings,
+      reporter = getReporter(),
+      testFileName = getTestFileName(settings);
+
+    reporter.report({
+      type: 'test',
+      test: 0,
+      name: testFileName ? 'FILE: /' + testFileName : ''
+    });
+
+    reporter.state.beforeAll = getBeforeAll();
+    clearBeforeAll();
+    reporter.state.afterAll = getAfterAll();
+    clearAfterAll();
+    reporter.state.beforeEach = getBeforeEach();
+    clearBeforeEach();
+    reporter.state.afterEach = getAfterEach();
+    clearAfterEach();
+    reporter.state.isBeforeAllUsed = false;
+
+    const currentState = reporter.state;
+
+    for (;;) {
+      const tests = getTests();
+      if (!tests.length) break;
+      clearTests();
+      const canContinue = await runTests(tests);
+      if (!canContinue) break;
+      await new Promise(resolve => defer(resolve));
+    }
+
+    await currentState?.runAfterAll();
+
+    const runHasFailed = reporter.state && reporter.state.failed > 0;
+
+    reporter.report({
+      type: 'end',
+      test: 0,
+      name: testFileName ? 'FILE: /' + testFileName : '',
+      fail: runHasFailed
+    });
+
+    if (!getConfiguredFlag() && runHasFailed) {
+      if (isCli) {
+        process.exitCode = 1;
+      }
+    }
+    if (isBrowser && typeof __tape6_reportResults == 'function') {
+      __tape6_reportResults(runHasFailed ? 'failure' : 'success');
+    }
+  } finally {
+    clearInterval(keepAlive);
   }
 };
 
