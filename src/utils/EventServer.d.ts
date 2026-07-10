@@ -21,7 +21,8 @@ export type TestEvent = {[key: string]: unknown};
  */
 export interface EventServerReporter {
   report(event: TestEvent, suppressStopTest?: boolean): void;
-  state?: {stopTest?: boolean; [key: string]: unknown} | null;
+  // no index signature: class-typed states (`State`) have none and must remain assignable
+  state?: {stopTest?: boolean} | null;
 }
 
 /**
