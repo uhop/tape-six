@@ -6,14 +6,14 @@ testing field is heading (mid-2026) and a set of concrete directions for
 recommendation is tagged with a tier and a rationale so we can pick and
 sequence deliberately.
 
-Companion reading: the blog post *TDD as religion*
+Companion reading: the blog post _TDD as religion_
 (`~/Open/blog-hugo/content/blog/2026-07-07-tdd-as-religion/`) frames the
 philosophy this doc operationalizes — **tests sample, they don't prove**; the
 newer techniques (property-based testing, fuzzing, mutation testing) are
-*better sampling*, still sampling, Monte Carlo with a price tag. That framing
+_better sampling_, still sampling, Monte Carlo with a price tag. That framing
 is the lens for every "should we adopt this?" call below: we price a technique
 by what it actually buys, and we keep the core honest about the difference
-between *ran* and *checked*.
+between _ran_ and _checked_.
 
 > A note on sources: the external claims here were gathered from primary
 > sources (official docs, release notes, GitHub) via automated research passes
@@ -28,8 +28,8 @@ between *ran* and *checked*.
 > "sourced but not double-checked" hedge no longer applies to any of these.
 > **Residual (treat as provisional):** the Bun / Deno native snapshot & bench
 > API specifics (file formats, update flags, serializers), flagged inline in
-> §4.5. Two claims were **refuted** and corrected below: TAP 14 does *not*
-> strictly mandate a `TAP version 14` first line, and node-tap does *not* always
+> §4.5. Two claims were **refuted** and corrected below: TAP 14 does _not_
+> strictly mandate a `TAP version 14` first line, and node-tap does _not_ always
 > emit one. The architectural facts about tape-six / nano-bench were verified
 > directly against the repos.
 
@@ -70,20 +70,20 @@ The starting position — what we already have that these directions build on:
   "publish a small package."
 - **An ambient-integration protocol.** `getTester()` +
   `Tester.reportAssertion({ok, message?, marker?, operator?, expected?,
-  actual?})` + a global host slot `Symbol.for('tape6.invariant.host.v1')`.
+actual?})` + a global host slot `Symbol.for('tape6.invariant.host.v1')`.
   `tape-six-invariant` (shipped 2026-06-27) uses exactly this and never imports
   tape-six. This is the template for any "external thing materializes
   assertions into a live run" feature.
 - **A pluggable test server** (`dev-docs/pluggable-test-server.md`). Fixture
   plugins mount under a URL prefix with a WHATWG `fetch(request) → Response |
-  iterable | undefined` contract; reserved control endpoints (`/--tests`,
+iterable | undefined` contract; reserved control endpoints (`/--tests`,
   `/--patterns`, `/--importmap`, `/--plugins`); embeddable via
   `createTestServer({port: 0})`. This is the storage/endpoint substrate for
   browser-side snapshots and for run history.
 - **A browser web-app** (`web-app/`). Today deliberately thin: fire-once on
   page load, reads `?flags` / `?par` / `?q` patterns from the URL, runs the
-  resolved file list via `TestWorker`, renders to DOM + donut. Selection *is*
-  possible (`?q=` routes through `/--patterns`, repeatable) and *is* documented
+  resolved file list via `TestWorker`, renders to DOM + donut. Selection _is_
+  possible (`?q=` routes through `/--patterns`, repeatable) and _is_ documented
   (`wiki/Environment-‐-Browsers.md` § Supported search parameters) — but only as
   a hand-formed URL, framed as "specify a test file," with no interactive
   affordance. No on-demand re-run, no persistence, no history.
@@ -91,7 +91,7 @@ The starting position — what we already have that these directions build on:
   event; events carry per-test timing. State serialization already tags
   `Symbol`/`Error`/`RegExp`/`Set`/`Map`/`Circular` structurally
   (`src/State.js` replacer) — a reusable serializer for snapshots.
-- **TAP output that is *un-verified for conformance*.** We emit TAP and it was
+- **TAP output that is _un-verified for conformance_.** We emit TAP and it was
   sanity-checked against existing TAP reporters early on, but it has **never
   been run through a TAP verifier/validator**. So "tape-six is TAP-compliant"
   is currently an assumption, not a tested fact — and interop with any external
@@ -119,13 +119,13 @@ these.
 From the TDD post, made concrete for roadmap decisions:
 
 - **Better sampling is still sampling.** PBT, fuzzing, and mutation testing
-  raise the *odds* of hitting a bug; none proves absence. We adopt them as
+  raise the _odds_ of hitting a bug; none proves absence. We adopt them as
   **priced tools**, exposed through the cheapest integration that works —
   almost always BYO/plugin, almost never a bundled engine we maintain.
 - **The commodity/value split** (fleet rule: retire the commodity, keep the
   glue). The generators, fuzzing engines, mutation runners, and stats kernels
   are commodities other people maintain better than we would. Our value is the
-  *glue*: the reporter that recognizes their output, the `t.*` method that
+  _glue_: the reporter that recognizes their output, the `t.*` method that
   makes them ergonomic, the storage/UI that makes their results durable and
   legible. Build the glue; adopt the commodity.
 - **A green suite is not free, and neither is a feature.** Anything we add to
@@ -146,7 +146,7 @@ maintained (latest release reported v4.8.0, 2026-05-11; ~5.1k stars; MIT;
 js-yaml. Its monorepo hosts first-party **adapter packages** —
 `@fast-check/vitest`, `@fast-check/jest`, `@fast-check/ava`,
 `@fast-check/worker`. The integration pattern is instructive: the adapter
-*wraps the framework's test function* and injects a generator `g` into the
+_wraps the framework's test function_ and injects a generator `g` into the
 callback; arbitraries (`g(fc.nat)`, etc.) are composed from the library, not
 bundled into the runner. Determinism is the selling point — every failure
 traces to an exact value + seed. Beyond plain PBT, fast-check ships
@@ -161,11 +161,12 @@ functional but second-class (documented in
 `wiki/3rd‐party-property-based-testing.md`). The `@fast-check/vitest` adapter
 pattern maps almost exactly onto `registerTesterMethod`: a `tape-six-fast-check`
 plugin could provide `t.prop(arbitraries, predicate)` that runs the property,
-counts a real assertion on success, and reports a *named* failure with the
+counts a real assertion on success, and reports a _named_ failure with the
 shrunk counterexample + seed through `Tester.reportAssertion` instead of a bare
 throw.
 
 **Verdict.**
+
 - **Tier 1 (recognition):** teach the reporter to prettify fast-check's failure
   shape — its counterexample message is structured and stable enough to parse
   the seed/path/shrunk-input into `expected`/`actual`/diagnostic fields. Cheap,
@@ -197,7 +198,7 @@ fuzzing JS finds logic/uncaught-exception crashes, not memory bugs).
 **Relevance.** Coverage-guided fuzzing needs bytecode/native instrumentation
 and a libFuzzer harness — squarely a **platform-foundation** concern and
 firmly outside our guardrails. It's also Node-only in practice, and browser
-fuzzing isn't a thing we can offer. Fuzzing's *ergonomic* surface (feed
+fuzzing isn't a thing we can offer. Fuzzing's _ergonomic_ surface (feed
 structured random bytes to a target, shrink on crash) overlaps heavily with
 what fast-check already gives us portably.
 
@@ -216,21 +217,22 @@ a persisted `reports/stryker-incremental.json`, re-running mutants only for
 changed code while still producing a full report. Crucially for us, Stryker's
 incremental accuracy is tiered by **test-runner reporting fidelity**, and
 **StrykerJS ships a TAP test-runner integration** — at the "tests per file
-without location" tier, the *same tier as its Vitest and Mocha runners*.
+without location" tier, the _same tier as its Vitest and Mocha runners_.
 
 **Relevance.** This is a near-free win hiding in plain sight. Mutation testing
-is the technique that most directly measures the *ran-vs-checked* gap the TDD
+is the technique that most directly measures the _ran-vs-checked_ gap the TDD
 post is about — it plants bugs and checks that some assertion notices. And
 because Stryker has a generic **TAP runner**, tape-six's existing TAP output
 likely already makes it a usable Stryker target with no new code. The work is
-*verification and documentation*, not implementation.
+_verification and documentation_, not implementation.
 
 **Verdict.**
+
 - **Tier 0 (verify + docs):** confirm tape-six runs under StrykerJS's TAP
   runner (a spike: point Stryker's `tap` runner at a tape-six suite, read the
   mutation report), then document the setup in a new wiki page. If a small
   output tweak improves the fidelity tier, that's a cheap **Tier 1**.
-  *Prerequisite:* this spike depends on our TAP output actually being
+  _Prerequisite:_ this spike depends on our TAP output actually being
   conformant, which is itself unverified (see §4.8) — so the TAP-conformance
   audit gates this. If Stryker's TAP runner chokes on our stream, that's a
   conformance bug to fix, and finding it here is exactly the kind of interop
@@ -241,12 +243,13 @@ likely already makes it a usable Stryker target with no new code. The work is
 ### 4.4 Statistical, search-based, and simulation techniques
 
 **State.**
+
 - **Metamorphic testing** (assert relations between related inputs/outputs when
-  no oracle exists — e.g. `sin(x) == sin(π−x)`) is a real, useful *discipline*
+  no oracle exists — e.g. `sin(x) == sin(π−x)`) is a real, useful _discipline_
   but needs no framework machinery: it's a way of writing ordinary assertions,
   and composes naturally with PBT. Verified this session: the literature treats
   metamorphic testing as a **specialization of property-based testing** (arXiv
-  2211.12003), so it layers directly on `t.prop` — the metamorphic relation *is*
+  2211.12003), so it layers directly on `t.prop` — the metamorphic relation _is_
   the property, expressed with fast-check's `fc.pre` precondition. Nothing to
   build.
 - **Coverage-guided property-based testing (CGPT/FuzzChick)** (Lampropoulos,
@@ -261,7 +264,7 @@ likely already makes it a usable Stryker target with no new code. The work is
   Antithesis; MongoDB, TigerBeetle, Sui). Two shapes: (1) redesign the system so
   all nondeterminism is pluggable (FoundationDB style), or (2) run unmodified
   software inside a deterministic hypervisor (Antithesis) — the latter is
-  language-agnostic and needs *no test-framework support*. There is no
+  language-agnostic and needs _no test-framework support_. There is no
   established JS-native DST framework; the JS analogue that exists is narrower
   (`fc.scheduler` for async interleavings).
 - **Search-based / gradient-descent input search** remains largely academic in
@@ -272,11 +275,12 @@ likely already makes it a usable Stryker target with no new code. The work is
 assertions — nothing to build. DST is either out of scope (a hypervisor is not
 a test framework) or already covered in miniature by fast-check's scheduler.
 The one genuinely tape-six-shaped opportunity in this cluster is the
-*statistics* — but pointed at our own run history (§4.7) and perf regression
+_statistics_ — but pointed at our own run history (§4.7) and perf regression
 (§4.6), where we have a sibling (`nano-benchmark`) that is literally a
 nonparametric-statistics engine.
 
 **Verdict.**
+
 - **Tier 0 (docs):** a wiki note on metamorphic testing with `t.prop`.
 - **Rejected for core:** no DST engine, no search-based input generator. The
   async-interleaving slice is fast-check's `fc.scheduler`, surfaced via the
@@ -288,16 +292,17 @@ nonparametric-statistics engine.
 
 **State.** Snapshots have converged into a well-understood feature with a clear
 design space, and every runtime now ships one:
-- **node:test** *(verified):* `context.assert.snapshot` / `fileSnapshot`,
+
+- **node:test** _(verified):_ `context.assert.snapshot` / `fileSnapshot`,
   **stable since Node v23.4.0** (added v22.3.0). Default snapshot file is
   `<testfile>.snapshot`; regenerate with `--test-update-snapshots`;
   customization via `snapshot.setDefaultSnapshotSerializers(fn)` and
   `snapshot.setResolveSnapshotPath(fn)`.
-- **Bun** *(provisional — sourced from Bun docs, not re-verified):*
+- **Bun** _(provisional — sourced from Bun docs, not re-verified):_
   `toMatchSnapshot` (file-based, `__snapshots__/*.snap`, Jest-style) +
   `toMatchInlineSnapshot` (rewrites the test source) + `--update-snapshots` +
   `expect.addSnapshotSerializer` + property matchers.
-- **Deno** *(provisional — sourced from Deno docs, not re-verified):*
+- **Deno** _(provisional — sourced from Deno docs, not re-verified):_
   `t.assertSnapshot` built into the test context (no import), updated with
   `deno test -u`, stored as plain TypeScript in `__snapshots__/*.snap` via
   `Deno.inspect`; custom serializers; also supports Node's `t.assert.fileSnapshot`
@@ -305,8 +310,8 @@ design space, and every runtime now ships one:
 - **Vitest/Jest:** file + inline snapshots; **refuses to write new snapshots in
   CI**; `toMatchFileSnapshot` for arbitrary named/typed files; pluggable
   serializers via `expect.addSnapshotSerializer`.
-- **Playwright aria snapshots:** YAML of the accessibility tree, *partial/
-  containment* matching (not strict equality), inline or `.aria.yml` files,
+- **Playwright aria snapshots:** YAML of the accessibility tree, _partial/
+  containment_ matching (not strict equality), inline or `.aria.yml` files,
   **reviewable patch files** on update. A notably different (and nice) update UX.
 - **Vitest 4** added `toMatchScreenshot` (visual regression) in stable Browser
   Mode — snapshots extended into pixels.
@@ -314,7 +319,7 @@ design space, and every runtime now ships one:
 The cross-cutting patterns: **one serializer interface + pluggable serializers;
 a file backend keyed to the test; an explicit update flag; a CI safety rule
 (don't create snapshots in CI).** The hard part is never the comparison — it's
-*where snapshots live*, exactly as our queue note says.
+_where snapshots live_, exactly as our queue note says.
 
 **Relevance.** The comparison logic is easy for us (we already have a structural
 serializer and `deep6` deep-equality). The storage backend is the whole
@@ -323,13 +328,14 @@ history** (§4.6, §4.7): a keyed, committable artifact store, filesystem on
 CLI runtimes, and a `tape6-server` endpoint for browsers (our plugin contract
 already supports a `/--snapshots/` fixture that writes to the dev machine's
 disk — the only browser option that yields a committable artifact). On Node, we
-can also *delegate* to `node:test`'s stable `t.assert.snapshot` per the BYO
+can also _delegate_ to `node:test`'s stable `t.assert.snapshot` per the BYO
 principle, rather than reimplement.
 
 **Verdict.** **Tier 3 (core feature, needs the storage-interface design
 first).**
+
 - Design a single **snapshot storage interface** — `read(key)`, `write(key,
-  value)`, `list()` — with two backends: `fs` (Node/Bun/Deno, `__snapshots__`
+value)`, `list()` — with two backends: `fs` (Node/Bun/Deno, `__snapshots__`
   convention for familiarity) and `server` (a `/--snapshots/` plugin for
   browsers). One core comparison + serializer path over a pluggable backend.
 - Adopt the settled conventions rather than inventing: an `--update-snapshots`
@@ -349,13 +355,14 @@ interface it defines is reused by §4.6 and §4.7.
 ### 4.6 Performance-regression-as-a-test (the nano-bench synergy)
 
 **State.** Perf-regression testing has matured into a distinct discipline:
-- **In-runner benchmarking** *(verified):* Vitest's `bench` is built on
+
+- **In-runner benchmarking** _(verified):_ Vitest's `bench` is built on
   **Tinybench** (Tinybench is the common wall-time microbenchmarking substrate;
   the feature remains experimental). Deno bench and standalone `tinybench` /
   `mitata` round out the set.
-- **Statistical methodology** *(verified — a focused second pass confirmed these
-  against the vendors' own docs).* The field splits into three tiers of
-  sophistication. (a) **Naive ratio** — `github-action-benchmark` performs *no*
+- **Statistical methodology** _(verified — a focused second pass confirmed these
+  against the vendors' own docs)._ The field splits into three tiers of
+  sophistication. (a) **Naive ratio** — `github-action-benchmark` performs _no_
   significance test at all; it alerts when the current result exceeds the single
   previous one by an `alert-threshold` percentage (default 200%). This is the
   anti-pattern to beat. (b) **Configurable threshold models over a windowed
@@ -368,7 +375,7 @@ interface it defines is reused by §4.6 and §4.7.
   detection over the time series** — **Nyrkiö** extends github-action-benchmark
   with the nonparametric **E-Divisive Means** algorithm (Matteson & James, JASA
   2014), tuned in practice with p=0.001 and a 5% magnitude floor to suppress
-  false positives. Separately, **CodSpeed** sidesteps CI noise by *instrumentation*
+  false positives. Separately, **CodSpeed** sidesteps CI noise by _instrumentation_
   (`--codspeed-mode simulation`: Valgrind/Callgrind CPU simulation, single
   deterministic run, ignores warmup/rounds, no I/O or syscalls) as an alternative
   to its own wall-time mode. **criterion.rs** remains the reference design:
@@ -384,9 +391,9 @@ coincidence. Its entire design is the nonparametric, baseline-relative,
 raw-samples-as-truth methodology these services charge for. "Performance
 regression is part of testing" (the project owner's framing) becomes:
 `t.bench(name, fn)` collects samples during a run, compares against a committed
-baseline using **Mann-Whitney U for significance *and* a median-ratio effect-
+baseline using **Mann-Whitney U for significance _and_ a median-ratio effect-
 size floor** (significance alone flags trivial deltas in a big sample — the
-effect floor is what makes it a *regression* gate), gated by nano-bench's
+effect floor is what makes it a _regression_ gate), gated by nano-bench's
 existing **environment-comparability check** (`diffEnvironments` + `bodyHash`)
 so a machine-confounded comparison never reads as clean.
 
@@ -395,6 +402,7 @@ tape-six cannot take `nano-benchmark` as an npm dependency. The resolution is
 §5 — extract the stats kernel into a vendored package both projects share.
 
 **Verdict.** **Tier 2/4 (plugin now, deeper integration later), gated on §5.**
+
 - Extract the stats kernel (§5); verified this session to be **zero external
   imports**, so extraction is clean.
 - A `t.bench` capability via `registerTesterMethod`, backed by the shared stats
@@ -413,14 +421,15 @@ tape-six cannot take `nano-benchmark` as an npm dependency. The resolution is
 ### 4.7 Test-run history / time series
 
 **State.** Flaky-test analytics is a mature product category, and a focused
-research pass verified concrete prior art for both the *record shape* and the
-*policies*:
+research pass verified concrete prior art for both the _record shape_ and the
+_policies_:
+
 - **Buildkite Test Engine** gives a concrete per-test JSON schema tape-six can
   model local history on: `{name (required), scope, location "path:line",
-  file_name, result, failure_reason, failure_expanded, history (required), tags}`,
+file_name, result, failure_reason, failure_expanded, history (required), tags}`,
   where `result` is a four-value enum (**passed/failed/skipped/unknown**) and
   `history` stores timing at two granularities — an aggregate `{start_at, end_at,
-  duration}` (duration a float in seconds) plus a `children[]` array of span
+duration}` (duration a float in seconds) plus a `children[]` array of span
   objects (http/sql/sleep/annotation, down to individual query durations).
 - **Datadog Test Optimization** detects flakiness on the default branch over a
   **30-day rolling window** and separates two states: **Quarantine** (the test
@@ -444,16 +453,17 @@ table.
 
 **Relevance.** This is a natural tape-six feature with a decisive structural
 advantage: **browser runs already funnel through Node-side drivers**
-(`tape-six-puppeteer` / `-playwright`) and the CLI runners, so a *server-side*
+(`tape-six-puppeteer` / `-playwright`) and the CLI runners, so a _server-side_
 history store covers every runtime with no browser-storage problem. We already
 emit a structured JSONL event stream with per-test timing; capturing history is
-mostly *persisting what we already produce*, plus a git-rev stamp. And the
+mostly _persisting what we already produce_, plus a git-rev stamp. And the
 analytics layer is, again, `nano-benchmark`'s statistics (§5) pointed at a
 different table: duration drift via Mann-Whitney U between time windows, a
 windowed flakiness score, multiple-comparison correction (Holm/BH) across many
 tests.
 
 **Verdict.** **Tier 4 (opt-in utility + the web-UI story of §6).**
+
 - Capture at the **runner level**: append one JSONL record per (test, run) —
   `{test, file, result, durationMs, env, ts, gitRev?, retries?}` with `result`
   the Buildkite-style enum (passed/failed/skipped/unknown) — behind an opt-in
@@ -469,7 +479,7 @@ tests.
 - Storage backend: the **same interface** as §4.5/§4.6 — `fs`/JSONL for CLI,
   a `/--history/` server plugin for the browser/UI path. Optional SQLite is a
   later backend if scale demands; JSONL-append is the zero-dep default.
-- Retry/quarantine (the product-grade layer) is a *later* consideration and
+- Retry/quarantine (the product-grade layer) is a _later_ consideration and
   couples to a retry API (§4.8); start with capture + read-only analytics.
 
 ### 4.8 Other emerging features worth attention
@@ -477,7 +487,7 @@ tests.
 **State + verdicts**, briefly, since these are smaller:
 
 - **Type testing** (`expectTypeOf`/`assertType` via `expect-type`, used by
-  Vitest as an *experimental* integration; `tsd`; `attest`). Type-level
+  Vitest as an _experimental_ integration; `tsd`; `attest`). Type-level
   assertions run at type-check time, not runtime — a different execution model
   from our TAP runner. **Verdict: Tier 0/Watch.** BYO via a wiki note (run
   `tsd`/`expect-type` alongside; they're their own tools); a runtime framework
@@ -500,14 +510,14 @@ tests.
   question for "test inversion").
 - **test.only / inversion / expected-failure** (already a queued "research"
   item). The field norm: `only` to focus, `failing`/`fails` to mark
-  expected-failing tests that *fail if they pass*. **Verdict: Tier 3**, folded
+  expected-failing tests that _fail if they pass_. **Verdict: Tier 3**, folded
   with the retry design — one coherent pass over test-modifier semantics
   (`only`, `failing`, `retry`, `repeat`) against `t.plan` and skip/todo.
 - **AI-assisted test generation / self-healing tests.** Emerging, mostly
   external tooling and IDE/agent-side, not a framework primitive — and the TDD
   post is pointedly skeptical of agents optimizing for green. **Verdict:
   Reject/Watch.** Nothing to build into core; our contribution to the
-  agent-testing story is *honest signal* (accurate counts, clear failures,
+  agent-testing story is _honest signal_ (accurate counts, clear failures,
   the materialized-invariant path of `tape-six-invariant`), not test generation.
 - **TAP 14 + conformance verification (foundational).** What TAP 14 actually
   specifies (corrected after verification — the earlier draft overstated the
@@ -517,9 +527,9 @@ tests.
   blocks (schema left implementation-defined); `todo`/`skip` non-failing;
   `1..0` = wholly skipped. It "adds no features not already in wide use" —
   mostly formalizing practice. **Correction (refuted claims):** a `TAP version
-  14` declaration line is **not** strictly required as the first line, and
+14` declaration line is **not** strictly required as the first line, and
   node-tap does **not** always emit one — so do not treat a mandatory version
-  line as a compliance gate. Emitting `TAP version 14` is *interop-helpful*
+  line as a compliance gate. Emitting `TAP version 14` is _interop-helpful_
   (some consumers want it) but optional; if we emit it, strip it from indented
   subtest streams (some consumers reject an indented version line).
   **Verdict: Tier 1, and a prerequisite for the TAP-interop recommendations
@@ -540,14 +550,15 @@ tests.
 
 ## 5. Proposal: a vendored statistics package
 
-**The decision this enables** (project owner, this session): *when tape-six
+**The decision this enables** (project owner, this session): _when tape-six
 needs to pull in code, prefer a git submodule like `deep6`, not an npm
-dependency.* And specifically: a **statistics package vendored by both
+dependency._ And specifically: a **statistics package vendored by both
 `tape-six` and `nano-benchmark`.**
 
 **Why it's the right shape.**
+
 - It dissolves the dependency cycle. nano-bench's tests use tape-six, so
-  tape-six can't `npm`-depend on nano-benchmark. A *third* package both vendor
+  tape-six can't `npm`-depend on nano-benchmark. A _third_ package both vendor
   breaks the cycle cleanly.
 - It's verified extractable. The nano-bench stats layer — `stats.js`,
   `median.js`, `stream-stats.js`, `stream-median.js`, `significance/*`
@@ -561,6 +572,7 @@ dependency.* And specifically: a **statistics package vendored by both
   no-runtime-dependency posture while gaining a real statistics engine.
 
 **Shape.**
+
 1. New repo (e.g. `nano-stats` / `deep-stats`) = the extracted kernel, zero-dep,
    its own tests (using tape-six — fine; it's a leaf).
 2. `nano-benchmark` vendors it as a submodule, replacing its inline `src/stats*`
@@ -575,7 +587,7 @@ dependency.* And specifically: a **statistics package vendored by both
 
 **Caveats to weigh before committing.** Extracting churns nano-bench (a working,
 published tool) for tape-six's benefit — sequence it so nano-bench is
-refactored and green *before* tape-six consumes the kernel. Vendoring adds a
+refactored and green _before_ tape-six consumes the kernel. Vendoring adds a
 second submodule + build-copy step to tape-six's setup (already present for
 deep6, so marginal). And the kernel's API becomes a shared contract across two
 consumers — version it deliberately. None of these is blocking; they're
@@ -585,7 +597,7 @@ sequencing notes.
 
 **The direction** (project owner, this session): if we do run history / time
 series, explore a **`tape6-server`-based web UI** for it, folded into the
-existing queued *"web application for test running"* (selective running, reruns,
+existing queued _"web application for test running"_ (selective running, reruns,
 result viewing).
 
 Today's `web-app/` is a thin fire-once runner (§2). The queue already wants it
@@ -594,7 +606,8 @@ surface. So this is **one web-UI evolution with two stacked deliverables**, not
 a bolt-on:
 
 **Layer A — modernize the runner UI (needed regardless of history).**
-- Interactive, discoverable test selection driving the *existing* plumbing
+
+- Interactive, discoverable test selection driving the _existing_ plumbing
   (`/--patterns` already resolves `?q=` patterns to a file list — the UI just
   drives it instead of the user typing a URL). This closes the discoverability
   gap from §2, not a new capability.
@@ -603,6 +616,7 @@ a bolt-on:
 - A face-lift (the app is due one on its own merits).
 
 **Layer B — history/analytics views on top.**
+
 - A **`/--history/` server plugin** (the fixture-plugin `fetch` contract from
   `dev-docs/pluggable-test-server.md`): `POST` a run's records, `GET`
   trends/flakiness/durations. This is the browser-side storage backend from
@@ -626,6 +640,7 @@ headless first, pretty second.
 ## 7. Tiers and sequencing
 
 **Tier definitions.**
+
 - **Tier 0 — docs/verify:** wiki pages, a verification spike; no core change.
 - **Tier 1 — recognition/output:** small, safe core tweaks (recognize a shape,
   align output); no new API surface.
@@ -666,7 +681,7 @@ de-risk later ones):
    `repeat` semantics against `t.plan` and skip/todo, in one coherent design.
    Also add `--shard i/n`.
 8. **Run history + web UI (Tier 4, §6):** capture format → `/--history/` plugin
-   + CLI reader → web-app Layer A modernization → Layer B analytics views.
+   - CLI reader → web-app Layer A modernization → Layer B analytics views.
 
 **Explicitly not doing** (recorded so the question doesn't reopen): a bundled
 assertion/PBT/generator library; a fuzzing engine; a DST engine; a mutation
@@ -680,7 +695,7 @@ maintenance debt.
 
 1. **Stats extraction appetite.** §5 churns a working, published nano-bench.
    Worth it for the shared kernel, or keep the kernel in nano-bench and have
-   tape-six vendor *nano-bench's* subtree directly (narrower, but couples
+   tape-six vendor _nano-bench's_ subtree directly (narrower, but couples
    tape-six to nano-bench's layout)?
 2. **Snapshot scope for v1.** File snapshots only (recommended), or is the
    inline-snapshot source-rewriting worth the four-runtime cost sooner?
