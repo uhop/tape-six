@@ -37,6 +37,11 @@ export class TestWorker extends EventServer {
     throw new Error('TestWorker subclass must implement newContext(browser, {insecure})');
   }
 
+  // diagnostic sink — embedders/tests may override (the default is fine in driver bins)
+  logError(...args) {
+    console.error(...args);
+  }
+
   get insecure() {
     return /^https:/i.test(this.options.serverUrl || '');
   }
@@ -71,7 +76,7 @@ export class TestWorker extends EventServer {
         // Launch/setup failure (e.g. the engine isn't installed): no page
         // exists, so no 'close' event can drive completion — and without a
         // reported failure the run would exit 0 (a false pass).
-        console.error('Failed to run test:', fileName, error);
+        this.logError('Failed to run test:', fileName, error);
         try {
           this.report(id, {
             name: error && error.message ? error.message : String(error),
@@ -104,7 +109,7 @@ export class TestWorker extends EventServer {
       context = await this.newContext(this.browser, {insecure: this.insecure});
       page = await context.newPage();
     } catch (error) {
-      console.error('Failed to open context for:', fileName, error);
+      this.logError('Failed to open context for:', fileName, error);
       if (context) context.close().catch(() => {});
       this.close(id);
       return;
@@ -173,7 +178,7 @@ export class TestWorker extends EventServer {
       // up now that the iframe exists so a just-started task still aborts.
       if (this.stopRequested) this.destroyTask(id, 'failOnce');
     } catch (error) {
-      console.error('Failed to set up test:', fileName, error);
+      this.logError('Failed to set up test:', fileName, error);
       this.destroyTask(id, 'done');
     }
   }

@@ -56,6 +56,9 @@ class FakeWorker extends DriverTestWorker {
     super(reporter, numberOfTasks, options);
     this.driver = driver;
   }
+  logError(...args) {
+    (this.driver.errors ||= []).push(args);
+  }
   async launchBrowser(name, {insecure}) {
     this.driver.launched = {name, insecure};
     return this.driver.browser;
@@ -140,6 +143,10 @@ test('a launch failure reports instead of passing silently', async t => {
   t.ok(
     reporter.events.some(event => event.fail && /engine is not installed/.test(event.name)),
     'the launch failure is a reported test failure'
+  );
+  t.ok(
+    driver.errors?.some(args => args.some(a => /engine is not installed/.test(String(a)))),
+    'the diagnostic went through logError, not the console'
   );
   await worker.cleanup();
 });

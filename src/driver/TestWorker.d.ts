@@ -34,6 +34,12 @@ export class TestWorker extends EventServer {
    */
   newContext(browser: any, options: {insecure: boolean}): Promise<any>;
 
+  /**
+   * Diagnostic sink for task-setup failures (defaults to `console.error`).
+   * Overridable — e.g. tests collect instead of printing.
+   */
+  logError(...args: any[]): void;
+
   /** `true` when `options.serverUrl` is `https:` — the h2 / TLS mode. */
   readonly insecure: boolean;
 
