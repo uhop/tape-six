@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.14.1 _Bug fixes. Updated dependencies._
 - 1.14.0 _Internal housekeeping. Removed the Deno 2.9.0 workaround shim._
 - 1.13.0 _TypeScript declarations for the `EventServer`._
 - 1.12.0 _`tape6-server` is now pluggable, embeddable server for hermetic integration tests, runtime plugin registration, and an opt-in HTTP/2 mode._
@@ -455,5 +456,3 @@ The most recent releases:
 - 1.5.0 _Internal refactoring (moved state to reporters), added type identification of values in the DOM and TTY reporters, multiple minor fixes._
 
 The full release notes are in the wiki: [Release notes](https://github.com/uhop/tape-six/wiki/Release-notes).
-
-For more info consult full [release notes](https://github.com/uhop/tape-six/wiki/Release-notes).
