@@ -10,10 +10,11 @@
 export type DestroyReason = 'done' | 'failOnce' | 'timeout';
 
 /**
- * A test event routed to the reporter — a loose bag (`type`, `test`,
- * `name`, `marker`, `operator`, `fail`, `data`, ...). See TESTING.md.
+ * A test event routed to the reporter. `type` / `test` are the protocol
+ * spine (declared — sisters branch on them); the rest is a loose bag
+ * (`name`, `marker`, `operator`, `fail`, `data`, ...). See TESTING.md.
  */
-export type TestEvent = {[key: string]: unknown};
+export type TestEvent = {type: string; test?: number; [key: string]: unknown};
 
 /**
  * The reporter surface `EventServer` needs. Structural — every tape-six
@@ -21,8 +22,9 @@ export type TestEvent = {[key: string]: unknown};
  */
 export interface EventServerReporter {
   report(event: TestEvent, suppressStopTest?: boolean): void;
-  // no index signature: class-typed states (`State`) have none and must remain assignable
-  state?: {stopTest?: boolean} | null;
+  // no index signature: class-typed states (`State`) have none and must remain assignable;
+  // declared keys = the State-owned surface sisters read (proc: `failed`)
+  state?: {stopTest?: boolean; failed?: number} | null;
 }
 
 /**

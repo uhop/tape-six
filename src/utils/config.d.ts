@@ -21,12 +21,28 @@ export const printFlagOptions: () => void;
  */
 export const resolvePatterns: (rootFolder: string, patterns: string[]) => Promise<string[]>;
 
+/**
+ * The `tape6.server` section — core-owned (`src/test-server.js` reads it);
+ * declared so driver siblings read it cast-free. Still a user-authored bag,
+ * hence the open index.
+ */
+export interface Tape6ServerConfig {
+  protocol?: 'h1' | 'h2';
+  plugins?: (string | {module: string; name?: string; prefix?: string})[];
+  remotePlugins?: boolean;
+  webAppPath?: string;
+  cert?: string;
+  key?: string;
+  [key: string]: any;
+}
+
 /** The `tape6` config bag: test-set patterns keyed by environment, plus the importmap. */
 export interface Tape6Config {
   tests?: string | string[];
   cli?: string | string[];
   browser?: string | string[];
   importmap?: {imports: Record<string, string>};
+  server?: Tape6ServerConfig;
   [key: string]: any;
 }
 
