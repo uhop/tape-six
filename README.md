@@ -46,7 +46,7 @@ _(The examples below show actual output of test functions. In real life, success
 Running a test file directly:
 
 ```txt
-$ node tests/test-console.js
+$ node tests/manual/test-console.js
 ○ console test
   log: log #1
   ✓ pass - 1.542ms
@@ -63,8 +63,8 @@ $ node tests/test-console.js
 Running a test suite:
 
 ```txt
-$ npx tape6 tests/test-console.js tests/test-eval.js
-○ FILE: /tests/test-console.js
+$ npx tape6 tests/manual/test-console.js tests/test-eval.js
+○ FILE: /tests/manual/test-console.js
   ○ console test
     log: log #1
     ✓ pass - 0.338ms
@@ -75,7 +75,7 @@ $ npx tape6 tests/test-console.js tests/test-eval.js
     log: log #3
     err: error #2
   ✓ console test  2  0  - 1.286ms
-✓ FILE: /tests/test-console.js  2  0  - 7.411ms
+✓ FILE: /tests/manual/test-console.js  2  0  - 7.411ms
 ○ FILE: /tests/test-eval.js
   ○ OK test
     ✓ 1 < 2 - 1.28ms

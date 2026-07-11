@@ -1,4 +1,4 @@
-import test from '../index.js';
+import test from '../../index.js';
 
 test('console test', t => {
   console.assert(true, 'Assertion passed, value is', true);
