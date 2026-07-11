@@ -1,4 +1,4 @@
-import type {RequestListener, Server} from 'node:http';
+import type {IncomingMessage, RequestListener, Server, ServerResponse} from 'node:http';
 
 /**
  * Result of starting a server. Properties reflect the actual bound address
@@ -56,6 +56,32 @@ export function withServer<T>(
   clientHandler: (base: string, lifecycle: ServerLifecycle) => Promise<T> | T,
   opts?: ServerOptions
 ): Promise<T>;
+
+/** One request captured by a `record()` listener. */
+export interface RecordedRequest {
+  method: string;
+  url: string;
+  /** Lower-cased header names (Node's normalization), copied to a plain object. */
+  headers: Record<string, string | string[] | undefined>;
+  /** The full request body, eagerly buffered as UTF-8 text (`''` when empty). */
+  body: string;
+}
+
+/** A request listener that records every request it serves into `requests`. */
+export type RecordingListener = RequestListener & {requests: RecordedRequest[]};
+
+/**
+ * Recording wrapper for the harness: returns a request listener that buffers
+ * each incoming request into a `RecordedRequest` on its `requests` array,
+ * then answers `204` — or delegates to `handler` when one is given.
+ *
+ * Eager by design: the body is fully drained before delegation, so `handler`
+ * reads `entry.body` (its third argument) — never the already-consumed `req`
+ * stream. Reset between tests with `rec.requests.length = 0`.
+ */
+export function record(
+  handler?: (req: IncomingMessage, res: ServerResponse, entry: RecordedRequest) => void
+): RecordingListener;
 
 /**
  * Hook-registering helper for suite-shared servers. Registers `beforeAll` to

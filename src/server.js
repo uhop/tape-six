@@ -41,6 +41,27 @@ export const withServer = async (serverHandler, clientHandler, opts) => {
   }
 };
 
+export const record = handler => {
+  const recorder = (req, res) => {
+    req.setEncoding('utf8');
+    let body = '';
+    req.on('data', chunk => (body += chunk));
+    req.on('end', () => {
+      const entry = {method: req.method, url: req.url, headers: {...req.headers}, body};
+      recorder.requests.push(entry);
+      if (handler) {
+        // eager: the body is already drained — handlers read entry.body, not req
+        handler(req, res, entry);
+      } else {
+        res.statusCode = 204;
+        res.end();
+      }
+    });
+  };
+  recorder.requests = [];
+  return recorder;
+};
+
 export const setupServer = (serverHandler, opts) => {
   let lifecycle = null;
   beforeAll(async () => {
