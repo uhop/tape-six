@@ -50,6 +50,10 @@ src/                  # Source code
 │   ├── bun/          # Bun: TestWorker.js + worker.js
 │   ├── deno/         # Deno: TestWorker.js + worker.js
 │   └── seq/          # Sequential: TestWorker.js + BypassReporter.js
+├── driver/           # Browser-driver kit (for tape-six-puppeteer / tape-six-playwright; .d.ts sidecars)
+│   ├── bootstrap.js  # In-page harness text (browser-safe)
+│   ├── TestWorker.js # Shared driver-worker base (extends EventServer; 4-member driver adapter)
+│   └── cli.js        # runDriverCli: the whole driver-bin flow
 ├── utils/            # Shared utilities
 │   ├── config.js     # CLI arg parsing, options, test discovery, reporter init
 │   ├── config.d.ts   # Type declarations for config.js
@@ -173,6 +177,23 @@ self-signed cert (`node_modules/.cache/tape6/cert.pem`, written by `certs.js`), 
 verification. The endpoints and the cert-cache location are core's contract; the
 `tape-six-*` browser providers import this client instead of hand-mirroring it.
 
+### Browser-driver kit
+
+Everything the driver-backed browser providers (`tape-six-puppeteer`,
+`tape-six-playwright`) share lives in core; a provider keeps only a four-member
+driver adapter (`supportedBrowsers`, `launchBrowser`, `newContext`,
+`pageErrorEvent`) plus its bin identity. Three modules:
+`src/driver/bootstrap.js` (browser-safe in-page harness text: srcdoc /
+URL forms, the `__tape6_*` globals, the `tape6-terminate` message shape),
+`src/driver/TestWorker.js` (extends `EventServer`; the per-task
+BrowserContext + Page lifecycle driven by the page `close` event, iframe
+injection, cooperative drain + `graceTimeout` force-kill), and
+`src/driver/cli.js` (`runDriverCli` — the whole driver-bin
+flow; it self-launches this package's own `bin/tape6-server.js` for
+`--start-server`). Core tests the kit with a fake driver (`tests/cli/`); real
+browsers are exercised by the providers' own suites. Full design:
+`dev-docs/browser-driver-kit.md`.
+
 ### Worker control channel
 
 `EventServer` is the base of every runner's `TestWorker`. Beyond the data plane
@@ -216,6 +237,9 @@ bin/tape6-server.js → src/test-server.js → src/test-server/* (adapter, regis
 src/utils/config.js ← (used by all bin/* runners for test discovery)
 src/utils/listing.js ← (glob-based file listing)
 src/utils/controlFetch.js ← (control-plane client; imported by tape-six-puppeteer / tape-six-playwright)
+src/driver/bootstrap.js ← (in-page harness text; browser-safe)
+src/driver/TestWorker.js ← (shared driver-worker base; extends EventServer)
+src/driver/cli.js ← (shared driver-bin flow; imported by the browser providers)
 ```
 
 ## Testing

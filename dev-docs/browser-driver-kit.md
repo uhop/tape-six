@@ -1,9 +1,11 @@
 # Browser-driver kit — design note
 
-Status: **design accepted, not implemented** (2026-07-10). Implementation is a
-tape-six minor plus paired `tape-six-puppeteer` / `tape-six-playwright`
-releases. This note records the measured duplication, the decided split, and
-the rollout plan.
+Status: **implemented in core 2026-07-10, unreleased** — `src/driver/`
+(`bootstrap.js`, `TestWorker.js`, `cli.js`) with sidecars, fake-driver unit
+tests, and a real-Playwright e2e validation. The paired
+`tape-six-puppeteer` / `tape-six-playwright` adoptions are gated on the
+tape-six release carrying the kit. This note records the measured duplication,
+the decided split, and the rollout plan.
 
 ## Problem — measured duplication
 
@@ -55,10 +57,11 @@ argument, `page.on('close' | 'console')`, `context.close()`.
 
 ## Design — three core modules
 
-All under `src/utils/`, CLI-side like `EventServer`; the bootstrap module is
+All under `src/driver/` — a subsystem directory like `runners/` and
+`test-server/`, kept out of the crowded `src/utils/`; the bootstrap module is
 browser-safe (pure string building, no `node:` imports).
 
-### `utils/browser-bootstrap.js` (browser-safe)
+### `driver/bootstrap.js` (browser-safe)
 
 Owns the in-page harness text: the srcdoc HTML for JS test files (importmap
 injection, `__tape6_id` / `__tape6_testFileName` / `__tape6_flags` globals, the
@@ -69,9 +72,9 @@ module that can later retire the `web-app/TestWorker.js` copy and serve the
 future DOM-free Web-Worker worker (see `worker-control-channel.md` § still to
 come).
 
-### `utils/BrowserTestWorker.js`
+### `driver/TestWorker.js`
 
-`class BrowserTestWorker extends EventServer` — the entire shared task
+`class TestWorker extends EventServer` (default export) — the entire shared task
 lifecycle, verbatim from today's sisters:
 
 - `makeTask`: supported-extension gate; the launch-failure guard that reports a
@@ -82,7 +85,7 @@ lifecycle, verbatim from today's sisters:
 - `__tape6_reporter` / `__tape6_error` exposure with the
   `end`/`terminated` → `destroyTask('done')` watch and `StopTest` swallowing.
 - `/--tests` navigation (origin inheritance), page reset, console forwarding,
-  iframe injection via `browser-bootstrap`, and the `stopRequested` catch-up
+  iframe injection via `driver/bootstrap`, and the `stopRequested` catch-up
   for tasks that start mid-abort.
 - Control plane: cooperative drain via `tape6-terminate`, `graceTimeout`
   force-kill by closing the context, idempotent kill/cleanup.
@@ -91,9 +94,9 @@ Subclasses supply the four adapter members from § Adapter surface. The base
 standardizes on the single-object `evaluate` convention (both drivers accept
 it), which erases the largest stylistic diff class outright.
 
-### `utils/browser-driver-cli.js`
+### `driver/cli.js`
 
-`runBrowserDriverCli({commandName, description, supportedBrowsers, TestWorker})`
+`runDriverCli({packageUrl, commandName, description, supportedBrowsers, TestWorker})`
 — everything the bins share: option/env parsing (`--server-url`/`-u`,
 `--browser`, `--flags`, `--parallel`, `--start-server`, help/version/self;
 `TAPE6_SERVER_URL`, `TAPE6_BROWSER`), config + protocol resolution (typed via
@@ -125,7 +128,7 @@ from ~650 duplicated lines to ~80–100 owned lines.
 2. Paired sister releases adopt the kit, delete the mirrored code, bump their
    tape-six floor — the `controlFetch` adoption (both 1.2.1s) is the
    procedural template.
-3. Separate follow-ups: `web-app/TestWorker.js` adopts `browser-bootstrap`;
+3. Separate follow-ups: `web-app/TestWorker.js` adopts `driver/bootstrap`;
    the DOM-free Web-Worker worker builds on it.
 
 ## Risks and open questions
@@ -138,6 +141,6 @@ from ~650 duplicated lines to ~80–100 owned lines.
   same posture `EventServer` already has toward `tape-six-proc`.
 - **Version coupling.** Kit changes ripple to both drivers — no worse than
   today's `EventServer` coupling, and strictly better than editing two clones.
-- **Naming** (`BrowserTestWorker` vs `DriverTestWorker`, exact CLI-runner
-  signature) — decide at implementation; nothing downstream depends on the
-  names until the sisters adopt.
+- **Naming** — settled at implementation (2026-07-10): `src/driver/` with
+  `bootstrap.js` / `TestWorker.js` (class `TestWorker`, matching the runners'
+  per-transport convention) / `cli.js` exporting `runDriverCli`.
