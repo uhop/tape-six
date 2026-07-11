@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.15.0 _New: an HTTP request recorder. Bug fixes._
 - 1.14.1 _Bug fixes. Updated dependencies._
 - 1.14.0 _Internal housekeeping. Removed the Deno 2.9.0 workaround shim._
 - 1.13.0 _TypeScript declarations for the `EventServer`._

@@ -52,6 +52,7 @@ tape-six/
 │   ├── test-server/  # Test server internals (adapter, registry, control, statics, certs) + plugins/echo.js
 │   ├── reporters/    # TAP, TTY, JSONL, Proxy, DOM reporters
 │   ├── runners/      # Runtime-specific test runners
+│   ├── driver/       # Browser-driver kit for tape-six-puppeteer / tape-six-playwright (see dev-docs/browser-driver-kit.md)
 │   ├── utils/        # Timers, console capture, defer, etc.
 │   └── deep6/        # Copied from vendors/deep6 at build time (gitignored)
 ├── web-app/          # Browser test UI application
