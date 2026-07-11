@@ -166,6 +166,8 @@ const init = async () => {
     }
     reporter ||= new TapReporter({
       useJson: true,
+      // flat TAP stream: nested-test ids repeat, consumers need 1..N
+      renumberAsserts: true,
       originalConsole,
       hasColors
     });

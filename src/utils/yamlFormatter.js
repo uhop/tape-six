@@ -11,7 +11,9 @@ const repeatString = (n, string = ' ') => {
 
 const hasNewline = /\n/,
   hasColon = /:/,
-  forceQuotes = /^(?:@|`|\s|$|true$|false$|null$|.+\s$)/;
+  forceQuotes = /^(?:@|`|\s|$|true$|false$|null$|.+\s$)/,
+  // plain-scalar hazards: leading indicators, colon-space/end, comment intro, tabs
+  yamlUnsafe = /^[[\]{}#&*!|>'"%,]|^[-?:](?:\s|$)|:(?:\s|$)|\s#|\t/;
 
 const getDataEncoding = value => {
   switch (typeof value) {
@@ -21,7 +23,8 @@ const getDataEncoding = value => {
       if (!isNaN(value)) return {inline: true, string: '"' + value + '"'};
       {
         const encoded = JSON.stringify(value);
-        if (value.length + 2 === encoded.length) return {inline: true, string: value};
+        if (value.length + 2 === encoded.length && !yamlUnsafe.test(value))
+          return {inline: true, string: value};
         return {inline: true, string: encoded};
       }
     case 'boolean':
@@ -37,7 +40,7 @@ const getDataEncoding = value => {
       return {skip: true};
   }
   if (value === null) return {inline: true, string: 'null'};
-  if (value instanceof Date) return {inline: true, string: value.toUTCString()};
+  if (value instanceof Date) return {inline: true, string: JSON.stringify(value.toUTCString())};
   if (value instanceof Set || value instanceof Map) return {skip: true};
   if (Array.isArray(value) && !value.length) return {inline: true, string: '[]'};
   const keys = Object.keys(value);
@@ -50,6 +53,7 @@ const getKeyEncoding = key => {
   if (hasNewline.test(key)) return {string: key.split('\n')};
   const encoded = JSON.stringify(key);
   if (key.length + 2 === encoded.length) {
+    if (yamlUnsafe.test(key)) return {inline: true, string: encoded};
     if (hasColon.test(key)) return {string: key};
     return {inline: true, string: key};
   }

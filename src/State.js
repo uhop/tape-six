@@ -186,9 +186,9 @@ export class State {
       typeof event.diffTime !== 'number' && (event.diffTime = event.time - this.startTime);
     }
 
-    // reporters read event.at / event.stackList only for failures — stack
-    // walking on passing assertions is wasted work
-    if (isFailed) {
+    // reporters read event.at / event.stackList for displayed failures (todo
+    // included) — stack walking on passing assertions is wasted work
+    if (event.fail && !event.skip) {
       if (
         event.type === 'assert' &&
         (event.operator === 'error' || event.operator === 'exception') &&

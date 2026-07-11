@@ -339,7 +339,11 @@ export const initReporter = async (getReporter, setReporter, flags) => {
         runtime.getEnvVar('NODE_DISABLE_COLORS') ||
         runtime.getEnvVar('FORCE_COLOR') === '0'
       ),
-      customOptions = reporterType === 'tap' ? {useJson: true, hasColors} : {...flags, hasColors},
+      customOptions =
+        reporterType === 'tap'
+          ? // flat TAP stream: per-file ids restart, consumers need 1..N
+            {useJson: true, renumberAsserts: true, hasColors}
+          : {...flags, hasColors},
       customReporter = new CustomReporter(customOptions);
     setReporter(customReporter);
   }

@@ -302,8 +302,10 @@ export class TTYReporter extends Reporter {
             this.out(this.lowWhite('  actual:   ') + this.formatValue(actual));
           }
 
-          this.out(this.lowWhite('  stack: |-'));
-          event.stackList.forEach(line => this.out(this.lowWhite('    at ' + line)));
+          if (Array.isArray(event.stackList) && event.stackList.length) {
+            this.out(this.lowWhite('  stack: |-'));
+            event.stackList.forEach(line => this.out(this.lowWhite('    at ' + line)));
+          }
         }
         break;
     }

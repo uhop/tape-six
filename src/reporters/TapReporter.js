@@ -30,18 +30,37 @@ const formatValue = value => {
   return JSON.stringify(value);
 };
 
+// expected/actual arrive pre-serialized; parse for the signature strip
+const parseValue = text => {
+  if (typeof text != 'string') return text;
+  try {
+    const value = JSON.parse(text);
+    if (value && value[signature] === signature) delete value[signature];
+    return value;
+  } catch {
+    return text;
+  }
+};
+
+const formatSerialized = text => {
+  const value = parseValue(text);
+  return typeof value == 'string' ? JSON.stringify(value) : formatValue(value);
+};
+
 export class TapReporter extends Reporter {
   constructor({
     write,
     failOnce = false,
     useJson = false,
-    renumberAsserts = false,
+    // flat TAP output repeats nested/per-file ids — consumers need 1..N
+    renumberAsserts = true,
     hasColors = true,
     originalConsole
   } = {}) {
     super({failOnce});
     this.console = originalConsole || console;
-    this.write = write || (hasColors ? this.logger : (...args) => this.writeOut(...args));
+    // the style arg must not reach writeOut — it prints every argument
+    this.write = write || (hasColors ? this.logger : text => this.writeOut(text));
     this.renumberAsserts = renumberAsserts;
     this.useJson = useJson;
     this.assertCounter = 0;
@@ -163,10 +182,10 @@ export class TapReporter extends Reporter {
               this.write('  operator: ' + event.operator, 'yaml');
               this.write('  message:  ' + formatValue(nameLines), 'yaml');
               if (event.hasOwnProperty('expected')) {
-                this.write('  expected: ' + formatValue(event.expected), 'yaml');
+                this.write('  expected: ' + formatSerialized(event.expected), 'yaml');
               }
               if (event.hasOwnProperty('actual')) {
-                this.write('  actual:   ' + formatValue(event.actual), 'yaml');
+                this.write('  actual:   ' + formatSerialized(event.actual), 'yaml');
               }
               event.at && this.write('  at: ' + event.at, 'yaml');
             } else {
@@ -176,8 +195,8 @@ export class TapReporter extends Reporter {
               ).forEach(line => this.write(line, 'yaml'));
               yamlFormatter(
                 {
-                  expected: event.expected && JSON.parse(event.expected),
-                  actual: event.actual && JSON.parse(event.actual)
+                  expected: parseValue(event.expected),
+                  actual: parseValue(event.actual)
                 },
                 formatterOptions
               ).forEach(line => this.write(line, 'yaml'));
@@ -185,8 +204,13 @@ export class TapReporter extends Reporter {
                 this.write(line, 'yaml')
               );
             }
-            this.write('  stack: |-', 'yaml');
-            event.stackList.forEach(line => this.write('    at ' + line, 'yaml'));
+            if (Array.isArray(event.stackList) && event.stackList.length) {
+              // quoted list, not a block scalar: prove's YAMLish reader has no |-
+              this.write('  stack:', 'yaml');
+              event.stackList.forEach(line =>
+                this.write('    - ' + JSON.stringify('at ' + line), 'yaml')
+              );
+            }
             this.write('  ...', 'yaml');
           }
         }
