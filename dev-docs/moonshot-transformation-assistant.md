@@ -1,6 +1,7 @@
 # Moonshot — an interactive, invariant-aware code-transformation assistant
 
-Status: **vision / feasibility, 2026-07-06.** A moonshot: an AI-agent-based
+Status: **vision / feasibility, 2026-07-06; §6 library-declared laws added
+2026-07-15.** A moonshot: an AI-agent-based
 assistant that applies the semantics-preserving, readability-oriented code
 transformations from the blog series — but interactively, advising and teaching
 rather than silently rewriting, and reasoning about _libraries_ rather than only
@@ -225,7 +226,258 @@ _explanation_ is the rule + invariant surfaced to the programmer. This is the
 bridge from "informal blog prose" to "an agent can apply it and something can
 check it."
 
-## 6. How the three projects are three legs of one stool
+## 6. Library-declared laws — a second rule tier (2026-07-15)
+
+§5's catalog is the _language-level_ algebra — universal rules that ship with
+the tool. There is a second tier the research passes did not cover:
+**library-authored laws** — equations only the library's author can assert
+(associativity of a `concat`, the `empty` identities, functor composition),
+shipped _with the package_ as machine-readable records. Origin: the
+practitioner's Khepri recollection + Fantasy Land's axioms + static-land's
+derivations (session 2026-07-15).
+
+### 6.1 Prior art for this tier
+
+- **Khepri** (Bierner, pre-ES6; _repo/wiki verified 2026-07-15_) — an
+  ECMAScript rework for untyped functional-style programming compiling to
+  plain JS with no runtime dependencies; "Khepri and Javascript can also be
+  freely mixed"; function inlining documented as a compiler capability
+  (`khepri-parse` / `khepri-compile`). An open-world, per-function compilation
+  model — a prior-art point the §3 corpus missed. That its optimizer exploited
+  Fantasy-Land-style algebraic structure (and sometimes mis-optimized) is the
+  practitioner's recollection — _plausible, unverified_.
+- **static-land** (_spec verified 2026-07-15_) — types as **modules of static
+  functions** ("static meaning they don't use `this`"); laws as `≡` equations;
+  a derivation lattice (Bifunctor/Profunctor/Applicative/Monad → `map`,
+  Chain → `ap`, Traversable → `reduce` + `map`; a Monad's minimal base is
+  `{of, chain}`); and a **consistency clause** — a module providing a
+  derivable method anyway must keep its behaviour "equivalent to that of the
+  derivation".
+- **GHC `{-# RULES #-}`** (_training knowledge_) — the canonical "library
+  ships rewrite rules to the optimizer" mechanism (map/map, foldr/build
+  fusion); canonical weakness: rules are **trusted, never checked**.
+- **clojure.spec** (_training knowledge_) — API + invariants as data,
+  generative tests derived automatically; the verification half,
+  ecosystem-proven.
+- **fp-ts-laws / sanctuary-type-classes** (_training knowledge_) — JS law
+  suites exist, but as hand-written _test code_, not shipped data. The gap.
+- **`/*#__PURE__*/` + `sideEffects: false`** (_training knowledge_) — the one
+  invariant annotation the JS ecosystem adopted at scale: one bit, one
+  consumer (tree-shaking), immediate payoff. A _minimal_ vocabulary with a
+  concrete consuming tool can spread.
+- **QuickSpec** (_training knowledge_) — _discovers_ equational laws by
+  testing; a bootstrap for law sets of existing libraries.
+
+### 6.2 One artifact, three consumers
+
+A law record — a name, both sides as expressions over bound variables, the
+equivalence relation, side conditions — feeds:
+
+1. **Verify** — compile the record to a property test (the
+   `tape-six-fast-check` `t.prop` plugin the testing-directions doc already
+   plans): quantify the bound variables over generators, compare sides with
+   the type's own `equals`. Two auto-generated classes: base-set laws, and
+   **consistency tests** (native ≡ derived) for every override. Derived
+   methods are correct by construction — the verification surface shrinks to
+   the minimal base plus overrides.
+2. **Derive** — dictionary completion: `derive({of, chain})` returns the
+   module with `map` / `ap` filled in from the spec's formulas. A plain
+   runtime function; buildable today, no compiler.
+3. **Optimize** — laws are undirected equations, which e-graphs (§3.2) take
+   natively: both directions available, no orientation or phase-ordering
+   choice — dissolving the mistake class the trusted-rules precedent warns
+   about (attributing Khepri's mis-optimizations to this is _speculative_).
+   The consistency clause licenses **specialization** (contract a derived
+   generic form into the native optimized method) and **fusion** (expand into
+   the base form, fuse with neighbours, re-extract).
+
+**The trust story — the piece GHC RULES never had:** the rewriter may only
+use a law the test suite has verified for that instance. This is §4's
+assume-until-proven spine with the library's own axioms as the premises.
+
+### 6.3 Soundness nuance: laws are quotient equivalences
+
+Laws state equivalence **up to the type's own `equals`** — a quotient, not
+`===`. Allocation, identity, timing, and any impurity in the methods escape
+it. Law exploitation is therefore opt-in per lawful instance and still gated;
+§4's tiers apply unchanged — the laws only add premises carrying a declared
+equivalence relation.
+
+### 6.4 Representation is load-bearing
+
+static-land's module-of-static-functions style matters twice. No `this` and
+explicit arguments is exactly the "clearly-pure region" §4's conservative
+purity gate can approve — fantasy-land's method style drags in prototypes,
+getters, and dynamic receivers. And statically-resolvable callees are what a
+source-level optimizer can inline: `S.equals(a, b)` names its function;
+`a['fantasy-land/equals'](b)` dispatches on an unknown receiver. Khepri's
+inline-into-oblivion and static-land's derivations converge on one design
+point: open-world, statically-referenced function dictionaries —
+dictionary-passing, what Haskell type classes elaborate into.
+
+### 6.5 Generalization: the invariants sidecar (2026-07-15)
+
+Algebraic laws are one claim kind of a more general, optional artifact a
+library ships next to its types: an **invariants sidecar** — working shape, a
+Markdown file of a specified format (the `llms.txt` / `AGENTS.md` family,
+maintainable by the same ai-docs tooling). Types under-specify:
+`nano-binary-search`'s `.d.ts` gives
+`(readonly T[], LessFn<T>, number?, number?) => number`, while everything that
+matters — the sortedness precondition, the insertion-point semantics,
+`result ∈ [l, r]`, the `splice` idiom — lives only in JSDoc prose. The sidecar
+promotes that prose to executable, pattern-matchable claims.
+
+The claim vocabulary, worked against the real `binarySearch` (which is
+`std::partition_point`):
+
+- **`pre:`** — the partition precondition (`lessFn` over `[l, r)` is
+  `true* false*`; sortedness + a consistent `<`-predicate is one way to
+  satisfy it) and range sanity. Declared _assumed, never checked_ — an O(n)
+  check would defeat the O(log n) function; exactly the knowledge only a
+  declaration can carry.
+- **`post:`** — `l <= result <= r` (an insertion index, not a found index)
+  and the partition-point functional spec, both executable predicates over
+  `(args, result)`.
+- **`effects:`** — pure; mutates nothing; calls only `lessFn`; deterministic.
+  The `/*#__PURE__*/` bit generalized to a frame condition — the claim that
+  licenses reorder/cache/drop.
+- **`complexity:`** — at most `⌈log2(r − l)⌉ + 1` `lessFn` calls, O(1) space;
+  verified by instrumented counting (wall-time claims via nano-benchmark).
+- **`pattern:`** — named idioms as _trigger_ (what an agent recognizes:
+  `push()` + `sort()` per insertion; `indexOf` on known-sorted data),
+  _replacement_, _justification_ (which postcondition), and **obligation**
+  (which precondition the call site must now establish).
+- **`hazard:`** — negative knowledge: an inconsistent `lessFn` returns a
+  silently meaningless index; reading the result as a found position without
+  the equality check; a mutating `lessFn`.
+- **`law:` / `derivation:`** — §6.1–6.2's algebraic kinds, when the module is
+  typeclass-shaped. One format hosts both; the boundary is soft
+  (partition-point is itself a relational equation).
+
+The complete worked artifact:
+
+````markdown
+---
+package: nano-binary-search
+binds: ^1.0.14
+export: 'binarySearch(sortedArray, lessFn, l = 0, r = sortedArray.length): number'
+---
+
+# binarySearch
+
+Finds the partition point of `sortedArray` over `lessFn`: the smallest index in
+`[l, r]` such that every earlier element satisfies `lessFn` and no element from
+it on does. With `x => x < pivot` this is the lower bound; with
+`x => x <= pivot` the upper bound (`std::partition_point` semantics).
+
+## Preconditions
+
+- `partitioned` (assumed, never checked at runtime; O(n) to verify): over
+  `[l, r)`, `lessFn` values form `true* false*` - no `true` after a `false`.
+  A sorted array queried with a consistent `<`-style predicate satisfies this.
+
+  ```js check pre:partitioned
+  (sortedArray, lessFn, l, r) => {
+    let seenFalse = false;
+    for (let i = l; i < r; ++i) {
+      if (lessFn(sortedArray[i], i, sortedArray)) {
+        if (seenFalse) return false;
+      } else seenFalse = true;
+    }
+    return true;
+  };
+  ```
+
+- `range`: `l` and `r` are integers with `0 <= l <= r <= sortedArray.length`.
+
+## Postconditions
+
+- `result-range`: `l <= result && result <= r`. Note `result` may equal
+  `sortedArray.length`: it is an insertion index, not a found index.
+- `partition-point`:
+
+  ```js check post:partition-point
+  (result, sortedArray, lessFn, l, r) => {
+    for (let i = l; i < result; ++i) if (!lessFn(sortedArray[i], i, sortedArray)) return false;
+    for (let i = result; i < r; ++i) if (lessFn(sortedArray[i], i, sortedArray)) return false;
+    return true;
+  };
+  ```
+
+## Effects
+
+- `pure`: does not mutate `sortedArray`; calls nothing but `lessFn`;
+  deterministic while `lessFn` is. Safe to reorder, cache, or drop when the
+  result is unused.
+
+## Complexity
+
+- `log-calls`: at most `Math.ceil(Math.log2(r - l)) + 1` invocations of
+  `lessFn`; O(1) space. Verify by counting calls with an instrumented `lessFn`
+  over generated inputs.
+
+## Patterns
+
+### sorted-insert
+
+- Trigger: maintaining order via `push()` + `sort()` per insertion, or a
+  linear scan for the insertion index into a known-sorted array.
+- Replacement:
+
+  ```js
+  const i = binarySearch(arr, x => x < value);
+  arr.splice(i, 0, value);
+  ```
+
+- Justification: `partition-point` implies the splice preserves sortedness.
+- Obligation at the call site: `arr` is sorted by the same ordering that
+  `x => x < value` assumes (the `partitioned` precondition).
+
+### membership
+
+- Trigger: `indexOf()` / `findIndex()` / `includes()` on a known-sorted array.
+- Replacement:
+
+  ```js
+  const i = binarySearch(arr, x => x < value);
+  const found = i < arr.length && !(value < arr[i]);
+  ```
+
+- Justification: `result-range` + `partition-point`; equality is recovered as
+  "neither less" under the same ordering.
+
+## Hazards
+
+- `inconsistent-order`: a `lessFn` inconsistent with the array's actual order
+  violates `partitioned`; the function still returns an index, silently
+  meaningless. No error is thrown.
+- `insertion-index-misread`: using the result directly as the position of a
+  found element without the `membership` equality check.
+- `mutating-lessFn`: a `lessFn` that mutates the array mid-search voids all
+  postconditions.
+````
+
+Consumption and trust: the library's own CI compiles `check`-bearing claims
+into property tests (`t.prop` / fast-check) — claims are _verified, not
+trusted_ (§6.2's RULES lesson). At a call site the agent inherits a pattern's
+obligation, discharged by local reasoning or by inserting a
+`tape-six-invariant` guard (inert in production, materialized in tests) — the
+sister library is the runtime vehicle for `pre:` claims. The optimizer
+consumes `effects:` / `law:` claims as rewrite licenses. Authoring is
+symmetric: a human or an agent drafts claims from source and tests (the
+artifact above was derived by reading `index.js`), the generated suite
+validates them, the author blesses.
+
+Prior art for the sidecar (_training knowledge_): Design by Contract (Eiffel
+`require` / `ensure`); frame conditions (JML / ACSL / Dafny
+`assignable` / `modifies`); .NET Code Contracts — the closest
+one-source-many-consumers precedent (static checker + runtime checks + doc
+injection); LiquidHaskell refinement types, which express "sorted input,
+range-bounded output" in types — here shipped deliberately as _optional data_,
+testable rather than provable; Rust doctests — executable usage examples in
+docs, CI-run.
+
+## 7. How the three projects are three legs of one stool
 
 The moonshot is not a fourth, separate bet — it rests on the other three:
 
@@ -242,7 +494,7 @@ The moonshot is not a fourth, separate bet — it rests on the other three:
 
 The blog series is the **knowledge base** the agent applies and teaches from.
 
-## 7. Honest risks and open questions
+## 8. Honest risks and open questions
 
 - **The soundness gap for effectful JS is real and unsolved.** Every verified
   formal result is pure/bounded-only. The moonshot's bet is that a
@@ -261,7 +513,7 @@ The blog series is the **knowledge base** the agent applies and teaches from.
   at the source level. A conservative-but-useful analyzer is a prerequisite, not
   a detail.
 
-## 8. A tractable first slice (not the whole moonshot)
+## 9. A tractable first slice (not the whole moonshot)
 
 If any of this is pursued, the smallest honest starting point:
 
@@ -281,3 +533,12 @@ That slice is a _linter-plus-teacher_ that already does something no existing
 tool does (readable, advisory, invariant-explaining, test-gated), and it grows
 toward the open-world/API-redesign/interactive frontier from there — the axes
 the research shows are empty.
+
+**A pre-slice from §6 (2026-07-15):** the law/invariants tier has its own,
+smaller standalone experiment — the invariants-sidecar format (§6.5), with the
+static-land dictionary completer + law/consistency test generator as the
+buildable-today core (claim records in; derived methods and `t.prop` suites
+out).
+Independently useful with nothing else built, and it produces exactly the
+checked-equation records the rewriter would later consume as its per-library
+rule tier. Filed on the tape-six queue.
