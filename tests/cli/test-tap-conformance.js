@@ -41,9 +41,5 @@ test('TAP stream is conformant', {timeout: 15000}, async t => {
   t.matchString(stdout, /^# SKIP test: /m, 'the skipped subtest is noted as a comment');
   t.matchString(stdout, /still running/, 'the suite ran to completion after the todo failure');
   t.matchString(stdout, /^# tests \d+$/m, 'the summary is complete');
-  t.doesNotMatchString(
-    stdout,
-    new RegExp(signature.replace(/[!@#$%^&*]/g, '\\$&')),
-    'no internal signature leaks'
-  );
+  t.notOk(stdout.includes(signature), 'no internal signature leaks');
 });
