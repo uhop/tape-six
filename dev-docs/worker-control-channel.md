@@ -25,6 +25,14 @@ Done, verified on Node / Bun / Deno (`par`, `seq`, and `proc`):
   incoming `event.stopTest` / `bail-out`, so a failure in a worker still
   buffered behind the pass-through worker aborts the rest immediately, not when
   its buffer eventually flushes); and the optional per-worker deadline (Layer 2).
+- Aggregation counting is order-safe: `State.preprocess` stamps every event it
+  touches (`processed: true`), and an aggregating reporter counts pre-stamped
+  worker events by their own flags — it never re-merges its chain's `skip` into
+  them, and a forwarded `stopTest` marks the chain `stopTest` only. Without
+  this, a terminated sibling's event delivered ahead of the still-buffered
+  triggering failure skip-poisoned the hub chain and the failure counted as
+  skipped — the parallel `FO` green-on-red masking bug (fixed 2026-07-22;
+  regression: `tests/test-event-aggregation.js`).
 - Child-side `terminate` is a reporter primitive: `Reporter.terminate()`
   (`src/reporters/Reporter.js`) arms `stopTest` + fires the abort signal across
   the live state chain, and is **remembered** so a test that starts _after_ the

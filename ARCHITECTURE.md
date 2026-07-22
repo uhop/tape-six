@@ -204,6 +204,10 @@ or `timeout` (the optional per-worker deadline, env `TAPE6_WORKER_TIMEOUT`, ran
 out). The worker drains cooperatively — `Reporter.terminate()` arms `stopTest`
 and fires the abort signal so the running test unwinds and its cleanup hooks run
 — and is force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms.
+On the hub side, `State.preprocess` stamps events `processed: true` on first
+touch; an aggregating reporter counts pre-stamped worker events by their own
+flags, so a terminated sibling's early-delivered `stopTest` cannot skip-poison
+the hub chain and mask a still-buffered failure as skipped.
 Each `tape-six-*` provider implements the same contract for its own transport.
 See `dev-docs/worker-control-channel.md`.
 

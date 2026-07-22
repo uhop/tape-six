@@ -163,7 +163,15 @@ export class State {
   }
 
   preprocess(event) {
-    event = {...event, skip: event.skip || this.skip, todo: event.todo || this.todo};
+    // processed events were already stamped by the originating (worker) State
+    // chain — re-merging this chain's skip miscounts buffered failures as skipped
+    const processed = event.processed === true;
+    event = {
+      ...event,
+      skip: event.skip || (!processed && this.skip),
+      todo: event.todo || (!processed && this.todo),
+      processed: true
+    };
     !event.type && (event.type = 'assert');
 
     if (typeof event.time !== 'number' || !event.time) {
@@ -241,7 +249,12 @@ export class State {
 
     if (event.stopTest) {
       if (!this.stopTest) {
-        for (const state of this) state.skip = state.stopTest = true;
+        for (const state of this) {
+          state.stopTest = true;
+          // skip-marking an aggregator chain from a forwarded event poisons
+          // counting of events still buffered in EventServer lanes
+          if (!processed) state.skip = true;
+        }
       }
     } else if (this.stopTest) {
       event.stopTest = true;
