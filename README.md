@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.16.1 _Failure diagnostics now unchain `Error.cause` and `AggregateError` members._
 - 1.16.0 _Bug fix: the parallel runner with fail-once could report green on a failing suite. Vendored `deep6` updated to 1.4.0: assertions and object-pattern matchers now compare by value._
 - 1.15.0 _New: an HTTP request recorder. Bug fixes._
 - 1.14.1 _Bug fixes. Updated dependencies._
