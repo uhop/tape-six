@@ -20,6 +20,19 @@ export const isAssertionError: (error: unknown) => boolean;
 /** Extract the `at ...` frames of an error stack as trimmed strings. */
 export const getStackList: (error: {stack: string}) => string[];
 
+/** Display-ready error chain extracted from a serialized error. */
+export interface ErrorChain {
+  /** `Name: message` labels for the `cause` chain, outermost to root. */
+  causes: string[];
+  /** `Name: message` labels for `AggregateError`-style members from every link. */
+  errors: string[];
+  /** Stack frames of the deepest `cause` that has a stack, or `null`. */
+  causeStack: string[] | null;
+}
+
+/** Walk a parsed serialized error (`event.actual` / `event.error`) into a display chain; `null` when there is nothing to unchain. */
+export const getErrorChain: (value: unknown) => ErrorChain | null;
+
 /** A test event routed through the reporter pipeline — a loose bag. See TESTING.md. */
 export type TestEvent = {[key: string]: unknown};
 

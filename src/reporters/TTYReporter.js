@@ -1,7 +1,7 @@
 import process from 'node:process';
 
 import Reporter from './Reporter.js';
-import {signature} from '../State.js';
+import {signature, getErrorChain} from '../State.js';
 import {normalizeBox, padBox, padBoxLeft, drawBox, stackHorizontally} from '../utils/box.js';
 import {formatNumber, formatTime} from '../utils/formatters.js';
 
@@ -305,6 +305,19 @@ export class TTYReporter extends Reporter {
           if (Array.isArray(event.stackList) && event.stackList.length) {
             this.out(this.lowWhite('  stack: |-'));
             event.stackList.forEach(line => this.out(this.lowWhite('    at ' + line)));
+          }
+
+          const chain = getErrorChain(event.error !== undefined ? event.error : event.actual);
+          if (chain) {
+            chain.causes.forEach(cause => this.out(this.lowWhite('  cause: ') + cause));
+            if (chain.errors.length) {
+              this.out(this.lowWhite('  errors:'));
+              chain.errors.forEach(member => this.out(this.lowWhite('    - ') + member));
+            }
+            if (chain.causeStack) {
+              this.out(this.lowWhite('  cause stack: |-'));
+              chain.causeStack.forEach(line => this.out(this.lowWhite('    at ' + line)));
+            }
           }
         }
         break;

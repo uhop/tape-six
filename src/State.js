@@ -40,6 +40,52 @@ export const getStackList = error => {
   return stackList;
 };
 
+const isSerializedError = value =>
+  value && typeof value == 'object' && value[signature] === signature && value.type === 'Error';
+
+const errorLabel = value => (value.name || 'Error') + ': ' + (value.message ?? '');
+
+// walk a serialized error (event.actual / event.error, string or parsed) into
+// a display-ready chain: cause labels outer-to-root, the root cause's stack,
+// and AggregateError-style members collected from every link
+export const getErrorChain = value => {
+  if (typeof value == 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return null;
+    }
+  }
+  if (!isSerializedError(value)) return null;
+  const causes = [],
+    errors = [];
+  let causeStack = null;
+  for (let link = value; link !== undefined;) {
+    if (Array.isArray(link.errors)) {
+      for (const member of link.errors) {
+        errors.push(
+          isSerializedError(member)
+            ? errorLabel(member)
+            : typeof member == 'string'
+              ? member
+              : JSON.stringify(member)
+        );
+      }
+    }
+    const next = link.cause;
+    if (next === undefined) break;
+    if (isSerializedError(next)) {
+      causes.push(errorLabel(next));
+      if (typeof next.stack == 'string') causeStack = getStackList(next);
+      link = next;
+    } else {
+      causes.push(typeof next == 'string' ? next : JSON.stringify(next));
+      break;
+    }
+  }
+  return causes.length || errors.length ? {causes, errors, causeStack} : null;
+};
+
 const replacer =
   (seen = new Set()) =>
   (_, value) => {
@@ -47,14 +93,21 @@ const replacer =
       return {type: 'Symbol', value: value.toString(), [signature]: signature};
 
     if (value && typeof value == 'object') {
-      if (value instanceof Error)
-        return {
+      if (value instanceof Error) {
+        // errors join the seen set: a cyclic cause chain must not hang stringify
+        if (seen.has(value)) return {type: 'Circular', [signature]: signature};
+        seen.add(value);
+        const result = {
           type: 'Error',
           message: value.message,
           stack: value.stack,
           name: value.name,
           [signature]: signature
         };
+        if (value.cause !== undefined) result.cause = value.cause;
+        if (Array.isArray(value.errors)) result.errors = value.errors;
+        return result;
+      }
 
       if (value instanceof RegExp)
         return {type: 'RegExp', source: value.source, flags: value.flags, [signature]: signature};

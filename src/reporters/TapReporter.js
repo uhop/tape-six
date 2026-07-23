@@ -1,5 +1,5 @@
 import Reporter from './Reporter.js';
-import {signature} from '../State.js';
+import {signature, getErrorChain} from '../State.js';
 import yamlFormatter from '../utils/yamlFormatter.js';
 
 const formatterOptions = {offset: 2};
@@ -210,6 +210,29 @@ export class TapReporter extends Reporter {
               event.stackList.forEach(line =>
                 this.write('    - ' + JSON.stringify('at ' + line), 'yaml')
               );
+            }
+            {
+              const chain = getErrorChain(event.error !== undefined ? event.error : event.actual);
+              if (chain) {
+                if (chain.causes.length) {
+                  this.write('  causes:', 'yaml');
+                  chain.causes.forEach(cause =>
+                    this.write('    - ' + JSON.stringify(cause), 'yaml')
+                  );
+                }
+                if (chain.errors.length) {
+                  this.write('  errors:', 'yaml');
+                  chain.errors.forEach(member =>
+                    this.write('    - ' + JSON.stringify(member), 'yaml')
+                  );
+                }
+                if (chain.causeStack) {
+                  this.write('  causeStack:', 'yaml');
+                  chain.causeStack.forEach(line =>
+                    this.write('    - ' + JSON.stringify('at ' + line), 'yaml')
+                  );
+                }
+              }
             }
             this.write('  ...', 'yaml');
           }

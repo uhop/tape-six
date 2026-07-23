@@ -487,7 +487,7 @@ Browser: `http://localhost:3000/?flags=FO`
 
 ## 3rd-party libraries (bring-your-own)
 
-`tape-six` doesn't bundle assertion / mock / property-based libraries. It catches whatever the test throws — anything throwing a node-compatible `AssertionError` (with `name`, `operator`, `actual`, `expected`) is reported as a regular assertion; other errors are reported as `UNEXPECTED EXCEPTION` (test still fails).
+`tape-six` doesn't bundle assertion / mock / property-based libraries. It catches whatever the test throws — anything throwing a node-compatible `AssertionError` (with `name`, `operator`, `actual`, `expected`) is reported as a regular assertion; other errors are reported as `UNEXPECTED EXCEPTION` (test still fails). Error `cause` chains and `AggregateError` members are serialized with events and rendered with failures (`causes:` / `errors:` / `causeStack:` diagnostics), so wrapped root causes stay visible.
 
 **Verified candidates** (full per-lib examples and browser importmap snippets in the wiki):
 
