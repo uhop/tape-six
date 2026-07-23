@@ -1,4 +1,5 @@
 import {equal, match, any} from './deep6/index.js';
+import unify from './deep6/unify.js';
 import {getTimer} from './utils/timer.js';
 
 const tryFn = fn => {
@@ -13,6 +14,24 @@ const tryFn = fn => {
 const isErrorClass = fn =>
   fn === Error || (typeof fn === 'function' && fn.prototype instanceof Error);
 
+// tape-six compares by value, not by strict structure: circular: true picks
+// deep6's cheapest value-preserving mode (bisimulation); 'graph' is out.
+const equalOptions = {circular: true};
+const looseEqualOptions = {circular: true, loose: true};
+
+// matchers: open-mode unify on the naked pattern (deep6 1.4.0+) has no
+// prototype guard, so plain patterns match class instances by their own
+// properties — an absent key constrains nothing. match() would
+// preprocess-wrap the pattern, which forbids instance targets.
+const matchOptions = {
+  openObjects: true,
+  openArrays: true,
+  openMaps: true,
+  openSets: true,
+  circular: true
+};
+const matchValues = (value, pattern) => !!unify(value, pattern, null, matchOptions);
+
 const applyMatcher = (actual, matcher) => {
   if (matcher === undefined) return true;
   if (typeof matcher === 'function') {
@@ -23,7 +42,7 @@ const applyMatcher = (actual, matcher) => {
     const str = actual instanceof Error ? actual.message : String(actual);
     return matcher.test(str);
   }
-  if (matcher !== null && typeof matcher === 'object') return match(actual, matcher);
+  if (matcher !== null && typeof matcher === 'object') return matchValues(actual, matcher);
   return actual === matcher;
 };
 
@@ -242,7 +261,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'deepEqual',
-      fail: !equal(a, b),
+      fail: !equal(a, b, equalOptions),
       data: {
         expected: b,
         actual: a
@@ -257,7 +276,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'notDeepEqual',
-      fail: equal(a, b),
+      fail: equal(a, b, equalOptions),
       data: {
         expected: b,
         actual: a
@@ -272,7 +291,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'deepLooseEqual',
-      fail: !equal(a, b, {circular: true, loose: true}),
+      fail: !equal(a, b, looseEqualOptions),
       data: {
         expected: b,
         actual: a
@@ -287,7 +306,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'notDeepLooseEqual',
-      fail: equal(a, b, {circular: true, loose: true}),
+      fail: equal(a, b, looseEqualOptions),
       data: {
         expected: b,
         actual: a
@@ -377,7 +396,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'match',
-      fail: !match(a, b),
+      fail: !matchValues(a, b),
       data: {
         expected: b,
         actual: a
@@ -392,7 +411,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'doesNotMatch',
-      fail: match(a, b),
+      fail: matchValues(a, b),
       data: {
         expected: b,
         actual: a

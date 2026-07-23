@@ -91,7 +91,7 @@ The object passed to test functions. Provides assertions and test control.
 - `t.doesNotThrow(fn, msg)` — assert fn() does not throw.
 - `t.matchString(string, regexp, msg)` — assert string matches regexp.
 - `t.doesNotMatchString(string, regexp, msg)` — assert string does not match regexp.
-- `t.match(a, b, msg)` — assert a matches pattern b (structural).
+- `t.match(a, b, msg)` — assert a matches pattern b (partial value match, open mode).
 - `t.doesNotMatch(a, b, msg)` — assert a does not match pattern b.
 - `t.rejects(promise, msg)` — assert promise rejects. **Async: must await.** Alias: `doesNotResolve`.
 - `t.resolves(promise, msg)` — assert promise resolves. **Async: must await.** Alias: `doesNotReject`.

@@ -206,3 +206,62 @@ test('matcher edge cases', async t => {
   );
   t.deepEqual(verdicts(reporter), [true, false]);
 });
+
+test('object patterns use value equality across prototypes', t => {
+  const reporter = new SpyReporter();
+  const sub = new Tester(0, reporter);
+  // message is own but non-enumerable — open-mode unify still compares it
+  sub.throws(
+    () => {
+      throw new CustomError('boom', 'ENOENT');
+    },
+    {message: 'boom', name: 'CustomError', code: 'ENOENT'}
+  );
+  // own-property mismatch, non-enumerable included → fail
+  sub.throws(
+    () => {
+      throw new CustomError('boom', 'ENOENT');
+    },
+    {message: 'not boom'}
+  );
+  // nested instance: a cause chain matched by a nested plain pattern
+  const withCause = () =>
+    Object.assign(new CustomError('outer', 'EOUTER'), {cause: new CustomError('inner', 'EINNER')});
+  sub.throws(
+    () => {
+      throw withCause();
+    },
+    {code: 'EOUTER', cause: {code: 'EINNER'}}
+  );
+  // mismatch on a nested field → fail
+  sub.throws(
+    () => {
+      throw withCause();
+    },
+    {code: 'EOUTER', cause: {code: 'EWRONG'}}
+  );
+  t.deepEqual(verdicts(reporter), [false, true, false, true]);
+});
+
+test('t.match: class instances match plain patterns by value', t => {
+  const reporter = new SpyReporter();
+  const sub = new Tester(0, reporter);
+  class Response {
+    constructor(status) {
+      this.status = status;
+    }
+    get ok() {
+      return this.status < 400;
+    }
+  }
+  sub.match(new Response(200), {status: 200});
+  sub.match(new Response(500), {status: 200}); // own-property mismatch → fail
+  sub.doesNotMatch(new Response(500), {status: 200});
+  // open mode constrains only properties the value owns: absent keys and
+  // prototype getters are not read
+  sub.match(new Error('x'), {code: 'ENOENT'});
+  sub.match(new Response(500), {ok: true});
+  // registered types (Date, RegExp, ...) never match plain patterns
+  sub.doesNotMatch(new Date(), {});
+  t.deepEqual(verdicts(reporter), [false, true, false, false, false, false]);
+});

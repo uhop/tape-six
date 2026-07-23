@@ -171,7 +171,7 @@ The `Tester` object is passed to test functions. All `msg` arguments are optiona
 - `doesNotThrow(fn, msg)` — assert fn does not throw.
 - `matchString(string, regexp, msg)` — assert string matches regexp.
 - `doesNotMatchString(string, regexp, msg)` — assert string does not match regexp.
-- `match(a, b, msg)` — deep structural match (supports wildcards).
+- `match(a, b, msg)` — open-mode value match (supports wildcards; plain patterns match class instances by own properties).
 - `doesNotMatch(a, b, msg)` — assert no deep match.
 - `rejects(promise, msg)` — assert promise rejects (async, await it). Alias: `doesNotResolve()`.
 - `resolves(promise, msg)` — assert promise resolves (async, await it). Alias: `doesNotReject()`.
