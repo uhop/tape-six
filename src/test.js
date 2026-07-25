@@ -278,7 +278,12 @@ const wrapAsPromiseFn = options => {
     options.testFn = tester =>
       new Promise((resolve, reject) => {
         try {
-          fn(tester, resolve, reject);
+          const result = fn(tester, resolve, reject);
+          // an async callback's rejection (incl. failOnce's StopTest thrown by a
+          // failed assert) must reject the test, not become an unhandled rejection
+          if (result && typeof result == 'object' && typeof result.then == 'function') {
+            result.then(null, reject);
+          }
         } catch (error) {
           reject(error);
         }

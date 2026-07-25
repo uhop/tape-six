@@ -1,0 +1,6 @@
+import test from '../../../../index.js';
+
+test('passing sibling A', async t => {
+  await new Promise(r => setTimeout(r, 150));
+  t.pass('A done');
+});
