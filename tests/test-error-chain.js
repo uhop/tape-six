@@ -1,19 +1,13 @@
 import test from '../index.js';
 import TapReporter from '../src/reporters/TapReporter.js';
-import TTYReporter from '../src/reporters/TTYReporter.js';
 import {getErrorChain} from '../src/State.js';
+
+// TTYReporter rendering lives in tests/cli/test-error-chain-tty.js — its
+// node:process import doesn't load in browsers, this file must
 
 const captureTap = () => {
   const lines = [];
   return {lines, write: text => lines.push(text)};
-};
-
-const captureTty = () => {
-  const lines = [];
-  return {
-    lines,
-    output: {isTTY: false, write: text => lines.push(text.replace(/\n$/, ''))}
-  };
 };
 
 const failWith = (reporter, error) => {
@@ -103,20 +97,6 @@ test('non-Error causes are rendered as-is and end the chain', t => {
   failWith(reporter, new Error('outer', {cause: 'plain reason'}));
   t.ok(lines.includes('    - "plain reason"'), 'a string cause is shown verbatim');
   t.notOk(lines.includes('  causeStack:'), 'no stack without an Error root');
-});
-
-test('TTY renders the cause chain', t => {
-  const {lines, output} = captureTty();
-  const reporter = new TTYReporter({output, hasColors: false, showBanner: false});
-  failWith(reporter, new Error('outer', {cause: new Error('root boom')}));
-  t.ok(
-    lines.some(line => line.includes('cause: Error: root boom')),
-    'the cause line is present'
-  );
-  t.ok(
-    lines.some(line => line.includes('cause stack: |-')),
-    'the root cause stack is present'
-  );
 });
 
 test('getErrorChain ignores non-serialized values', t => {
