@@ -25,6 +25,7 @@ class FakeWorker extends EventServer {
   makeTask(fileName) {
     const id = String(++this.counter);
     this.made.push({id, fileName});
+    this.onMade?.();
     return id;
   }
   destroyTask(id, reason) {
@@ -40,19 +41,30 @@ test('control channel: createTask tracks live tasks up to parallelism', t => {
   t.equal(w.fileQueue.length, 1, 'the third file is queued');
 });
 
-test('control channel: close terminates with `done` and drains the queue', async t => {
-  const w = new FakeWorker(makeReporter(), 1, {});
-  w.execute(['a.js', 'b.js']);
-  t.equal(w.made.length, 1, 'one task at a time');
+test(
+  'control channel: close terminates with `done` and drains the queue',
+  {timeout: 1000},
+  async t => {
+    const w = new FakeWorker(makeReporter(), 1, {});
+    w.execute(['a.js', 'b.js']);
+    t.equal(w.made.length, 1, 'one task at a time');
 
-  w.close('1');
-  t.deepEqual(w.destroyed.at(-1), {id: '1', reason: 'done'}, 'finished worker torn down as `done`');
-  t.notOk(w.liveTasks.has('1'), 'no longer live');
+    // await the deferred start itself — a fixed sleep races the wrong scheduler
+    // (setTimeout vs requestIdleCallback in browsers)
+    const secondStarted = new Promise(resolve => (w.onMade = resolve));
+    w.close('1');
+    t.deepEqual(
+      w.destroyed.at(-1),
+      {id: '1', reason: 'done'},
+      'finished worker torn down as `done`'
+    );
+    t.notOk(w.liveTasks.has('1'), 'no longer live');
 
-  await timeout(10); // let the deferred next task start
-  t.equal(w.made.length, 2, 'queued file starts once a slot frees');
-  t.ok(w.liveTasks.has('2'), 'the queued task is tracked too');
-});
+    await secondStarted;
+    t.equal(w.made.length, 2, 'queued file starts once a slot frees');
+    t.ok(w.liveTasks.has('2'), 'the queued task is tracked too');
+  }
+);
 
 test('control channel: stopTest terminates every in-flight worker', t => {
   const w = new FakeWorker(makeReporter(), 3, {});

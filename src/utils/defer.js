@@ -10,7 +10,8 @@ do {
   if (typeof window != 'object') break;
 
   if (typeof window.requestIdleCallback == 'function') {
-    deferImplementation = window.requestIdleCallback;
+    // timeout bounds idle starvation — hidden iframes / headless may never go idle
+    deferImplementation = fn => window.requestIdleCallback(fn, {timeout: 50});
     break;
   }
 
