@@ -47,6 +47,7 @@ for (let i = 0; i < flags.length; ++i) {
     name = optionNames[option];
   if (typeof name == 'string') options[name] = option !== flags[i];
 }
+options.flags = flags;
 
 window.addEventListener('DOMContentLoaded', () => {
   const tools = document.querySelector('.tape6 form.tools');
@@ -98,7 +99,11 @@ window.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       if (!isStopTest(error)) throw error;
     }
-    domReporter.report(event);
+    try {
+      domReporter.report(event);
+    } catch (error) {
+      if (!isStopTest(error)) throw error;
+    }
   };
 
   setReporter(new ProxyReporter({...options, reportTo}));

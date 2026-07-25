@@ -1,5 +1,6 @@
 import EventServer from '../src/utils/EventServer.js';
 import {isStopTest} from '../src/State.js';
+import {htmlTestUrl, iframeId, terminateMessage, testPageSrcdoc} from '../src/driver/bootstrap.js';
 
 export default class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks, options) {
@@ -41,47 +42,18 @@ export default class TestWorker extends EventServer {
     };
   }
   makeTask(fileName) {
-    const id = String(++this.counter);
-    const iframe = document.createElement('iframe');
-    iframe.id = 'test-iframe-' + id;
+    const id = String(++this.counter),
+      flags = this.options.flags || '',
+      iframe = document.createElement('iframe');
+    iframe.id = iframeId(id);
     iframe.className = 'test-iframe';
     if (/\.html?$/i.test(fileName)) {
-      const search = new URLSearchParams({id, 'test-file-name': fileName});
-      if (this.options.failOnce) search.set('flags', 'F');
-      iframe.src = '/' + fileName + '?' + search.toString();
+      iframe.src = htmlTestUrl(fileName, {id, flags});
       iframe.onerror = error => window.__tape6_error(id, error);
-      document.body.append(iframe);
     } else {
-      document.body.append(iframe);
-      iframe.contentWindow.document.open();
-      iframe.contentWindow.document.write(`
-        <!doctype html>
-        <html lang="en">
-          <head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <title>Test IFRAME</title>
-            ${
-              this.importmap
-                ? `<script type="importmap">${JSON.stringify(this.importmap)}</script>`
-                : ''
-            }
-            <script type="module">
-              window.__tape6_id = ${JSON.stringify(id)};
-              window.__tape6_testFileName = ${JSON.stringify(fileName)};
-              window.__tape6_flags = "${this.options.failOnce ? 'F' : ''}";
-              const s = document.createElement('script');
-              s.setAttribute('type', 'module');
-              s.src = '/${fileName}';
-              s.onerror = error => window.parent.__tape6_error(window.__tape6_id, error);
-              document.documentElement.appendChild(s);
-            </script>
-          </head>
-          <body></body>
-        </html>
-      `);
-      iframe.contentWindow.document.close();
+      iframe.srcdoc = testPageSrcdoc(fileName, {id, flags, importmap: this.importmap});
     }
+    document.body.append(iframe);
     return id;
   }
   destroyTask(id, reason = 'done') {
@@ -93,10 +65,10 @@ export default class TestWorker extends EventServer {
     // graceTimeout is a best-effort backstop; a real kill needs a driver
     // (puppeteer / playwright). See dev-docs/worker-control-channel.md.
     if (this.graceTimers[id]) return;
-    const iframe = document.getElementById('test-iframe-' + id);
+    const iframe = document.getElementById(iframeId(id));
     if (!iframe) return;
     try {
-      iframe.contentWindow?.postMessage({type: 'tape6-terminate', reason}, '*');
+      iframe.contentWindow?.postMessage(terminateMessage(reason), '*');
     } catch (e) {
       void e;
     }
@@ -108,7 +80,7 @@ export default class TestWorker extends EventServer {
       clearTimeout(grace);
       delete this.graceTimers[id];
     }
-    const iframe = document.getElementById('test-iframe-' + id);
+    const iframe = document.getElementById(iframeId(id));
     iframe && iframe.parentElement && iframe.parentElement.removeChild(iframe);
   }
 }
