@@ -2,7 +2,7 @@ import EventServer from '../src/utils/EventServer.js';
 import {isStopTest} from '../src/State.js';
 import {htmlTestUrl, iframeId, terminateMessage, testPageSrcdoc} from '../src/driver/bootstrap.js';
 
-export default class TestWorker extends EventServer {
+export class TestWorker extends EventServer {
   constructor(reporter, numberOfTasks, options) {
     super(reporter, numberOfTasks, options);
 
@@ -69,9 +69,7 @@ export default class TestWorker extends EventServer {
     if (!iframe) return;
     try {
       iframe.contentWindow?.postMessage(terminateMessage(reason), '*');
-    } catch (e) {
-      void e;
-    }
+    } catch {}
     this.graceTimers[id] = setTimeout(() => this.#removeIframe(id), this.graceTimeout);
   }
   #removeIframe(id) {
@@ -84,3 +82,5 @@ export default class TestWorker extends EventServer {
     iframe && iframe.parentElement && iframe.parentElement.removeChild(iframe);
   }
 }
+
+export default TestWorker;

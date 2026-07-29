@@ -19,7 +19,7 @@ const getType = value => {
   return className ? type + '/' + className : type;
 };
 
-class DomReporter extends Reporter {
+export class DomReporter extends Reporter {
   constructor({root, failOnce = false, renumberAsserts = false} = {}) {
     super({failOnce});
     this.root = root;
