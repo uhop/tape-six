@@ -235,7 +235,26 @@ export class TestWorker extends EventServer {
         {domId: iframeId(id), message: terminateMessage(reason)}
       )
       .catch(() => {});
-    this.graceTimers[id] = setTimeout(() => this.#kill(id), this.graceTimeout);
+    this.graceTimers[id] = setTimeout(() => this.#forceKill(id, reason), this.graceTimeout);
+  }
+
+  // A force-killed page emits no closing events, so unwind the scopes it left
+  // open — otherwise the report tree stays unbalanced and the summary with it.
+  // A deadline kill carries no failure of its own, so it reports one.
+  #forceKill(id, reason) {
+    this.#clearGrace(id);
+    if (!this.tasks[id]) return; // the page closed on its own while draining
+    if (reason === 'timeout') {
+      this.report(id, {
+        name: `Terminated after ${this.workerTimeout}ms`,
+        test: 0,
+        marker: new Error(),
+        operator: 'error',
+        fail: true
+      });
+    }
+    this.report(id, {type: 'terminated', test: 0});
+    this.#kill(id);
   }
 
   // Idempotent: the page 'close' handler clears tracking and calls close(id),
@@ -245,7 +264,9 @@ export class TestWorker extends EventServer {
     this.#clearGrace(id);
     const task = this.tasks[id];
     if (!task) return;
-    task.context.close().catch(() => {});
+    // a context that refuses to close fires no page 'close', so finalize here
+    // instead — an unclosed task keeps the run from ever completing
+    task.context.close().catch(() => this.close(id));
   }
 
   #clearGrace(id) {

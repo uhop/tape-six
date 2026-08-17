@@ -87,7 +87,25 @@ export class TestWorker extends EventServer {
     } catch (e) {
       void e;
     }
-    this.graceTimers[id] = setTimeout(() => this.#kill(id), this.graceTimeout);
+    this.graceTimers[id] = setTimeout(() => this.#forceKill(id, reason), this.graceTimeout);
+  }
+  // A force-killed worker never emits its `end`, so nothing else would close the
+  // task: the run would never complete and the process would exit 0 with the
+  // failing worker's events still buffered. `terminated` unwinds the scopes that
+  // worker left open, without which the summary is swallowed too.
+  #forceKill(id, reason) {
+    this.#kill(id);
+    if (reason === 'timeout') {
+      this.report(id, {
+        name: `Terminated after ${this.workerTimeout}ms`,
+        test: 0,
+        marker: new Error(),
+        operator: 'error',
+        fail: true
+      });
+    }
+    this.report(id, {type: 'terminated', test: 0});
+    this.close(id);
   }
   #kill(id) {
     const grace = this.graceTimers[id];

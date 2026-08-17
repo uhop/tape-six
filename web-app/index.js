@@ -158,7 +158,9 @@ window.addEventListener('DOMContentLoaded', () => {
       worker.execute(files);
     });
 
-    const runHasFailed = reporter.state && reporter.state.failed > 0;
+    // stopRequested is only ever raised by a failure or a bail-out: reporting a
+    // green run here would mean the failing event never reached the reporter
+    const runHasFailed = worker.stopRequested || reporter.state?.failed > 0;
 
     reporter.report({
       type: 'end',

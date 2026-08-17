@@ -87,6 +87,8 @@ export class EventServer {
   retained: Record<string, TestEvent[]>;
   readyQueue: TestEvent[][];
   liveTasks: Set<string>;
+  /** Ids `close()` has already finalized; makes a second `close(id)` a no-op. */
+  closedTasks: Set<string>;
   deadlineTimers: Record<string, ReturnType<typeof setTimeout>>;
 
   /** DATA plane: forward one worker event, preserving per-task ordering. */

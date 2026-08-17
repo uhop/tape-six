@@ -26,6 +26,7 @@ export class EventServer {
     this.readyQueue = [];
 
     this.liveTasks = new Set();
+    this.closedTasks = new Set();
     this.deadlineTimers = {};
     this.stopRequested = false;
   }
@@ -57,12 +58,19 @@ export class EventServer {
     }
   }
   close(id) {
+    // a force-killed worker can still land a queued `end` — closing twice would
+    // double-decrement totalTasks and end the run early
+    if (this.closedTasks.has(id)) return;
+    this.closedTasks.add(id);
     this.#clearDeadline(id);
     this.liveTasks.delete(id);
     this.destroyTask(id, 'done');
     --this.totalTasks;
     if (this.fileQueue.length) {
-      if (this.reporter.state?.stopTest) {
+      // stopRequested, not reporter.state: a stop raised by a retained worker
+      // reaches the reporter only when its lane flushes, and until then the
+      // queue would keep starting files the stop was meant to cancel
+      if (this.stopRequested) {
         this.fileQueue = [];
       } else {
         ++this.totalTasks;
@@ -92,12 +100,29 @@ export class EventServer {
       }
     }
     if (!this.totalTasks) {
-      this.retained = {};
+      this.#flushPending();
       this.done && this.done();
     }
   }
+  // the run is over: anything still buffered has nowhere left to go, and
+  // dropping it loses the failures the exit code is computed from
+  #flushPending() {
+    for (const events of this.readyQueue) {
+      for (const event of events) {
+        this.reporter.report(event, true);
+      }
+    }
+    this.readyQueue = [];
+    for (const events of Object.values(this.retained)) {
+      for (const event of events) {
+        this.reporter.report(event, true);
+      }
+    }
+    this.retained = {};
+    this.passThroughId = null;
+  }
   createTask(fileName) {
-    if (this.reporter.state?.stopTest) return;
+    if (this.stopRequested) return;
     if (this.totalTasks < this.numberOfTasks) {
       ++this.totalTasks;
       this.#startTask(fileName);
@@ -112,6 +137,9 @@ export class EventServer {
   #startTask(fileName) {
     const id = this.makeTask(fileName);
     if (id == null) return id;
+    // a transport may close the task inside makeTask (an unsupported file):
+    // tracking it now would leave a dead id live and arm a deadline for it
+    if (this.closedTasks.has(id)) return id;
     this.liveTasks.add(id);
     if (this.workerTimeout > 0) {
       this.deadlineTimers[id] = setTimeout(() => {

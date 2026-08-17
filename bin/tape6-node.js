@@ -91,7 +91,9 @@ const main = async () => {
     worker.execute(files);
   });
 
-  const hasFailed = reporter.state && reporter.state.failed > 0;
+  // stopRequested is only ever raised by a failure or a bail-out: reporting a
+  // green run here would mean the failing event never reached the reporter
+  const hasFailed = worker.stopRequested || reporter.state?.failed > 0;
 
   reporter.report({
     type: 'end',

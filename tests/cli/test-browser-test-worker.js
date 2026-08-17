@@ -173,7 +173,27 @@ test('cooperative drain escalates to a context force-kill', async t => {
   await waitFor(() => driver.closedContexts === 1);
   t.pass('the context was force-closed after graceTimeout');
   await done;
+  t.ok(
+    reporter.events.some(event => event.type === 'terminated'),
+    'the kill unwinds the scopes the page left open'
+  );
   await worker.cleanup();
+});
+
+test('a deadline kill reports a failure of its own', async t => {
+  const driver = makeFakeDriver(),
+    reporter = makeReporter(),
+    worker = new FakeWorker(reporter, 1, {...OPTIONS, graceTimeout: 20, workerTimeout: 30}, driver);
+
+  const done = new Promise(resolve => (worker.done = resolve));
+  worker.execute(['tests/test-a.js']);
+  await waitFor(() => driver.pages.length && driver.pages[0].exposed.__tape6_reporter);
+  await done;
+
+  t.ok(
+    reporter.events.some(event => event.fail && /^Terminated after 30ms$/.test(event.name)),
+    'the hung task fails instead of passing silently'
+  );
 });
 
 test('an https server URL asks the adapter for insecure contexts', async t => {

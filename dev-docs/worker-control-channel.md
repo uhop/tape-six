@@ -166,6 +166,21 @@ children via env — `TAPE6_JSONL` + prefix; reuse/extend that), the runtime:
    are **parent/runner-side, per transport**; the drain itself is in-process in
    the child.
 
+   **What the kill owes the run.** A killed worker sends nothing more, so the
+   parent must stand in for it on three counts, or the kill turns a failing run
+   green. It must `close()` the task itself — nothing else will, and an
+   unclosed task means `totalTasks` never reaches zero, `done()` never fires,
+   and the process drains its event loop and exits **0** with the failing
+   worker's events still buffered in a retained lane. It must report a
+   `terminated` event so `Reporter.onTerminated` unwinds the scopes the worker
+   left open; without it the report tree stays unbalanced and the final summary
+   is swallowed. And a Layer-2 (`workerTimeout`) kill must report a failing
+   assertion of its own, since unlike failOnce it has no failure elsewhere in
+   the run to carry the verdict. This was the 2026-08-08/15 `--flags O` false
+   pass (see `projects/tape-six/queue` in the vault): a small early failure plus
+   a long-lived sibling that ignored the terminate produced exit 0 with zero
+   lines of output.
+
    Note: failOnce today throws `StopTest` but does _not_ call
    `reporter.abort()` (only timeout does) — the channel should fire **both**,
    or failOnce won't interrupt a signal-aware `await` that hasn't reached an
