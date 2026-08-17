@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.16.4 _Bug fixes: failures now show their stack and cause chain on Firefox and Safari/WebKit, not just on V8; `t.bailOut()` fails the run instead of reporting success. The browser dashboard shows progress while a run is in flight._
 - 1.16.3 _Bug fixes: a fail-once run that had to force-kill a worker could exit 0 with no output at all; a worker-deadline kill now fails the run instead of passing silently._
 - 1.16.2 _Bug fixes: fail-once no longer records phantom failures and drops the summary on `asPromise` tests; the web application handles fail-once runs correctly._
 - 1.16.1 _Failure diagnostics now unchain `Error.cause` and `AggregateError` members._
