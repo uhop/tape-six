@@ -161,11 +161,15 @@ body.tape6 {
 
 .tape6 .score tape6-donut .donut-status {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px;
+  /* inset + auto margins center on the border box exactly; a top/left 50% with a
+     negative margin has to account for the border width and silently will not */
+  inset: 0;
+  margin: auto;
+  box-sizing: border-box;
+  /* the donut's hole is r=40, so 68px leaves a little room for the segments'
+     drop shadow, which falls inward */
+  width: 68px;
+  height: 68px;
   border: 3px solid transparent;
   border-radius: 50%;
   opacity: 0;
@@ -173,9 +177,9 @@ body.tape6 {
   pointer-events: none;
 }
 .tape6 .score tape6-donut .donut-status.running {
-  opacity: 0.65;
-  border-top-color: #555;
-  border-right-color: #555;
+  opacity: 0.35;
+  border-top-color: #888;
+  border-right-color: #888;
   animation: tape6-donut-status-spin 1s linear infinite;
 }
 
