@@ -427,6 +427,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.16.3 _Bug fixes: a fail-once run that had to force-kill a worker could exit 0 with no output at all; a worker-deadline kill now fails the run instead of passing silently._
 - 1.16.2 _Bug fixes: fail-once no longer records phantom failures and drops the summary on `asPromise` tests; the web application handles fail-once runs correctly._
 - 1.16.1 _Failure diagnostics now unchain `Error.cause` and `AggregateError` members._
 - 1.16.0 _Bug fix: the parallel runner with fail-once could report green on a failing suite. Vendored `deep6` updated to 1.4.0: assertions and object-pattern matchers now compare by value._
