@@ -226,7 +226,9 @@ export class TapReporter extends Reporter {
                     this.write('    - ' + JSON.stringify(member), 'yaml')
                   );
                 }
-                if (chain.causeStack) {
+                // an engine whose frames we cannot parse yields an empty list, not null —
+                // a bare header with no entries under it is not valid YAMLish
+                if (chain.causeStack?.length) {
                   this.write('  causeStack:', 'yaml');
                   chain.causeStack.forEach(line =>
                     this.write('    - ' + JSON.stringify('at ' + line), 'yaml')

@@ -31,11 +31,22 @@ export const isAssertionError = error =>
   typeof error.message == 'string' &&
   typeof error.operator == 'string';
 
+// SpiderMonkey / JavaScriptCore frames: `name@url:line:col`, anonymous `@url:line:col`,
+// native `name@[native code]`. Anchored on the trailing position so an error *message*
+// that happens to contain an `@` is not mistaken for a frame (V8 keeps the message in
+// `stack`; the other two do not).
+const webFrameRe = /^.*@(?:.*:\d+:\d+|\[native code\])$/;
+
 export const getStackList = error => {
   const stackList = [];
   for (const line of error.stack.split('\n')) {
     const result = /^\s+at\s+(.*)$/.exec(line);
-    if (result) stackList.push(result[1].trimEnd());
+    if (result) {
+      stackList.push(result[1].trimEnd());
+      continue;
+    }
+    const text = line.trim();
+    if (webFrameRe.test(text)) stackList.push(text);
   }
   return stackList;
 };

@@ -20,6 +20,8 @@ export class DashReporter extends Reporter {
     this.assertCounter = 0;
     this.depth = this.assertCounter = this.failureCounter = this.skipCounter = this.todoCounter = 0;
     this.testCounter = 0;
+    // a bail-out scores no assertion, so the count-derived verdict reads green
+    this.bailedOut = false;
     this.currentTest = this.lastAssert = '';
     this.scoreNode = document.querySelector('.tape6 .score');
     this.donutNode = this.scoreNode && this.scoreNode.querySelector('tape6-donut');
@@ -48,6 +50,10 @@ export class DashReporter extends Reporter {
       case 'terminated':
         this.onTerminated(event);
         break;
+      case 'bail-out':
+        this.bailedOut = true;
+        this.updateDashboard();
+        break;
       case 'assert':
         ++this.assertCounter;
         event.fail && !event.skip && !event.todo && ++this.failureCounter;
@@ -71,7 +77,9 @@ export class DashReporter extends Reporter {
       success = total - this.failureCounter;
     this.donutNode.show([
       {value: success, className: 'success'},
-      {value: this.failureCounter, className: 'failure'},
+      // an aborted run scores nothing, so with no slice of its own the donut
+      // renders its empty state — green by absence
+      {value: this.failureCounter || (this.bailedOut ? 1 : 0), className: 'failure'},
       {value: this.skipCounter, className: 'skipped'},
       {value: this.todoCounter, className: 'todo'}
     ]);
@@ -101,7 +109,8 @@ export class DashReporter extends Reporter {
     if (!this.scoreNode) return;
     const total = this.assertCounter - this.skipCounter,
       success = total - this.failureCounter,
-      fail = success < total,
+      // the percentage stays an assertion statistic; the verdict does not
+      fail = success < total || this.bailedOut,
       result = total > 0 ? formatNumber(100 * (success / total), 1) : '100';
     let node = this.scoreNode.querySelector('.text');
     node.classList.remove('nothing');

@@ -317,7 +317,9 @@ export class TTYReporter extends Reporter {
               this.out(this.lowWhite('  errors:'));
               chain.errors.forEach(member => this.out(this.lowWhite('    - ') + member));
             }
-            if (chain.causeStack) {
+            // an engine whose frames we cannot parse yields an empty list, not null —
+            // a bare header with no frames under it is worse than no header
+            if (chain.causeStack?.length) {
               this.out(this.lowWhite('  cause stack: |-'));
               chain.causeStack.forEach(line => this.out(this.lowWhite('    at ' + line)));
             }

@@ -101,6 +101,7 @@ test('example', t => {
 - Test files should be directly executable: `node tests/test-foo.js`
 - Test file naming convention: `test-*.js`, `test-*.mjs`, `test-*.cjs`, `test-*.ts`, `test-*.mts`, `test-*.cts`.
 - Tests are configured in `package.json` under the `"tape6"` section.
+- **The runtime matrix is not an engine matrix.** `test` / `test:bun` / `test:deno` all produce V8-shaped `error.stack` (message line + `    at …`): Node and Deno are V8, and Bun runs JavaScriptCore but mimics V8's `Error.stack` — `Error.captureStackTrace` included — for Node compatibility. The other format, `name@url:line:col`, comes only from a browser host (Safari/Epiphany on the same JSC, Firefox on SpiderMonkey), and the browser suite is normally run on headless Chrome, which is V8 again. So **no CLI gate can catch stack-format bugs** — `getStackList` parsed only V8 frames until 2026-08-16, which silently stripped every failure's location, stack block and cause stack on Firefox and WebKit. Anything that parses `error.stack` needs fixtures: `tests/test-stack-parsing.js` carries real captures per host and is the only gate covering the non-V8 branch.
 - For step-by-step guidance see `skills/write-tests/` and `skills/run-tests/` (also mirrored under `.claude/skills/` and `.windsurf/skills/` for in-repo work).
 
 ## Key conventions
