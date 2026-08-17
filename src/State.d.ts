@@ -71,6 +71,12 @@ export class State {
   /** Direct assertions in this state only — `t.plan()`'s comparison basis. */
   localAsserts: number;
   stopTest: boolean;
+  /**
+   * Set on every state in the chain by a `bail-out`. A bail-out aborts the run
+   * without failing an assertion, so `failed` stays 0 — reporters and exit-code
+   * checks must consult this too, or an aborted run reports success.
+   */
+  bailedOut: boolean;
   timer: Timer;
   startTime: number;
   time: number;

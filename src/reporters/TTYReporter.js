@@ -176,15 +176,18 @@ export class TTYReporter extends Reporter {
         const theTest = this.onEnd(event);
         if (theTest && (theTest.name || theTest.test > 0)) {
           --this.visibleDepth;
-          if (!this.failureOnly || theTest.failed) {
+          // a bail-out fails no assertion, so `failed` alone would mark the
+          // aborted test green — and hide it entirely under failure-only
+          const failedTest = theTest.failed > 0 || theTest.bailedOut;
+          if (!this.failureOnly || failedTest) {
             let name = '';
             if (theTest.test) {
               name = theTest.name || this.italic('anonymous test');
             } else {
               name = this.italic(theTest.name);
             }
-            text = (theTest.failed ? '✗' : '✓') + ' ' + name;
-            text = theTest.failed ? this.brightRed(text) : this.green(text);
+            text = (failedTest ? '✗' : '✓') + ' ' + name;
+            text = failedTest ? this.brightRed(text) : this.green(text);
             text += this.makeState(theTest);
             this.showTime && (text += this.lowWhite(' - ' + formatTime(event.diffTime)));
             this.out(text);
@@ -348,13 +351,16 @@ export class TTYReporter extends Reporter {
   }
   showSummary(state, diffTime) {
     const total = state.asserts - state.skipped,
-      success = total - state.failed;
+      success = total - state.failed,
+      // counts stay truthful — a bail-out fails no assertion — but the verdict
+      // must not read green on a run that was aborted
+      failedRun = state.failed > 0 || state.bailedOut;
 
     if (!this.showBanner || !this.output.isTTY) {
       this.out(
         this.blackBg(
           '  ' +
-            (state.failed ? '⛔' : '♥️') +
+            (failedRun ? '⛔' : '♥️') +
             '   ' +
             this.brightWhite('tests: ' + formatNumber(this.testCounter)) +
             ', ' +
@@ -375,8 +381,8 @@ export class TTYReporter extends Reporter {
       return;
     }
 
-    const paintMethod = state.failed ? 'failure' : 'success';
-    let box1 = [state.failed ? 'Need work' : 'All good!'];
+    const paintMethod = failedRun ? 'failure' : 'success';
+    let box1 = [failedRun ? 'Need work' : 'All good!'];
     box1 = padBox(box1, 0, 2);
     box1 = drawBox(box1);
     box1 = padBox(box1, 0, 3);

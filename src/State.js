@@ -154,6 +154,9 @@ export class State {
     // direct assertions in this state only — not bumped by updateParent, used by t.plan()
     this.localAsserts = 0;
     this.stopTest = false;
+    // a bail-out aborts the run without failing an assertion, so `failed` never
+    // sees it — the verdict needs its own channel or the run reports success
+    this.bailedOut = false;
     this.timer = timer || parent.timer || getTimer();
     this.startTime = this.time = time || this.timer.now();
     this.abortController = new AbortController();
@@ -297,6 +300,7 @@ export class State {
         break;
       case 'bail-out':
         event.stopTest = true;
+        for (const state of this) state.bailedOut = true;
         break;
     }
 

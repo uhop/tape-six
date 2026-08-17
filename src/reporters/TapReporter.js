@@ -242,15 +242,19 @@ export class TapReporter extends Reporter {
     this.state?.postprocess(event, suppressStopTest);
   }
   showSummary(state, diffTime) {
-    const success = state.asserts - state.failed - state.skipped;
+    const success = state.asserts - state.failed - state.skipped,
+      // counts stay truthful — a bail-out fails no assertion — but the verdict
+      // must not read `ok` on a run that was aborted
+      failedRun = state.failed > 0 || state.bailedOut;
     this.write('1..' + state.asserts, 'summary');
     this.write('# tests ' + state.asserts, 'summary');
     state.skipped && this.write('# skip  ' + state.skipped, 'summary-info');
     success && this.write('# pass  ' + success, 'summary-success');
     state.failed && this.write('# fail  ' + state.failed, 'summary-failure');
+    state.bailedOut && this.write('# bailed out', 'summary-failure');
     this.write(
-      '# ' + (state.failed ? 'not ok' : 'ok'),
-      state.failed ? 'summary-result-failure' : 'summary-result-success'
+      '# ' + (failedRun ? 'not ok' : 'ok'),
+      failedRun ? 'summary-result-failure' : 'summary-result-success'
     );
     this.write('# time=' + diffTime.toFixed(3) + 'ms', 'summary-info');
   }

@@ -269,7 +269,9 @@ const testRunner = async () => {
 
     await currentState?.runAfterAll();
 
-    const runHasFailed = reporter.state && reporter.state.failed > 0;
+    // a bail-out aborts the run without failing an assertion — without the flag
+    // a directly-run file exits 0 on it
+    const runHasFailed = reporter.state?.failed > 0 || reporter.state?.bailedOut;
 
     reporter.report({
       type: 'end',

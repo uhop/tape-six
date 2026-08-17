@@ -246,7 +246,9 @@ export const runTests = async tests => {
       name: options.name,
       test: testNumber,
       time: tester.timer.now(),
-      fail: tester.state && tester.state.failed > 0
+      // a bail-out fails no assertion — without the flag the aborted test
+      // announces its end as a success to every `event.fail` consumer
+      fail: tester.state?.failed > 0 || tester.state?.bailedOut
     });
     await reporter.state.runAfterEach();
     deferred && deferred.resolve(tester.state);

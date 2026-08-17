@@ -324,7 +324,7 @@ The following methods are available (all `msg` arguments are optional):
   - `plan(n)` &mdash; records the expected number of direct assertions; emits a TAP-comment diagnostic at test end if the count diverges (does not fail the test).
   - `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
   - `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
-  - `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness.
+  - `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness. The run is reported as failed and exits non-zero, even though no assertion failed.
 - Evaluators:
   - `OK(condition, msg, options)` &mdash; a high-level helper for evaluating simple expressions.
     - _Available since 1.4.0._
