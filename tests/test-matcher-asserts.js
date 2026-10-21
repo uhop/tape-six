@@ -1,5 +1,6 @@
 import test from '../index.js';
 import {Tester} from '../src/Tester.js';
+import matchInstanceOf from '../src/deep6/unifiers/matchInstanceOf.js';
 
 class SpyReporter {
   constructor() {
@@ -74,13 +75,13 @@ test('t.throws: matcher — object pattern (deep6 match)', t => {
   const sub = new Tester(0, reporter);
   sub.throws(
     () => {
-      throw new CustomError('boom', 'ENOENT');
+      throw {code: 'ENOENT', errno: -2};
     },
     {code: 'ENOENT'}
   );
   sub.throws(
     () => {
-      throw new CustomError('boom', 'OTHER');
+      throw {code: 'OTHER'};
     },
     {code: 'ENOENT'}
   ); // miss → fail
@@ -141,7 +142,7 @@ test('t.rejects: matcher — RegExp / predicate / object pattern', async t => {
   const sub = new Tester(0, reporter);
   await sub.rejects(Promise.reject(new Error('not found')), /not found/);
   await sub.rejects(Promise.reject(new CustomError('x', 'ENOENT')), e => e.code === 'ENOENT');
-  await sub.rejects(Promise.reject(new CustomError('x', 'ENOENT')), {code: 'ENOENT'});
+  await sub.rejects(Promise.reject({code: 'ENOENT'}), {code: 'ENOENT'});
   t.deepEqual(verdicts(reporter), [false, false, false]);
 });
 
@@ -207,61 +208,41 @@ test('matcher edge cases', async t => {
   t.deepEqual(verdicts(reporter), [true, false]);
 });
 
-test('object patterns use value equality across prototypes', t => {
-  const reporter = new SpyReporter();
-  const sub = new Tester(0, reporter);
-  // message is own but non-enumerable — open-mode unify still compares it
-  sub.throws(
-    () => {
-      throw new CustomError('boom', 'ENOENT');
-    },
-    {message: 'boom', name: 'CustomError', code: 'ENOENT'}
-  );
-  // own-property mismatch, non-enumerable included → fail
-  sub.throws(
-    () => {
-      throw new CustomError('boom', 'ENOENT');
-    },
-    {message: 'not boom'}
-  );
-  // nested instance: a cause chain matched by a nested plain pattern
-  const withCause = () =>
-    Object.assign(new CustomError('outer', 'EOUTER'), {cause: new CustomError('inner', 'EINNER')});
-  sub.throws(
-    () => {
-      throw withCause();
-    },
-    {code: 'EOUTER', cause: {code: 'EINNER'}}
-  );
-  // mismatch on a nested field → fail
-  sub.throws(
-    () => {
-      throw withCause();
-    },
-    {code: 'EOUTER', cause: {code: 'EWRONG'}}
-  );
-  t.deepEqual(verdicts(reporter), [false, true, false, true]);
-});
-
-test('t.match: class instances match plain patterns by value', t => {
+test('object patterns do not match class instances; matchInstanceOf does', t => {
   const reporter = new SpyReporter();
   const sub = new Tester(0, reporter);
   class Response {
     constructor(status) {
       this.status = status;
     }
-    get ok() {
-      return this.status < 400;
-    }
   }
+  sub.throws(
+    () => {
+      throw new CustomError('boom', 'ENOENT');
+    },
+    {code: 'ENOENT'}
+  );
   sub.match(new Response(200), {status: 200});
-  sub.match(new Response(500), {status: 200}); // own-property mismatch → fail
-  sub.doesNotMatch(new Response(500), {status: 200});
-  // open mode constrains only properties the value owns: absent keys and
-  // prototype getters are not read
-  sub.match(new Error('x'), {code: 'ENOENT'});
-  sub.match(new Response(500), {ok: true});
-  // registered types (Date, RegExp, ...) never match plain patterns
   sub.doesNotMatch(new Date(), {});
-  t.deepEqual(verdicts(reporter), [false, true, false, false, false, false]);
+  sub.match(new Response(200), new Response(200));
+  sub.match(new Response(200), matchInstanceOf(Response));
+  sub.match({response: new Response(200)}, {response: matchInstanceOf(Response)});
+  t.deepEqual(verdicts(reporter), [true, true, false, false, false, false]);
+});
+
+test('object patterns require every key they name', t => {
+  const reporter = new SpyReporter();
+  const sub = new Tester(0, reporter);
+  sub.match({code: 'x', other: 1}, {code: 'x'});
+  sub.match({}, {code: 'x'});
+  sub.match({recordId: 'x'}, {refused: 'claimed_by_other'});
+  sub.match({a: {}}, {a: {b: 1}});
+  sub.doesNotMatch({}, {code: 'x'});
+  sub.throws(
+    () => {
+      throw {message: 'x'};
+    },
+    {code: 'ENOENT'}
+  );
+  t.deepEqual(verdicts(reporter), [false, true, true, true, false, true]);
 });

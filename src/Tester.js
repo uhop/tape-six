@@ -1,5 +1,4 @@
 import {equal, match, any} from './deep6/index.js';
-import unify from './deep6/unify.js';
 import {getTimer} from './utils/timer.js';
 
 const tryFn = fn => {
@@ -19,19 +18,6 @@ const isErrorClass = fn =>
 const equalOptions = {circular: true};
 const looseEqualOptions = {circular: true, loose: true};
 
-// matchers: open-mode unify on the naked pattern (deep6 1.4.0+) has no
-// prototype guard, so plain patterns match class instances by their own
-// properties — an absent key constrains nothing. match() would
-// preprocess-wrap the pattern, which forbids instance targets.
-const matchOptions = {
-  openObjects: true,
-  openArrays: true,
-  openMaps: true,
-  openSets: true,
-  circular: true
-};
-const matchValues = (value, pattern) => !!unify(value, pattern, null, matchOptions);
-
 const applyMatcher = (actual, matcher) => {
   if (matcher === undefined) return true;
   if (typeof matcher === 'function') {
@@ -42,7 +28,7 @@ const applyMatcher = (actual, matcher) => {
     const str = actual instanceof Error ? actual.message : String(actual);
     return matcher.test(str);
   }
-  if (matcher !== null && typeof matcher === 'object') return matchValues(actual, matcher);
+  if (matcher !== null && typeof matcher === 'object') return match(actual, matcher);
   return actual === matcher;
 };
 
@@ -396,7 +382,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'match',
-      fail: !matchValues(a, b),
+      fail: !match(a, b),
       data: {
         expected: b,
         actual: a
@@ -411,7 +397,7 @@ export class Tester {
       marker: new Error(),
       time: this.timer.now(),
       operator: 'doesNotMatch',
-      fail: matchValues(a, b),
+      fail: match(a, b),
       data: {
         expected: b,
         actual: a

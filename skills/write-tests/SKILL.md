@@ -42,11 +42,10 @@ Write or update tests using the tape-six testing library.
      () => parse(''),
      e => e.code === 'EPARSE'
    ); // predicate
-   t.throws(() => parse(''), {code: 'EPARSE'}); // deep6 object pattern
    await t.rejects(fetchData(), /404/);
-   await t.resolves(fetchData(), {status: 200}); // matches resolved value
+   await t.resolves(readConfig(), {strict: true}); // deep6 object pattern on the resolved value
    ```
-   A string second arg is still treated as the message for backward compatibility.
+   A string second arg is still treated as the message for backward compatibility. An object pattern requires every key it names and doesn't match a class instance, an `Error` included: match errors by class, RegExp, or predicate.
 6. **Wildcards in deep equality** — use `t.any` (alias `t._`) inside expected values to skip non-deterministic fields:
    ```js
    t.deepEqual(result, {id: t.any, name: 'Alice', createdAt: t.any});

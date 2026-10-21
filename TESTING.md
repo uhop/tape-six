@@ -129,8 +129,8 @@ All `msg` arguments are optional. If omitted, a generic message is used.
 | `t.doesNotThrow(fn, msg)`            | `fn()` does not throw             |                                  |
 | `t.matchString(str, re, msg)`        | `str` matches `re`                |                                  |
 | `t.doesNotMatchString(str, re, msg)` | `str` doesn't match `re`          |                                  |
-| `t.match(a, b, msg)`                 | Partial value match (open mode)   |                                  |
-| `t.doesNotMatch(a, b, msg)`          | No partial value match            |                                  |
+| `t.match(a, b, msg)`                 | Structural pattern match          |                                  |
+| `t.doesNotMatch(a, b, msg)`          | No structural match               |                                  |
 | `t.rejects(promise, m?, msg)`        | Rejects (matches `m?`) — `await`  | `doesNotResolve`                 |
 | `t.resolves(promise, m?, msg)`       | Resolves (matches `m?`) — `await` | `doesNotReject`                  |
 
@@ -145,9 +145,8 @@ t.throws(
   () => parse(''),
   e => e.code === 'EPARSE'
 ); // predicate
-t.throws(() => parse(''), {code: 'EPARSE'}); // deep6 object pattern
 await t.rejects(fetchData(), TypeError, 'wrong type');
-await t.resolves(fetchData(), {status: 200}); // matches resolved value
+await t.resolves(readConfig(), {strict: true}); // deep6 object pattern on the resolved value
 ```
 
 Matcher rules:
@@ -155,11 +154,11 @@ Matcher rules:
 - **Error subclass** (a function whose prototype is Error) → `instanceof` check.
 - **RegExp** → tested against `error.message` for `Error` instances, otherwise against `String(value)`.
 - **Function** (non-Error-class) → predicate; truthy return = match.
-- **Object** (non-null, non-RegExp) → open-mode value match (deep6 `unify()`): the pattern's
-  properties are compared by value against the target's own properties, so plain patterns match
-  class instances (an `Error`'s `code`, `message`, `cause`, …). A pattern key the target does not
-  own constrains nothing; prototype getters are not read; registered types (`Date`, `RegExp`,
-  typed arrays, `URL`, …) never match plain patterns.
+- **Object** (non-null, non-RegExp) → uses deep6's `match()` for partial structural matching:
+  every key the pattern names must be present in the value, and keys the pattern doesn't name are
+  ignored. A plain-object pattern doesn't match a class instance, an `Error` included: match an
+  error by its class, a RegExp, or a predicate, and check a class inside a pattern with deep6's
+  `matchInstanceOf`.
 - **`null` or any primitive** → strict equality.
 
 Falsy reasons (`null`, `0`, `false`, `''`, `NaN`) are correctly handled: `Promise.reject(null)` is still a rejection, and `throw 0` is still a throw.
