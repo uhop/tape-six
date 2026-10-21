@@ -32,9 +32,9 @@
     "test:seq": "node ./bin/tape6-seq.js --flags FO",
     "test:seq:bun": "bun run ./bin/tape6-seq.js --flags FO",
     "test:seq:deno": "deno run -A ./bin/tape6-seq.js --flags FO",
-    "ts-test": "node ./bin/tape6.js --flags FO 'tests/test-*.*ts'",
-    "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO 'tests/test-*.*ts'",
-    "ts-test:deno": "deno run -A ./bin/tape6-deno.js --flags FO 'tests/test-*.*ts'",
+    "ts-test": "node ./bin/tape6.js --flags FO \"tests/test-*.*ts\"",
+    "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO \"tests/test-*.*ts\"",
+    "ts-test:deno": "deno run -A ./bin/tape6-deno.js --flags FO \"tests/test-*.*ts\"",
     "ts-check": "tsc --noEmit"
   },
   "github": "http://github.com/uhop/tape-six",
