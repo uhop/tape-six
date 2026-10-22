@@ -1,8 +1,9 @@
 /**
- * Matcher accepted by `throws`, `rejects`, and `resolves`.
+ * Matcher accepted by `throws`, `rejects`, and `resolves`. It sees the thrown value, the
+ * rejection reason, or the resolved value as is: any value, not only an `Error`.
  *
  * - An `Error` subclass — checks `instanceof`.
- * - A `RegExp` — tested against the error's `message` (or `String(value)` for non-Errors).
+ * - A `RegExp` — tested against `value.message` when the value is an `Error`, otherwise against `String(value)`.
  * - A predicate function — called with the value; truthy return = match.
  * - An object pattern — uses deep6's `match` for structural matching.
  * - `null` or any primitive — strict equality.
@@ -520,16 +521,16 @@ export declare interface Tester {
   notDeepLooseEqual(actual: unknown, expected: unknown, message?: string): void;
 
   /**
-   * Asserts that `fn` throws an error.
+   * Asserts that `fn` throws. Any thrown value counts, not only an `Error`.
    * @param fn - The function to test
    * @param message - Optional message to display if the assertion fails
    */
   throws(fn: () => void, message?: string): void;
   /**
-   * Asserts that `fn` throws an error matching `matcher`.
+   * Asserts that `fn` throws a value matching `matcher`. Any thrown value counts, not only an `Error`.
    * `matcher` may be:
    * - an `Error` subclass (checks `instanceof`)
-   * - a `RegExp` (tested against the error's message, or `String(error)` for non-Errors)
+   * - a `RegExp` (tested against `value.message` when the thrown value is an `Error`, otherwise against `String(value)`)
    * - a predicate function (called with the thrown value; truthy return = match)
    * - an object pattern (uses deep6's `match`)
    * - `null` or any primitive (strict equality)

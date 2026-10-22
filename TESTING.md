@@ -134,9 +134,11 @@ All `msg` arguments are optional. If omitted, a generic message is used.
 | `t.rejects(promise, m?, msg)`        | Rejects (matches `m?`) — `await`  | `doesNotResolve`                 |
 | `t.resolves(promise, m?, msg)`       | Resolves (matches `m?`) — `await` | `doesNotReject`                  |
 
-### Matching errors and resolved values
+### Matchers for thrown and resolved values
 
 `t.throws`, `t.rejects`, and `t.resolves` accept an optional **matcher** as their second argument. If the second argument is a string, it's still treated as the message (backward compatible).
+
+JavaScript lets code throw any value and reject a promise with any value, not only an `Error`. The matcher sees the thrown value, the rejection reason, or the resolved value as is.
 
 ```js
 t.throws(() => parse(''), TypeError); // Error subclass — instanceof
@@ -145,6 +147,7 @@ t.throws(
   () => parse(''),
   e => e.code === 'EPARSE'
 ); // predicate
+t.throws(() => check(input), {code: 'EINVALID'}); // deep6 object pattern on a thrown plain object
 await t.rejects(fetchData(), TypeError, 'wrong type');
 await t.resolves(readConfig(), {strict: true}); // deep6 object pattern on the resolved value
 ```
@@ -152,12 +155,12 @@ await t.resolves(readConfig(), {strict: true}); // deep6 object pattern on the r
 Matcher rules:
 
 - **Error subclass** (a function whose prototype is Error) → `instanceof` check.
-- **RegExp** → tested against `error.message` for `Error` instances, otherwise against `String(value)`.
+- **RegExp** → tested against `value.message` when the value is an `Error`, otherwise against `String(value)`.
 - **Function** (non-Error-class) → predicate; truthy return = match.
 - **Object** (non-null, non-RegExp) → uses deep6's `match()` for partial structural matching:
   every key the pattern names must be present in the value, and keys the pattern doesn't name are
-  ignored. A plain-object pattern doesn't match a class instance, an `Error` included: match an
-  error by its class, a RegExp, or a predicate, and check a class inside a pattern with deep6's
+  ignored. A plain-object pattern doesn't match a class instance, such as an `Error`: check an
+  instance with its class, a RegExp, or a predicate, and inside a pattern with deep6's
   `matchInstanceOf`.
 - **`null` or any primitive** → strict equality.
 
