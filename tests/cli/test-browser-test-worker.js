@@ -24,7 +24,7 @@ const makeFakeDriver = () => {
         emit: (event, ...args) => (handlers[event] || []).forEach(fn => fn(...args)),
         exposeFunction: async (name, fn) => (page.exposed[name] = fn),
         goto: async url => page.log.push(['goto', url]),
-        evaluate: async (fn, arg) => page.log.push(['evaluate', arg])
+        evaluate: async (_fn, arg) => page.log.push(['evaluate', arg])
       };
     driver.pages.push(page);
     return page;
