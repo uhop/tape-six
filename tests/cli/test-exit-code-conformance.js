@@ -14,6 +14,7 @@ const root = fileURLToPath(new URL('../../', import.meta.url)),
   BAIL_OUT = dir + 'bail-out.js',
   LOAD_ERROR = dir + 'load-error.js',
   UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js',
+  QUIET_DRAIN = 'tests/cli/fixtures/deadline/quiet-drain.js',
   PARALLEL = 'bin/tape6.js',
   SEQUENTIAL = 'bin/tape6-seq.js',
   PROC = 'bin/tape6-proc.js';
@@ -175,4 +176,79 @@ test('a passing suite exits 0 in every mode', {timeout: 60000}, async t => {
     t.equal(code, 0, `${testCase.label}: exits 0`);
     t.matchString(stdout, /^# tests \d+$/m, `${testCase.label}: reports a summary`);
   }
+});
+
+const countLines = (text, re) => text.split(/\r?\n/).filter(line => re.test(line)).length;
+
+// A deadline caps one runaway file. However its worker stops, that file fails
+// once and the files queued behind it still run. A drained worker used to
+// report nothing, and its stop marks cancelled the queue: exit 1 under `# ok`.
+const DEADLINE_CASES = [
+  {label: 'drains', files: [QUIET_DRAIN, PASS_B], deadline: 400, failures: 1},
+  // the 1 ms cap stops the queued file too
+  {
+    label: 'is stopped before its test starts',
+    files: [QUIET_DRAIN, PASS_B],
+    deadline: 1,
+    failures: 2
+  },
+  {
+    label: 'is force-killed',
+    files: [UNRESPONSIVE, PASS_B],
+    deadline: 400,
+    failures: 1,
+    killed: true
+  }
+];
+
+// the sequential runner shares its process with the test and cannot kill it
+const DEADLINE_RUNNERS = [
+  {label: 'parallel', bin: PARALLEL},
+  {label: 'sequential', bin: SEQUENTIAL, inProcess: true},
+  {label: 'proc runner', bin: PROC}
+];
+
+const runDeadline = (bin, files, deadline, extra = {}) =>
+  runSuite({
+    bin,
+    files,
+    flags: 'F',
+    par: 1,
+    ...extra,
+    env: {TAPE6_WORKER_TIMEOUT: String(deadline), TAPE6_GRACE_TIMEOUT: '300', ...extra.env}
+  });
+
+test('a worker deadline fails its own file in every mode', {timeout: 120000}, async t => {
+  for (const runner of DEADLINE_RUNNERS) {
+    for (const testCase of DEADLINE_CASES) {
+      if (testCase.killed && runner.inProcess) continue;
+      const label = `${runner.label}, a file that ${testCase.label}`,
+        {code, stdout} = await runDeadline(runner.bin, testCase.files, testCase.deadline);
+      t.equal(code, 1, `${label}: exits 1`);
+      t.equal(
+        countLines(stdout, new RegExp(`^not ok \\d+ Terminated after ${testCase.deadline}ms`)),
+        testCase.failures,
+        `${label}: the deadline fails each file it stops once`
+      );
+      t.matchString(stdout, /^# not ok$/m, `${label}: the trailer agrees with the exit code`);
+      t.matchString(
+        stdout,
+        /^# start: FILE: \/tests\/cli\/fixtures\/exit-code\/passing-b\.js$/m,
+        `${label}: the next file still runs`
+      );
+    }
+
+    const label = `${runner.label}, failOnce`,
+      {code, stdout} = await runDeadline(runner.bin, [QUIET_DRAIN, PASS_B], 400, {flags: 'FO'});
+    t.equal(code, 1, `${label}: exits 1`);
+    t.equal(
+      countLines(stdout, /^not ok \d+ Terminated after 400ms/),
+      1,
+      `${label}: the deadline fails the file once`
+    );
+    t.notOk(/passing-b\.js/.test(stdout), `${label}: the deadline stops the run`);
+  }
+
+  const tty = await runDeadline(PARALLEL, [QUIET_DRAIN, PASS_B], 400, {env: {TAPE6_TAP: ''}});
+  t.matchString(tty.stdout, /\bfailed: 1\b/, 'the TTY summary counts the deadline');
 });

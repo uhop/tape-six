@@ -11,6 +11,7 @@ const DEFAULT_GRACE_TIMEOUT = 5_000;
 // machinery) and CONTROL (reporter/runner -> worker, a single `terminate`
 // delivered per transport by destroyTask). See dev-docs/worker-control-channel.md.
 export class EventServer {
+  #owedTimeouts = new Set();
   constructor(reporter, numberOfTasks = 1, options = {}) {
     this.reporter = reporter;
     this.numberOfTasks = numberOfTasks;
@@ -28,9 +29,22 @@ export class EventServer {
     this.liveTasks = new Set();
     this.closedTasks = new Set();
     this.deadlineTimers = {};
+    this.timedOutTasks = new Set();
     this.stopRequested = false;
   }
   report(id, event) {
+    if (this.timedOutTasks.has(id)) {
+      // the deadline's terminate marks the worker's later events stopTest: that
+      // stops this file, not the run
+      if (event?.stopTest) event = {...event, stopTest: false};
+      if (event?.test === 0 && (event.type === 'end' || event.type === 'terminated')) {
+        this.#reportTimeout(id);
+      }
+    } else if (event?.type === 'end' && event.test === 0) {
+      // the task closes later (a subprocess exits, a page closes): a deadline in
+      // between would fail a file that has finished
+      this.#clearDeadline(id);
+    }
     // Stop / bail-out trigger. React the moment the signal arrives, even if
     // this worker's events are still buffered behind the pass-through worker
     // (its stopTest would otherwise not reach reporter.state until it flushes,
@@ -48,7 +62,8 @@ export class EventServer {
         delete this.retained[id];
       }
       this.reporter.report(event, true);
-      if (this.reporter.state?.stopTest) this.#requestStop();
+      // in-process runners mark the shared reporter's chain on a deadline too
+      if (this.reporter.state?.stopTest && !this.timedOutTasks.has(id)) this.#requestStop();
       return;
     }
     if (Array.isArray(events)) {
@@ -61,6 +76,8 @@ export class EventServer {
     // a force-killed worker can still land a queued `end` — closing twice would
     // double-decrement totalTasks and end the run early
     if (this.closedTasks.has(id)) return;
+    // a task can close with neither `end` nor `terminated` (a worker error)
+    this.#reportTimeout(id);
     this.closedTasks.add(id);
     this.#clearDeadline(id);
     this.liveTasks.delete(id);
@@ -142,12 +159,33 @@ export class EventServer {
     if (this.closedTasks.has(id)) return id;
     this.liveTasks.add(id);
     if (this.workerTimeout > 0) {
-      this.deadlineTimers[id] = setTimeout(() => {
-        delete this.deadlineTimers[id];
-        if (this.liveTasks.has(id)) this.destroyTask(id, 'timeout');
-      }, this.workerTimeout);
+      this.deadlineTimers[id] = setTimeout(() => this.#onDeadline(id), this.workerTimeout);
     }
     return id;
+  }
+  #onDeadline(id) {
+    delete this.deadlineTimers[id];
+    if (!this.liveTasks.has(id)) return;
+    // a task already stopping with the run owes no failure of its own
+    if (!this.stopRequested) {
+      this.timedOutTasks.add(id);
+      this.#owedTimeouts.add(id);
+    }
+    this.destroyTask(id, 'timeout');
+    // the deadline is the file's failure, and under failOnce a failure stops the run
+    if (this.options.failOnce) this.#requestStop();
+  }
+  // one failure per timed-out task, however its worker stopped
+  #reportTimeout(id) {
+    if (!this.#owedTimeouts.delete(id)) return;
+    this.report(id, {
+      type: 'assert',
+      name: `Terminated after ${this.workerTimeout}ms`,
+      test: 0,
+      marker: new Error(),
+      operator: 'error',
+      fail: true
+    });
   }
   #clearDeadline(id) {
     const timer = this.deadlineTimers[id];

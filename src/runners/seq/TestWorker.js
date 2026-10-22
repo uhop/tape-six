@@ -67,6 +67,11 @@ export class TestWorker extends EventServer {
       this.reporter.terminate();
       return;
     }
+    // the terminate marked the shared reporter: a deadline stops its own file only
+    if (this.timedOutTasks.has(id) && !this.stopRequested) {
+      this.reporter.terminating = false;
+      for (let state = this.reporter.state; state; state = state.parent) state.stopTest = false;
+    }
     setReporter(this.reporter);
     setCurrentReporter(null);
     clearBeforeAll();

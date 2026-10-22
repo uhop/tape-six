@@ -79,7 +79,7 @@ test('a worker that exits 0 at its deadline fails the run', {timeout: 30_000}, a
     TAPE6_WORKER_TIMEOUT: '300'
   });
   t.equal(code, 1, 'exit status');
-  t.matchString(output, /process has failed, timed out/, 'failure');
+  t.matchString(output, /Terminated after 300ms/, 'failure');
   t.matchString(output, /tests: \d+, asserts: \d+, passed: \d+, failed: 1\b/, 'summary');
 });
 

@@ -195,6 +195,101 @@ test('control channel: completing before the deadline cancels it', async t => {
   );
 });
 
+const makeRecorder = () => ({
+  seen: [],
+  state: {stopTest: false},
+  report(event) {
+    this.seen.push(event);
+    if (event && (event.stopTest || event.type === 'bail-out')) this.state.stopTest = true;
+  }
+});
+
+const deadlineFailures = reporter =>
+  reporter.seen.filter(event => event.fail && /^Terminated after \d+ms$/.test(event.name));
+
+// A drained worker sends its file's own `end`; a killed one gets a `terminated`
+// in its place. The deadline fails the file once either way, inside its scope.
+test('control channel: a deadline fails its file once, before the file closes', async t => {
+  for (const type of ['end', 'terminated']) {
+    const reporter = makeRecorder(),
+      w = new FakeWorker(reporter, 1, {workerTimeout: 20});
+    w.execute(['slow.js']);
+    w.report('1', {type: 'test', test: 0, name: 'FILE: /slow.js'});
+    await timeout(50);
+    w.report('1', {type, test: 0});
+    w.close('1');
+
+    t.deepEqual(
+      reporter.seen.map(event => event.type),
+      ['test', 'assert', type],
+      `${type}: the failure precedes the closing event`
+    );
+    t.equal(deadlineFailures(reporter).length, 1, `${type}: reported once`);
+  }
+});
+
+test('control channel: a deadline is reported when the task closes without an end', async t => {
+  const reporter = makeRecorder(),
+    w = new FakeWorker(reporter, 1, {workerTimeout: 20});
+  w.execute(['slow.js']);
+  await timeout(50);
+  w.close('1');
+  t.equal(deadlineFailures(reporter).length, 1, 'the failure is not lost');
+});
+
+// The terminate marks the worker's later events stopTest. Read as a stop, they
+// cancelled every file queued behind the capped one.
+test('control channel: a deadline does not stop the other files', async t => {
+  const w = new FakeWorker(makeRecorder(), 1, {workerTimeout: 20});
+  w.execute(['slow.js', 'next.js']);
+  await timeout(50);
+  w.report('1', {type: 'assert', stopTest: true});
+  t.notOk(w.stopRequested, 'the stopped worker does not stop the run');
+
+  const nextStarted = new Promise(resolve => (w.onMade = resolve));
+  w.report('1', {type: 'end', test: 0});
+  w.close('1');
+  await Promise.race([nextStarted, timeout(200)]);
+  t.equal(w.made.length, 2, 'the queued file starts');
+});
+
+test('control channel: under failOnce a deadline stops the run like a failure', async t => {
+  const reporter = makeRecorder(),
+    w = new FakeWorker(reporter, 2, {workerTimeout: 20, failOnce: true});
+  w.execute(['slow.js', 'other.js', 'queued.js']);
+  await timeout(50);
+  t.ok(w.stopRequested, 'the stop fired');
+  t.ok(
+    w.destroyed.some(c => c.id === '2' && c.reason === 'failOnce'),
+    'the sibling is told to stop'
+  );
+
+  // the sibling's deadline lapses while it drains for the stop: no failure of its own
+  w.report('2', {type: 'end', test: 0});
+  w.close('2');
+  w.report('1', {type: 'end', test: 0});
+  w.close('1');
+  t.equal(deadlineFailures(reporter).length, 1, 'only the file that hit its deadline fails');
+  t.equal(w.made.length, 2, 'the queued file never starts');
+});
+
+// a subprocess exits after its `end`, and a page closes after it: the task
+// closes later than the file ends, and the deadline must not land in between
+test('control channel: a file end disarms its deadline', async t => {
+  const reporter = makeRecorder(),
+    w = new FakeWorker(reporter, 1, {workerTimeout: 20});
+  w.execute(['quick.js']);
+  w.report('1', {type: 'end', test: 0});
+  await timeout(50);
+  w.close('1');
+
+  t.notOk(
+    w.destroyed.some(c => c.reason === 'timeout'),
+    'no `timeout` terminate'
+  );
+  t.equal(deadlineFailures(reporter).length, 0, 'no deadline failure');
+});
+
 test('control channel: no worker deadline unless configured', async t => {
   const w = new FakeWorker(makeReporter(), 1, {});
   t.equal(w.workerTimeout, 0, 'disabled by default');

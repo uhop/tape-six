@@ -90,6 +90,12 @@ export class EventServer {
   /** Ids `close()` has already finalized; makes a second `close(id)` a no-op. */
   closedTasks: Set<string>;
   deadlineTimers: Record<string, ReturnType<typeof setTimeout>>;
+  /**
+   * Ids stopped by their own deadline. Each owes one `Terminated after <n>ms`
+   * failure, which the base class reports when its file closes; a transport
+   * reports no failure of its own for them.
+   */
+  timedOutTasks: Set<string>;
 
   /** DATA plane: forward one worker event, preserving per-task ordering. */
   report(id: string, event: TestEvent): void;

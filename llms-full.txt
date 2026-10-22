@@ -348,7 +348,7 @@ Subprocess runner: each test file runs in its own child process. Same options an
 
 - `--runFileArgs`, `-r` — an argument for the interpreter that runs each test file (repeatable). Deno children don't inherit the parent's permissions, so pass them: `` deno run -A `tape6-proc --self` --flags FO -r -A ``.
 
-Under Bun and Deno, run it through `--self`: `` bun run `tape6-proc --self` --flags FO ``. A child that exits before its report ends fails its file with the reason (`exit code: N`, `signal: X`, `timed out`, or `exited mid-test`); a file with no tests passes. `TAPE6_WORKER_TIMEOUT` and `TAPE6_GRACE_TIMEOUT` apply per child. It replaces the separate `tape-six-proc` package: remove that dependency when you update `tape-six`; the command name is the same.
+Under Bun and Deno, run it through `--self`: `` bun run `tape6-proc --self` --flags FO ``. A child that exits before its report ends fails its file with the reason (`exit code: N`, `signal: X`, or `exited mid-test`), and one stopped at its `TAPE6_WORKER_TIMEOUT` fails with `Terminated after <n>ms`; a file with no tests passes. `TAPE6_WORKER_TIMEOUT` and `TAPE6_GRACE_TIMEOUT` apply per child. It replaces the separate `tape-six-proc` package: remove that dependency when you update `tape-six`; the command name is the same.
 
 ### tape6-server
 
@@ -484,7 +484,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - `TAPE6_MIN` — force minimal reporter (any non-empty value).
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
 - `TAPE6_GRACE_TIMEOUT` — ms a worker gets to drain (run cleanup, flush) after the runner asks it to stop, before being force-killed (default: 5000). A force-killed worker's open tests are closed out on the parent side, so the report stays balanced and the run still ends with its summary.
-- `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker and reports the kill as a failure, so a hung file cannot pass silently (default: 0, disabled). The complement to the per-test `timeout` option: this one can stop a worker that ignores `t.signal`.
+- `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker and fails the file with `Terminated after <n>ms`, whether the worker stops on its own or is killed (default: 0, disabled). The other files still run; under fail-once the deadline stops the run like any failure. The complement to the per-test `timeout` option: this one can stop a worker that ignores `t.signal`.
 - `TAPE6_PROTOCOL` — test server protocol: `h1` (default) or `h2`.
 - `TAPE6_CERT` / `TAPE6_KEY` — TLS certificate/key paths for the test server's h2 mode.
 

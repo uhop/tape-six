@@ -204,10 +204,74 @@ test('a deadline kill reports a failure of its own', async t => {
   await waitFor(() => driver.pages.length && driver.pages[0].exposed.__tape6_reporter);
   await done;
 
-  t.ok(
-    reporter.events.some(event => event.fail && /^Terminated after 30ms$/.test(event.name)),
+  t.equal(
+    reporter.events.filter(event => event.fail && /^Terminated after 30ms$/.test(event.name))
+      .length,
+    1,
     'the hung task fails instead of passing silently'
   );
+});
+
+test('a deadline that drains reports a failure too', async t => {
+  const driver = makeFakeDriver(),
+    reporter = makeReporter(),
+    worker = new FakeWorker(
+      reporter,
+      1,
+      {...OPTIONS, graceTimeout: 1000, workerTimeout: 30},
+      driver
+    );
+
+  const done = new Promise(resolve => (worker.done = resolve));
+  worker.execute(['tests/test-a.js']);
+  await waitFor(() => driver.pages.length && driver.pages[0].exposed.__tape6_reporter);
+  const page = driver.pages[0];
+  page.exposed.__tape6_reporter('1', {type: 'test', test: 0, name: 'FILE: /tests/test-a.js'});
+  await waitFor(() =>
+    page.log.some(([kind, arg]) => kind === 'evaluate' && arg?.message?.reason === 'timeout')
+  );
+  page.exposed.__tape6_reporter('1', {type: 'end', test: 0});
+  await done;
+
+  t.equal(
+    reporter.events.filter(event => event.fail && /^Terminated after 30ms$/.test(event.name))
+      .length,
+    1,
+    'the drained task fails once'
+  );
+  await worker.cleanup();
+});
+
+// the page is not there to take a terminate while the browser is still launching
+class SlowLaunchWorker extends FakeWorker {
+  async launchBrowser(name, options) {
+    await tick(60);
+    return super.launchBrowser(name, options);
+  }
+}
+
+test('a deadline that fires during setup still stops the task', async t => {
+  const driver = makeFakeDriver(),
+    reporter = makeReporter(),
+    worker = new SlowLaunchWorker(
+      reporter,
+      1,
+      {...OPTIONS, graceTimeout: 20, workerTimeout: 10},
+      driver
+    );
+
+  const done = new Promise(resolve => (worker.done = resolve));
+  worker.execute(['tests/test-a.js']);
+  await waitFor(() => driver.closedContexts === 1);
+  await done;
+
+  t.equal(
+    reporter.events.filter(event => event.fail && /^Terminated after 10ms$/.test(event.name))
+      .length,
+    1,
+    'the deadline is reported'
+  );
+  await worker.cleanup();
 });
 
 test('an https server URL asks the adapter for insecure contexts', async t => {

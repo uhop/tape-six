@@ -218,9 +218,11 @@ and fires the abort signal so the running test unwinds and its cleanup hooks run
 — and is force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms.
 A killed worker sends nothing more, so the parent stands in for it: it calls
 `close(id)` itself (nothing else will, and an unclosed task means the run never
-completes), reports a `terminated` event so `Reporter.onTerminated` unwinds the
-scopes the worker left open, and — for a `timeout` kill, which has no failure
-elsewhere in the run to carry the verdict — reports a failing assertion. `close`
+completes), and reports a `terminated` event so `Reporter.onTerminated` unwinds
+the scopes the worker left open. A `timeout` is the file's own failure however
+its worker stops: `EventServer` reports `Terminated after <n>ms` once, before the
+event that closes the file, and clears the `stopTest` marks the terminate leaves
+on that worker's events, so a deadline stops the run only under failOnce. `close`
 is idempotent (`closedTasks`), and completion flushes any events still buffered
 in a retained lane rather than dropping them.
 On the hub side, `State.preprocess` stamps events `processed: true` on first

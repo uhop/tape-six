@@ -177,9 +177,10 @@ children via env — `TAPE6_JSONL` + prefix; reuse/extend that), the runtime:
    worker's events still buffered in a retained lane. It must report a
    `terminated` event so `Reporter.onTerminated` unwinds the scopes the worker
    left open; without it the report tree stays unbalanced and the final summary
-   is swallowed. And a Layer-2 (`workerTimeout`) kill must report a failing
-   assertion of its own, since unlike failOnce it has no failure elsewhere in
-   the run to carry the verdict. This was the 2026-08-08/15 `--flags O` false
+   is swallowed. A Layer-2 (`workerTimeout`) deadline needs a failure too, since
+   unlike failOnce it has none elsewhere in the run to carry the verdict, but
+   that failure is not the kill's to report: see Layer 2 below, which reports it
+   however the worker stops. This was the 2026-08-08/15 `--flags O` false
    pass (see `projects/tape-six/queue` in the vault): a small early failure plus
    a long-lived sibling that ignored the terminate produced exit 0 with zero
    lines of output.
@@ -208,6 +209,22 @@ fn)` (`test.js:157`): on expiry it reports `TIMED OUT`, calls
   `terminate` — i.e. drain → grace → kill (edge #2). This is the enforcement
   Layer 1 lacks: it actually stops a hung worker. It is the _same_ code path as
   failOnce; only the trigger differs (a timer vs a failed assertion).
+
+  **A deadline caps one file, and fails it once.** When the deadline fires,
+  `EventServer` marks the task in `timedOutTasks` and reports
+  `Terminated after <n>ms` just before the event that closes the file: the
+  worker's own `end` after a drain, or the `terminated` the parent sends in its
+  place after a kill, with `close()` as the fallback. No transport reports one
+  of its own. The terminate marks the worker's later events `stopTest`; for a
+  timed-out task the server clears those marks, so the deadline stops its own
+  file and not the run. The files queued behind it still run, and only under
+  failOnce does the deadline, as a failure, stop the rest. A task already
+  draining for the run's stop owes no deadline failure, and a file's `end`
+  disarms its deadline, since a subprocess or a page closes after it. Before
+  2026-10-22 a drained worker reported nothing, and its stop marks cancelled
+  the queue, so the run exited 1 under `# ok` (CI on the 1.18.0 release
+  commit). The sequential runner shares its process with the test, so it can
+  only ask a file to stop: a test that ignores `t.signal` runs on.
 
 So Layer 1 stays the ergonomic per-test annotation; Layer 2 is the backstop
 that makes any deadline real even when the test won't cooperate. The per-test

@@ -176,7 +176,11 @@ export class TestWorker extends EventServer {
       // A stop/bail (or deadline) can fire while this context is still being
       // created — its destroyTask hits a not-yet-tracked task and no-ops. Catch
       // up now that the iframe exists so a just-started task still aborts.
-      if (this.stopRequested) this.destroyTask(id, 'failOnce');
+      if (this.timedOutTasks.has(id)) {
+        this.destroyTask(id, 'timeout');
+      } else if (this.stopRequested) {
+        this.destroyTask(id, 'failOnce');
+      }
     } catch (error) {
       this.logError('Failed to set up test:', fileName, error);
       this.destroyTask(id, 'done');
@@ -235,24 +239,14 @@ export class TestWorker extends EventServer {
         {domId: iframeId(id), message: terminateMessage(reason)}
       )
       .catch(() => {});
-    this.graceTimers[id] = setTimeout(() => this.#forceKill(id, reason), this.graceTimeout);
+    this.graceTimers[id] = setTimeout(() => this.#forceKill(id), this.graceTimeout);
   }
 
   // A force-killed page emits no closing events, so unwind the scopes it left
   // open — otherwise the report tree stays unbalanced and the summary with it.
-  // A deadline kill carries no failure of its own, so it reports one.
-  #forceKill(id, reason) {
+  #forceKill(id) {
     this.#clearGrace(id);
     if (!this.tasks[id]) return; // the page closed on its own while draining
-    if (reason === 'timeout') {
-      this.report(id, {
-        name: `Terminated after ${this.workerTimeout}ms`,
-        test: 0,
-        marker: new Error(),
-        operator: 'error',
-        fail: true
-      });
-    }
     this.report(id, {type: 'terminated', test: 0});
     this.#kill(id);
   }

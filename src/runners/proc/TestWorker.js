@@ -108,14 +108,10 @@ export class TestWorker extends EventServer {
       }
       // no `end` read — the child crashed or was force-killed while hung
       if (!task.endSeen) {
-        // stopped by failOnce or a bail-out: not this file's failure
-        if (!self.stopRequested) {
+        // stopped by failOnce or a bail-out: not this file's failure; a deadline
+        // is, and the base class reports it
+        if (!self.stopRequested && !self.timedOutTasks.has(id)) {
           const reason = [];
-          // `terminate` without a stop is the worker deadline; the child's watchdog
-          // can exit 0 before the kill
-          if (task.terminating) {
-            reason.push('timed out');
-          }
           if (worker.exitCode) {
             reason.push(`exit code: ${worker.exitCode}`);
           }
