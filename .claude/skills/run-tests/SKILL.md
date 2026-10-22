@@ -30,6 +30,38 @@ All test scripts pass `--flags FO` by default.
 
 `--flags FO` — **F**ailures only, fail **O**nce (quiet on green, stop on the first red). Lowercase disables, so passing `--flags fo` (via direct invocation) inverts both for a single run (shows passes, continues past failures). Override per-invocation with `TAPE6_FLAGS=...`. The full flag list lives at `wiki/Supported-flags.md`.
 
+## Reading the result
+
+The exit status is the verdict. Read it first, and read the output only to find what failed.
+
+- `0` — every test passed.
+- `1` — the run failed: a failed assertion outside a `todo` test, a bail-out (`t.bailOut()`), a test file that throws while loading, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or "No files found." when the patterns match nothing.
+
+A test file run directly (`node tests/test-foo.js`) exits the same way. A file that throws while loading then prints only Node's error.
+
+A pipe hides the status: `npm test | tail -20` reports the status of `tail`, which is `0`. Run the command on its own and print its status:
+
+```bash
+npm test; echo "exit=$?"
+```
+
+To shorten long output, set `pipefail` in the same command, so that the pipe reports the status of `npm test`:
+
+````bash
+set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"
+``` The cross-runtime sweep below chains its commands with `&&`, so it stops at the first failure, and `echo "exit=$?"` after it prints that command's status.
+
+Each reporter also marks the end of the run. Judge by that marker, never by the counts: a bail-out stops the run without a failed assertion, so the TTY summary reads `failed: 0` next to `⛔`.
+
+| Reporter      | Selected by          | Passed                                                           | Failed                                                                                 |
+| ------------- | -------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| TTY (default) | no reporter variable | the summary line starts with `♥️`                                | the summary line starts with `⛔`; failing tests and assertions are marked `✗`         |
+| TAP           | `TAPE6_TAP=1`        | `# ok` near the end                                              | `# not ok` near the end; failing assertions read `not ok N`, a bail-out `# bailed out` |
+| MIN           | `TAPE6_MIN=1`        | the last line is `Test: 0 Type: end Name: undefined Fail: false` | the same line ends with `Fail: true`                                                   |
+| JSONL         | `TAPE6_JSONL=1`      | the last event is `{"type":"end","test":0,"fail":false,…}`       | the same event carries `"fail":true`; `"stopTest":true` marks a run stopped early      |
+
+With the `F` flag (failures only), a green run prints only the summary line, so short output is normal. Under the runner, a file that throws while loading appears as a failed assertion, `✗ Error: …`. For a script that checks the result, set `TAPE6_JSONL=1`: every test's `end` event carries `fail`, and the event's `name` says which test it was. The fixtures in `tests/cli/fixtures/exit-code/` produce each outcome.
+
 ## Cross-runtime sweep
 
 Before publishing, run all six matrix points to confirm parity (this is what `release-check` step 15 does):
@@ -37,7 +69,7 @@ Before publishing, run all six matrix points to confirm parity (this is what `re
 ```bash
 npm test && npm run test:bun && npm run test:deno && \
 npm run test:seq && npm run test:seq:bun && npm run test:seq:deno
-```
+````
 
 If Node passes but Bun fails, run the failing file directly under each runtime to bisect:
 

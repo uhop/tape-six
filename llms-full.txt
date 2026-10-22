@@ -329,6 +329,15 @@ tape6 [options...] [tests...]
 - No arguments: runs tests from configuration.
 - Options accept `--flags FO` or `--flags=FO`. The `=` form does not support quoting.
 
+The exit status is the verdict: `0` when every test passed, `1` when the run failed (a failed assertion outside a `todo` test, a bail-out, a file that throws while loading, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or no files found). A test file run directly exits the same way. Read the status apart from the output: `npm test; echo "exit=$?"`. A pipe such as `npm test | tail` reports the status of `tail`; to keep the status of `npm test`, set `pipefail` in the same command: `set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"`.
+
+Each reporter also marks the end of the run. Judge by that marker, never by the counts: a bail-out stops the run without a failed assertion, so the TTY summary reads `failed: 0`.
+
+- TTY (default): the summary line starts with `♥️` on a pass and `⛔` on a failure; failing tests and assertions are marked `✗`.
+- TAP (`TAPE6_TAP`): `# ok` or `# not ok` near the end; a bail-out prints `# bailed out`.
+- MIN (`TAPE6_MIN`): the last line is `Test: 0 Type: end Name: undefined Fail: false` or `… Fail: true`.
+- JSONL (`TAPE6_JSONL`): the last event is `{"type":"end","test":0,"fail":false,…}` or carries `"fail":true`; `"stopTest":true` marks a run stopped early.
+
 ### tape6-seq
 
 Sequential in-process runner. Same options as `tape6` but no threads.

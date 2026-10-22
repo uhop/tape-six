@@ -236,6 +236,8 @@ npx tape6-seq              # run sequentially (no worker threads)
 npx tape6-server --trace   # start browser test server
 ```
 
+The exit status is the verdict: `0` when every test passed, `1` when the run failed (a failed assertion, a bail-out, a file that throws while loading, or no files found). Read it apart from the output: `npm test; echo "exit=$?"`. A pipe such as `npm test | tail` reports the status of `tail`. Never judge by the counts: a bail-out ends with `failed: 0`. Each reporter marks the end of the run: TTY's summary line starts with `♥️` or `⛔`, TAP prints `# ok` or `# not ok`, and MIN and JSONL end with `Fail: false|true` and `{"type":"end","test":0,"fail":false|true,…}`.
+
 ### Test server (fixtures + embedding)
 
 `tape6-server` is pluggable: fixture plugins mount under URL prefixes (`--plugin path`,

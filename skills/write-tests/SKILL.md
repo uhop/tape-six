@@ -90,6 +90,7 @@ Write or update tests using the tape-six testing library.
 13. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`). All are additive. See "Configuring test discovery" in `TESTING.md`.
 14. **Verify (CLI):** run the new test file directly: `node tests/test-<name>.js`
     - Run the full suite to check for regressions: `npm test`
+    - Judge each run by its exit status (`npm test; echo "exit=$?"`), never by the counts in the summary. The `run-tests` skill, § Reading the result, lists what each reporter prints.
     - For debugging, use `npm run test:seq` (sequential, in-process).
     - To see which files are being run, add `--flags fo` (overrides the default `--flags FO`).
     - To inspect the resolved config without running, use `npx tape6 --info`.

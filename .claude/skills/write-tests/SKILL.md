@@ -75,6 +75,6 @@ Write or update tape-six tests for a module or feature in this repository.
     - Place browser-only files in `tests/browser/` and add patterns to `"browser"` in the `tape6` config.
     - Run: `npx tape6-server --trace`, then open `http://localhost:3000`. Use `?q=<glob>` to filter, `?flags=FO` and `?par=N` to control output and parallelism.
 12. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`); all additive.
-13. **Verify (CLI):** `node tests/test-<name>.js`, then `npm test` for regressions. Use `npm run test:seq` to debug. Add `--flags fo` to see which files run. Use `npx tape6 --info` to inspect resolved config without running tests. For tests with heavy `beforeAll`, set `TAPE6_WORKER_START_TIMEOUT=60000` (default 5 s).
+13. **Verify (CLI):** `node tests/test-<name>.js`, then `npm test` for regressions. Use `npm run test:seq` to debug. Add `--flags fo` to see which files run. Use `npx tape6 --info` to inspect resolved config without running tests. For tests with heavy `beforeAll`, set `TAPE6_WORKER_START_TIMEOUT=60000` (default 5 s). Judge each run by its exit status (`npm test; echo "exit=$?"`), never by the counts in the summary: `.claude/skills/run-tests/SKILL.md` § Reading the result lists what each reporter prints.
 14. **Verify (browser):** `npx tape6-server --trace`, then `http://localhost:3000/?q=/tests/test-<name>.js`.
 15. Report results and any failures.
