@@ -63,7 +63,7 @@ import test from 'tape-six';
 - `async test(name, options, testFn)` — registers a test suite.
 - `test.skip(name, options, testFn)` — registers a skipped test suite.
 - `test.todo(name, options, testFn)` — registers a TODO test suite (failures not counted).
-- `test.asPromise(name, options, testPromiseFn)` — registers a callback-style test: `testPromiseFn(tester, resolve, reject)`.
+- `test.asPromise(name, options, testPromiseFn)` — registers a callback-style test: `testPromiseFn(tester, resolve, reject)`. The callback is synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain `test()`.
 
 Arguments:
 

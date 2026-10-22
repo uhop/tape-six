@@ -305,7 +305,8 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs a callback-based test wrapped in a promise.
+   * Runs a callback-based test wrapped in a promise. `fn` is expected to be synchronous: it wires
+   * `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain test.
    * @param name - The name of the test
    * @param fn - The test function
    * @param options - The test options
@@ -317,7 +318,8 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs a callback-based test wrapped in a promise.
+   * Runs a callback-based test wrapped in a promise. `fn` is expected to be synchronous: it wires
+   * `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain test.
    * @param name - The name of the test
    * @param options - The test options
    * @param fn - The test function
@@ -329,7 +331,8 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs a callback-based test wrapped in a promise.
+   * Runs a callback-based test wrapped in a promise. `fn` is expected to be synchronous: it wires
+   * `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain test.
    * @param fn - The test function
    * @param options - The test options
    * @param name - The name of the test
@@ -341,7 +344,8 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs a callback-based test wrapped in a promise.
+   * Runs a callback-based test wrapped in a promise. `fn` is expected to be synchronous: it wires
+   * `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain test.
    * @param fn - The test function
    * @param name - The name of the test
    * @param options - The test options
@@ -353,7 +357,8 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs a callback-based test wrapped in a promise.
+   * Runs a callback-based test wrapped in a promise. `fn` is expected to be synchronous: it wires
+   * `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain test.
    * @param options - The test options
    * @param fn - The test function
    * @param name - The name of the test
@@ -365,7 +370,8 @@ export declare interface Tester {
   ): Promise<void>;
 
   /**
-   * Runs a callback-based test wrapped in a promise.
+   * Runs a callback-based test wrapped in a promise. `fn` is expected to be synchronous: it wires
+   * `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain test.
    * @param options - The test options
    * @param name - The name of the test
    * @param fn - The test function
@@ -1089,7 +1095,9 @@ export declare interface Test {
 
   /**
    * Creates a new test that will be run as a promise.
-   * Usually used for asynchronous tests that are based on callbacks.
+   * Usually used for asynchronous tests that are based on callbacks. `fn` is expected to be
+   * synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic
+   * belongs in a plain test.
    * @param name - The name of the test
    * @param fn - The test function
    * @param options - The test options
@@ -1101,7 +1109,9 @@ export declare interface Test {
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
-   * Usually used for asynchronous tests that are based on callbacks.
+   * Usually used for asynchronous tests that are based on callbacks. `fn` is expected to be
+   * synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic
+   * belongs in a plain test.
    * @param name - The name of the test
    * @param options - The test options
    * @param fn - The test function
@@ -1113,7 +1123,9 @@ export declare interface Test {
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
-   * Usually used for asynchronous tests that are based on callbacks.
+   * Usually used for asynchronous tests that are based on callbacks. `fn` is expected to be
+   * synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic
+   * belongs in a plain test.
    * @param fn - The test function
    * @param options - The test options
    * @param name - The name of the test
@@ -1125,7 +1137,9 @@ export declare interface Test {
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
-   * Usually used for asynchronous tests that are based on callbacks.
+   * Usually used for asynchronous tests that are based on callbacks. `fn` is expected to be
+   * synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic
+   * belongs in a plain test.
    * @param fn - The test function
    * @param name - The name of the test
    * @param options - The test options
@@ -1137,7 +1151,9 @@ export declare interface Test {
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
-   * Usually used for asynchronous tests that are based on callbacks.
+   * Usually used for asynchronous tests that are based on callbacks. `fn` is expected to be
+   * synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic
+   * belongs in a plain test.
    * @param options - The test options
    * @param fn - The test function
    * @param name - The name of the test
@@ -1149,7 +1165,9 @@ export declare interface Test {
   ): Promise<void>;
   /**
    * Creates a new test that will be run as a promise.
-   * Usually used for asynchronous tests that are based on callbacks.
+   * Usually used for asynchronous tests that are based on callbacks. `fn` is expected to be
+   * synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic
+   * belongs in a plain test.
    * @param options - The test options
    * @param name - The name of the test
    * @param fn - The test function

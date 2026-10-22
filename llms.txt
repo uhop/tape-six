@@ -49,7 +49,7 @@ Registers a test marked as work-in-progress. Failures are reported but not count
 
 #### test.asPromise(name, options, testPromiseFn)
 
-Registers a test using callback-style completion: `(t, resolve, reject) => void`.
+Registers a test using callback-style completion: `(t, resolve, reject) => void`. The callback is synchronous: it wires `resolve` and `reject` into callback-based code, and asynchronous logic belongs in a plain `test()`.
 
 ### TestOptions
 

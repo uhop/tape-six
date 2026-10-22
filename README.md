@@ -155,6 +155,8 @@ This function registers a test suite. Available options:
 - `async test.asPromise(name, options, testPromiseFn)` &mdash; registers a test suite to be executed asynchronously
   using the callback-style API to notify that the test suite is finished.
   - The test function has a different signature: `testPromiseFn(tester, resolve, reject)`.
+  - The test function is expected to be synchronous: it wires `resolve()` and `reject()` into
+    callback-based code. Asynchronous logic belongs in a plain `test()`.
 
 The arguments mentioned above are:
 
@@ -231,7 +233,7 @@ test.asPromise('foo', (t, resolve, reject) => {
   result.then(resolve).catch(reject);
 });
 
-test.asPromise('bar', async (t, resolve, reject) => {
+test.asPromise('bar', (t, resolve, reject) => {
   const nodeStream = fs.createWriteStream('bar.txt');
   nodeStream.on('error', reject);
   nodeStream.on('finish', resolve);
