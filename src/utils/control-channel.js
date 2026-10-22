@@ -41,7 +41,8 @@ const exitProcess = code => {
 };
 
 const armWatchdog = (graceTimeout, getExitCode) => {
-  const watchdog = setTimeout(() => exitProcess(getExitCode()), graceTimeout);
+  // it fires only when a hung test outlived the drain, so the exit is a failure
+  const watchdog = setTimeout(() => exitProcess(getExitCode() || 1), graceTimeout);
   // The watchdog must never keep the child alive on its own — it only matters
   // when something else (a hung test) does. Unref so a clean drain exits at once.
   if (typeof watchdog?.unref == 'function') {

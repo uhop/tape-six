@@ -14,22 +14,51 @@ const runtimeArgs = process.versions.deno ? ['run', '-A'] : process.versions.bun
 // Deno children don't inherit the parent's permissions
 const childArgs = process.versions.deno ? ['-r', '-A'] : [];
 
+// the nested runner must not inherit this worker's TAPE6_* settings
+const cleanEnv = () =>
+  Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('TAPE6_')));
+
 const runProc = (files, extraEnv) =>
   new Promise((resolve, reject) => {
-    // the nested runner must not inherit this worker's TAPE6_* settings
-    const env = Object.fromEntries(
-      Object.entries(process.env).filter(([key]) => !key.startsWith('TAPE6_'))
-    );
     const child = spawn(
       process.execPath,
       [...runtimeArgs, path.join(root, 'bin/tape6-proc.js'), ...childArgs, '--par', '2', ...files],
-      {cwd: root, env: {...env, ...extraEnv}, stdio: ['ignore', 'pipe', 'pipe']}
+      {cwd: root, env: {...cleanEnv(), ...extraEnv}, stdio: ['ignore', 'pipe', 'pipe']}
     );
     let output = '';
     child.stdout.on('data', chunk => (output += chunk));
     child.stderr.on('data', chunk => (output += chunk));
     child.on('error', reject);
     child.on('close', code => resolve({code, output: output.replace(/\x1b\[[0-9;]*m/g, '')}));
+  });
+
+// drives one file as tape6-proc does: `terminate` once its first assert is out, then EOF
+const runChild = (file, extraEnv) =>
+  new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [...runtimeArgs, path.join(root, file)], {
+      cwd: root,
+      env: {
+        ...cleanEnv(),
+        TAPE6_CONTROL: 'Y',
+        TAPE6_JSONL: 'Y',
+        TAPE6_GRACE_TIMEOUT: '300',
+        ...extraEnv
+      },
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    let output = '',
+      sent = false;
+    child.stdin.on('error', () => {});
+    child.stdout.on('data', chunk => {
+      output += chunk;
+      if (!sent && output.includes('started')) {
+        sent = true;
+        child.stdin.end('terminate\n');
+      }
+    });
+    child.stderr.on('data', chunk => (output += chunk));
+    child.on('error', reject);
+    child.on('close', code => resolve({code, output}));
   });
 
 test('a crash queued behind a failing file keeps the run failed', {timeout: 30_000}, async t => {
@@ -65,4 +94,9 @@ test('a file with no tests still passes', {timeout: 30_000}, async t => {
   const {code, output} = await runProc([dir + 'no-tests.js']);
   t.equal(code, 0, 'exit status');
   t.matchString(output, /tests: 0, asserts: 0, passed: 0, failed: 0\b/, 'summary');
+});
+
+test('a child its watchdog forces out exits non-zero', {timeout: 30_000}, async t => {
+  const {code} = await runChild(dir + 'hung.js');
+  t.equal(code, 1, 'exit status');
 });

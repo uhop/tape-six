@@ -48,7 +48,8 @@ Done, verified on Node / Bun / Deno (`par`, `seq`, and `proc`):
   through `Reporter.terminate()`, and the pending read keeps the child alive
   after its top-level `end` so the parent drives exit (closing the Bun
   stdout-flush race). Control-channel EOF soft-terminates; an unref'd watchdog
-  is the dead-parent backstop.
+  is the dead-parent backstop. It fires only when a hung test outlives the
+  drain, so it exits non-zero (`process.exitCode`, else 1).
 - Config: `getGraceTimeout()` (env `TAPE6_GRACE_TIMEOUT`, default 5000) and
   `getWorkerTimeout()` (env `TAPE6_WORKER_TIMEOUT`, default 0 = disabled) in
   `src/utils/config.js`; injected into the worker via `getOptions()`.
