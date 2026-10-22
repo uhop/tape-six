@@ -233,7 +233,7 @@ test('a worker deadline fails its own file in every mode', {timeout: 120000}, as
       t.matchString(stdout, /^# not ok$/m, `${label}: the trailer agrees with the exit code`);
       t.matchString(
         stdout,
-        /^# start: FILE: \/tests\/cli\/fixtures\/exit-code\/passing-b\.js$/m,
+        /^# start: FILE: \/tests[\\/]cli[\\/]fixtures[\\/]exit-code[\\/]passing-b\.js$/m,
         `${label}: the next file still runs`
       );
     }
@@ -251,4 +251,28 @@ test('a worker deadline fails its own file in every mode', {timeout: 120000}, as
 
   const tty = await runDeadline(PARALLEL, [QUIET_DRAIN, PASS_B], 400, {env: {TAPE6_TAP: ''}});
   t.matchString(tty.stdout, /\bfailed: 1\b/, 'the TTY summary counts the deadline');
+});
+
+// The sequential runner's tests report straight to the run's reporter, so its
+// own fail-once flag is the one that stops the run. The TAP reporter was built
+// without it, and a failing run went on to the next file, still exiting 1.
+test('fail-once stops the queued files under every reporter', {timeout: 60000}, async t => {
+  const reporters = [
+    {label: 'TAP', env: {TAPE6_TAP: '1'}},
+    {label: 'TTY', env: {TAPE6_TAP: ''}}
+  ];
+  for (const runner of DEADLINE_RUNNERS) {
+    for (const reporter of reporters) {
+      const label = `${runner.label}, ${reporter.label}`,
+        {code, stdout} = await runSuite({
+          bin: runner.bin,
+          files: [FAILING, PASS_B],
+          flags: 'O',
+          par: 1,
+          env: reporter.env
+        });
+      t.equal(code, 1, `${label}: exits 1`);
+      t.notOk(/passing[- ]b/i.test(stdout), `${label}: the queued file does not run`);
+    }
+  }
 });

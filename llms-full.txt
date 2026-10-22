@@ -340,7 +340,7 @@ Each reporter also marks the end of the run. Judge by that marker, never by the 
 
 ### tape6-seq
 
-Sequential in-process runner. Same options as `tape6` but no threads.
+Sequential in-process runner. Same options as `tape6` but no threads. With no worker to kill, its `TAPE6_WORKER_TIMEOUT` stops a file only when the test honors `t.signal`; use `tape6` or `tape6-proc` to stop a hung test.
 
 ### tape6-proc
 
@@ -484,7 +484,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - `TAPE6_MIN` — force minimal reporter (any non-empty value).
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
 - `TAPE6_GRACE_TIMEOUT` — ms a worker gets to drain (run cleanup, flush) after the runner asks it to stop, before being force-killed (default: 5000). A force-killed worker's open tests are closed out on the parent side, so the report stays balanced and the run still ends with its summary.
-- `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker and fails the file with `Terminated after <n>ms`, whether the worker stops on its own or is killed (default: 0, disabled). The other files still run; under fail-once the deadline stops the run like any failure. The complement to the per-test `timeout` option: this one can stop a worker that ignores `t.signal`.
+- `TAPE6_WORKER_TIMEOUT` — per-file wall-clock budget in ms; on expiry the runner stops that worker and fails the file with `Terminated after <n>ms`, whether the worker stops on its own or is killed (default: 0, disabled). The other files still run; under fail-once the deadline stops the run like any failure. The complement to the per-test `timeout` option: this one can stop a worker that ignores `t.signal`, except under `tape6-seq`, which runs all files inside the runner's process and can only ask a test to stop.
 - `TAPE6_PROTOCOL` — test server protocol: `h1` (default) or `h2`.
 - `TAPE6_CERT` / `TAPE6_KEY` — TLS certificate/key paths for the test server's h2 mode.
 

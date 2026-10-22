@@ -343,7 +343,7 @@ export const initReporter = async (getReporter, setReporter, flags) => {
       customOptions =
         reporterType === 'tap'
           ? // flat TAP stream: per-file ids restart, consumers need 1..N
-            {useJson: true, renumberAsserts: true, hasColors}
+            {useJson: true, renumberAsserts: true, hasColors, failOnce: flags.failOnce}
           : {...flags, hasColors},
       customReporter = new CustomReporter(customOptions);
     setReporter(customReporter);
