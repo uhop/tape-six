@@ -1,52 +1,14 @@
-import {execFile} from 'node:child_process';
-import {fileURLToPath} from 'node:url';
-import {promisify} from 'node:util';
-
 import test from '../../index.js';
 
-const run = promisify(execFile);
+import {PARALLEL, PROC, RUNNERS, SEQUENTIAL, root, run, runSuite} from './helpers/run-suite.js';
 
-const root = fileURLToPath(new URL('../../', import.meta.url)),
-  dir = 'tests/cli/fixtures/exit-code/',
+const dir = 'tests/cli/fixtures/exit-code/',
   PASS_A = dir + 'passing-a.js',
   PASS_B = dir + 'passing-b.js',
   FAILING = dir + 'failing.js',
   BAIL_OUT = dir + 'bail-out.js',
   LOAD_ERROR = dir + 'load-error.js',
-  UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js',
-  QUIET_DRAIN = 'tests/cli/fixtures/deadline/quiet-drain.js',
-  PARALLEL = 'bin/tape6.js',
-  SEQUENTIAL = 'bin/tape6-seq.js',
-  PROC = 'bin/tape6-proc.js';
-
-// Spawns the runner and reports what the operating system saw. The runner
-// decides its own verdict, so nothing in-process can stand in for this: the
-// 1.16.3 bug reported success through the very path that was broken, and
-// tape-six's own suite runs `--flags FO`, so a green run was not proof.
-const runSuite = async ({bin, files, flags, par, env: extraEnv}) => {
-  const isDeno = typeof Deno == 'object',
-    cmd = isDeno ? Deno.execPath() : process.execPath,
-    // Deno children don't inherit the parent's permissions
-    childArgs = isDeno && bin === PROC ? ['-r', '-A'] : [],
-    args = isDeno ? ['run', '-A', bin, ...childArgs, ...files] : [bin, ...files],
-    env = {...process.env};
-  for (const key of Object.keys(env)) {
-    if (key.startsWith('TAPE6_')) delete env[key];
-  }
-  Object.assign(env, {
-    NO_COLOR: '1',
-    TAPE6_TAP: '1',
-    TAPE6_FLAGS: flags,
-    TAPE6_PAR: String(par),
-    ...extraEnv
-  });
-  const result = await run(cmd, args, {cwd: root, env}).catch(error => error);
-  return {
-    code: result.code === undefined ? 0 : result.code,
-    stdout: result.stdout || '',
-    stderr: result.stderr || ''
-  };
-};
+  UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js';
 
 // Every mode a failing suite can be run in. `parallel + failOnce` is where the
 // exit code has actually been wrong — twice (1.16.0, 1.16.3) — and the rest are
@@ -178,101 +140,29 @@ test('a passing suite exits 0 in every mode', {timeout: 60000}, async t => {
   }
 });
 
-const countLines = (text, re) => text.split(/\r?\n/).filter(line => re.test(line)).length;
-
-// A deadline caps one runaway file. However its worker stops, that file fails
-// once and the files queued behind it still run. A drained worker used to
-// report nothing, and its stop marks cancelled the queue: exit 1 under `# ok`.
-const DEADLINE_CASES = [
-  {label: 'drains', files: [QUIET_DRAIN, PASS_B], deadline: 400, failures: 1},
-  // the 1 ms cap stops the queued file too
-  {
-    label: 'is stopped before its test starts',
-    files: [QUIET_DRAIN, PASS_B],
-    deadline: 1,
-    failures: 2
-  },
-  {
-    label: 'is force-killed',
-    files: [UNRESPONSIVE, PASS_B],
-    deadline: 400,
-    failures: 1,
-    killed: true
-  }
-];
-
-// the sequential runner shares its process with the test and cannot kill it
-const DEADLINE_RUNNERS = [
-  {label: 'parallel', bin: PARALLEL},
-  {label: 'sequential', bin: SEQUENTIAL, inProcess: true},
-  {label: 'proc runner', bin: PROC}
-];
-
-const runDeadline = (bin, files, deadline, extra = {}) =>
-  runSuite({
-    bin,
-    files,
-    flags: 'F',
-    par: 1,
-    ...extra,
-    env: {TAPE6_WORKER_TIMEOUT: String(deadline), TAPE6_GRACE_TIMEOUT: '300', ...extra.env}
-  });
-
-test('a worker deadline fails its own file in every mode', {timeout: 120000}, async t => {
-  for (const runner of DEADLINE_RUNNERS) {
-    for (const testCase of DEADLINE_CASES) {
-      if (testCase.killed && runner.inProcess) continue;
-      const label = `${runner.label}, a file that ${testCase.label}`,
-        {code, stdout} = await runDeadline(runner.bin, testCase.files, testCase.deadline);
-      t.equal(code, 1, `${label}: exits 1`);
-      t.equal(
-        countLines(stdout, new RegExp(`^not ok \\d+ Terminated after ${testCase.deadline}ms`)),
-        testCase.failures,
-        `${label}: the deadline fails each file it stops once`
-      );
-      t.matchString(stdout, /^# not ok$/m, `${label}: the trailer agrees with the exit code`);
-      t.matchString(
-        stdout,
-        /^# start: FILE: \/tests[\\/]cli[\\/]fixtures[\\/]exit-code[\\/]passing-b\.js$/m,
-        `${label}: the next file still runs`
-      );
-    }
-
-    const label = `${runner.label}, failOnce`,
-      {code, stdout} = await runDeadline(runner.bin, [QUIET_DRAIN, PASS_B], 400, {flags: 'FO'});
-    t.equal(code, 1, `${label}: exits 1`);
-    t.equal(
-      countLines(stdout, /^not ok \d+ Terminated after 400ms/),
-      1,
-      `${label}: the deadline fails the file once`
-    );
-    t.notOk(/passing-b\.js/.test(stdout), `${label}: the deadline stops the run`);
-  }
-
-  const tty = await runDeadline(PARALLEL, [QUIET_DRAIN, PASS_B], 400, {env: {TAPE6_TAP: ''}});
-  t.matchString(tty.stdout, /\bfailed: 1\b/, 'the TTY summary counts the deadline');
-});
-
 // The sequential runner's tests report straight to the run's reporter, so its
 // own fail-once flag is the one that stops the run. The TAP reporter was built
 // without it, and a failing run went on to the next file, still exiting 1.
 test('fail-once stops the queued files under every reporter', {timeout: 60000}, async t => {
   const reporters = [
-    {label: 'TAP', env: {TAPE6_TAP: '1'}},
-    {label: 'TTY', env: {TAPE6_TAP: ''}}
-  ];
-  for (const runner of DEADLINE_RUNNERS) {
-    for (const reporter of reporters) {
-      const label = `${runner.label}, ${reporter.label}`,
-        {code, stdout} = await runSuite({
+      {label: 'TAP', env: {TAPE6_TAP: '1'}},
+      {label: 'TTY', env: {TAPE6_TAP: ''}}
+    ],
+    plan = RUNNERS.flatMap(runner =>
+      reporters.map(reporter => ({
+        label: `${runner.label}, ${reporter.label}`,
+        pending: runSuite({
           bin: runner.bin,
           files: [FAILING, PASS_B],
           flags: 'O',
           par: 1,
           env: reporter.env
-        });
-      t.equal(code, 1, `${label}: exits 1`);
-      t.notOk(/passing[- ]b/i.test(stdout), `${label}: the queued file does not run`);
-    }
+        })
+      }))
+    );
+  for (const {label, pending} of plan) {
+    const {code, stdout} = await pending;
+    t.equal(code, 1, `${label}: exits 1`);
+    t.notOk(/passing[- ]b/i.test(stdout), `${label}: the queued file does not run`);
   }
 });

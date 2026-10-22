@@ -90,6 +90,19 @@ test('a worker that exits 0 with a test open fails the run', {timeout: 30_000}, 
   t.matchString(output, /tests: \d+, asserts: \d+, passed: \d+, failed: 1\b/, 'summary');
 });
 
+// The failure a crashed child leaves raises the fail-once stop while its task is
+// still registered, and the stop armed a grace kill for a process already gone:
+// the run then waited out the whole grace window before it could exit.
+test('a crash under fail-once does not wait out the grace window', {timeout: 30_000}, async t => {
+  const start = Date.now(),
+    {code} = await runProc(['tests/cli/fixtures/exit-code/load-error.js'], {
+      TAPE6_FLAGS: 'FO',
+      TAPE6_GRACE_TIMEOUT: '10000'
+    });
+  t.equal(code, 1, 'exit status');
+  t.ok(Date.now() - start < 5000, 'the run ends without waiting for the grace kill');
+});
+
 test('a file with no tests still passes', {timeout: 30_000}, async t => {
   const {code, output} = await runProc([dir + 'no-tests.js']);
   t.equal(code, 0, 'exit status');

@@ -106,6 +106,9 @@ export class TestWorker extends EventServer {
         clearTimeout(task.graceTimer);
         task.graceTimer = null;
       }
+      // before the reports: a stop one of them raises must not arm a kill for a
+      // process that is gone, whose timer would hold the run open
+      delete self.idToWorker[id];
       // no `end` read — the child crashed or was force-killed while hung
       if (!task.endSeen) {
         // stopped by failOnce or a bail-out: not this file's failure; a deadline
@@ -137,7 +140,6 @@ export class TestWorker extends EventServer {
         // closes the tests the child left open, or the next file's events nest inside them
         self.report(id, {type: 'terminated', test: 0, name: 'FILE: /' + fileName});
       }
-      delete self.idToWorker[id];
       self.close(id);
     });
     return id;
