@@ -117,8 +117,8 @@ All `msg` arguments are optional. If omitted, a generic message is used.
 | `t.ok(val, msg)`                     | `val` is truthy                   | `true`, `assert`                 |
 | `t.notOk(val, msg)`                  | `val` is falsy                    | `false`, `notok`                 |
 | `t.error(err, msg)`                  | `err` is falsy                    | `ifError`, `ifErr`               |
-| `t.equal(a, b, msg)`                 | `a === b`                         | `is`, `strictEqual`, `isEqual`   |
-| `t.notEqual(a, b, msg)`              | `a !== b`                         | `not`, `notStrictEqual`, `isNot` |
+| `t.equal(a, b, msg)`                 | `a === b`, but `NaN` equals `NaN` | `is`, `strictEqual`, `isEqual`   |
+| `t.notEqual(a, b, msg)`              | `a !== b`, but `NaN` equals `NaN` | `not`, `notStrictEqual`, `isNot` |
 | `t.deepEqual(a, b, msg)`             | Deep strict equality              | `same`, `isEquivalent`           |
 | `t.notDeepEqual(a, b, msg)`          | Not deeply equal                  | `notSame`, `notEquivalent`       |
 | `t.looseEqual(a, b, msg)`            | `a == b`                          |                                  |
@@ -225,7 +225,7 @@ By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture 
 ### Other tester methods
 
 - `t.comment(msg)` — emit a TAP comment line.
-- `t.skipTest(msg)` — skip the **current** test from inside it (e.g. when a precondition isn't met at runtime).
+- `t.skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing else. To skip an assertion for now, rename it: `t.skipTest(a, b, 'msg')` in place of `t.equal(a, b, 'msg')`. The rest of the test still runs, and functions passed to `skipTest` are not called. To skip a whole test, use `test.skip()` or the `skip` option.
 - `t.bailOut(msg)` — stop the entire run. Catastrophic; use sparingly. The run is reported as failed (`# not ok`, exit 1) even though no assertion failed — the counts stay truthful, the verdict does not read green.
 - `t.plan(n)` — record the expected number of direct assertions. If the count diverges at test end, a `# plan != count: expected N, ran M` TAP comment is emitted (diagnostic only, doesn't fail the test). Subtest assertions don't count toward the parent's plan.
 - `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps the values of the top-level identifiers in the expression on failure. Useful for compact arithmetic/state checks. Not usable in CSP-restricted contexts (uses `eval`).
@@ -762,6 +762,7 @@ Both integrate with `tape6-server` and the `__tape6_reportResults` callback to r
 - Browsers cannot run TypeScript files directly — only `.js` and `.mjs`.
 - Browsers cannot run CommonJS (`.cjs`) files.
 - Browsers can run HTML shim files in addition to JS files.
+- A JS test file runs in a `srcdoc` frame whose address is `about:srcdoc`, so code under test that calls `history.replaceState` or `history.pushState` throws a `SecurityError` there. Test such a page from an HTML test file, which loads by its real URL. If the page rewrites its address, copy the harness's `id`, `test-file-name`, and `flags` query parameters into `window.__tape6_id`, `window.__tape6_testFileName`, and `window.__tape6_flags` in a classic script before any module loads, so the reporter still finds them.
 
 ## Test file conventions
 
@@ -863,6 +864,7 @@ npm test                      # run full suite to check for regressions
 - [tape-six-proc](https://www.npmjs.com/package/tape-six-proc) — runs test files in separate processes instead of worker threads. Useful when tests need full process isolation.
 - [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer. Runs configured browser tests headlessly from the command line.
 - [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright. Same as above but using Playwright.
+- [tape-six-fast-check](https://www.npmjs.com/package/tape-six-fast-check) — property-based testing with [fast-check](https://fast-check.dev/): `t.prop()` for properties and `t.scheduler()` for race-condition tests, each reported as one assertion. Without the plugin, call `fc.assert()` inside a plain test.
 
 ## Links
 

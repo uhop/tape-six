@@ -323,7 +323,7 @@ The following methods are available (all `msg` arguments are optional):
     - `_` &mdash; an alias of `any`.
   - `plan(n)` &mdash; records the expected number of direct assertions; emits a TAP-comment diagnostic at test end if the count diverges (does not fail the test).
   - `comment(msg)` &mdash; sends a comment to the test harness. Rarely used.
-  - `skipTest(...args, msg)` &mdash; skips the current test yet sends a message to the test harness.
+  - `skipTest(...args, msg)` &mdash; stands in for one assertion: reports it as skipped and does nothing else. Rename an assertion to `skipTest` to skip it for now; the rest of the test still runs.
   - `bailOut(msg)` &mdash; stops the test suite and sends a message to the test harness. The run is reported as failed and exits non-zero, even though no assertion failed.
 - Evaluators:
   - `OK(condition, msg, options)` &mdash; a high-level helper for evaluating simple expressions.
@@ -422,6 +422,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 - [tape-six-proc](https://www.npmjs.com/package/tape-six-proc) &mdash; runs test files in separate processes instead of worker threads.
 - [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) &mdash; automates browser testing with Puppeteer.
 - [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) &mdash; automates browser testing with Playwright.
+- [tape-six-fast-check](https://www.npmjs.com/package/tape-six-fast-check) &mdash; property-based testing with fast-check: `t.prop()` and `t.scheduler()`.
 
 ## Release notes
 

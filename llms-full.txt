@@ -159,8 +159,8 @@ The `Tester` object is passed to test functions. All `msg` arguments are optiona
 - `ok(val, msg)` — assert truthy. Aliases: `true()`, `assert()`.
 - `notOk(val, msg)` — assert falsy. Aliases: `false()`, `notok()`.
 - `error(err, msg)` — assert err is falsy. Aliases: `ifError()`, `ifErr()`, `iferror()`.
-- `strictEqual(a, b, msg)` — assert `a === b`. Aliases: `is()`, `equal()`, `isEqual()`, `equals()`, `strictEquals()`.
-- `notStrictEqual(a, b, msg)` — assert `a !== b`. Aliases: `not()`, `notEqual()`, `notEquals()`, `notStrictEquals()`, `doesNotEqual()`, `isUnequal()`, `isNotEqual()`, `isNot()`.
+- `strictEqual(a, b, msg)` — assert `a === b`, except that `NaN` equals `NaN`. Aliases: `is()`, `equal()`, `isEqual()`, `equals()`, `strictEquals()`.
+- `notStrictEqual(a, b, msg)` — assert `a !== b`, except that `NaN` equals `NaN`. Aliases: `not()`, `notEqual()`, `notEquals()`, `notStrictEquals()`, `doesNotEqual()`, `isUnequal()`, `isNotEqual()`, `isNot()`.
 - `looseEqual(a, b, msg)` — assert `a == b`. Alias: `looseEquals()`.
 - `notLooseEqual(a, b, msg)` — assert `a != b`. Alias: `notLooseEquals()`.
 - `deepEqual(a, b, msg)` — deep strict equality. Aliases: `same()`, `deepEquals()`, `isEquivalent()`.
@@ -194,7 +194,7 @@ The `Tester` object is passed to test functions. All `msg` arguments are optiona
 
 - `plan(n)` — record expected number of direct assertions. On test end, emits a `# plan != count: expected N, ran M` TAP comment if the count diverges (diagnostic only, doesn't fail the test). Subtest assertions don't count toward the parent's plan.
 - `comment(msg)` — send a comment to the reporter.
-- `skipTest(...args, msg)` — skip current test with a message.
+- `skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing else. Rename an assertion to `skipTest` to skip it for now (`t.skipTest(a, b, 'msg')` in place of `t.equal(a, b, 'msg')`); the rest of the test still runs, and functions passed to it are not called.
 - `bailOut(msg)` — abort the test suite; the run is reported as failed and exits non-zero even with no failed assertions.
 
 ### Expression evaluator
@@ -484,6 +484,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - tape-six-proc (https://www.npmjs.com/package/tape-six-proc) — runs test files in separate processes instead of worker threads.
 - tape-six-puppeteer (https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer.
 - tape-six-playwright (https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright.
+- tape-six-fast-check (https://www.npmjs.com/package/tape-six-fast-check) — property-based testing with fast-check: `t.prop()` for properties and `t.scheduler()` for race-condition tests, each reported as one assertion with the shrunk counterexample, seed, and replay path as structured data.
 
 ## 3rd-party libraries (bring-your-own)
 
@@ -496,7 +497,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - `expect` (Jest's standalone) — throws plain `Error`, not `AssertionError`. Works but failures render as `UNEXPECTED EXCEPTION` with ANSI-colored messages. Wrap negative cases in `t.throws()`.
 - `node:test` mock — built-in spies/stubs/timers via `import {mock} from 'node:test'`. Doesn't throw; assert on `spy.mock.calls` with `t.*`.
 - `sinon` — same pattern as `node:test` mock. Assert on `spy.callCount` / `spy.firstCall.args`.
-- `fast-check` — property-based testing. Throws plain `Error` on counterexample (with seed + path for repro). Wrap negative cases in `t.throws()`.
+- `fast-check` — property-based testing. Throws plain `Error` on counterexample (with seed + path for repro). Wrap negative cases in `t.throws()`. The `tape-six-fast-check` plugin (Related packages) reports properties as assertions instead.
 
 ```js
 import test from 'tape-six';

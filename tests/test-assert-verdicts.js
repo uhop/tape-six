@@ -89,6 +89,18 @@ test('strictEqual compares primitives strictly and objects by identity', t => {
   );
 });
 
+test('strictEqual is === except that NaN equals NaN', t => {
+  t.deepEqual(
+    verdicts(sub => {
+      sub.strictEqual(NaN, NaN);
+      sub.strictEqual(-0, 0);
+      sub.notStrictEqual(NaN, NaN);
+      sub.notStrictEqual(-0, 0);
+    }),
+    [false, false, true, true]
+  );
+});
+
 test('looseEqual and notLooseEqual use ==', t => {
   t.deepEqual(
     verdicts(sub => {

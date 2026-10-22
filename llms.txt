@@ -79,8 +79,8 @@ The object passed to test functions. Provides assertions and test control.
 - `t.ok(value, msg)` — assert truthy. Aliases: `true`, `assert`.
 - `t.notOk(value, msg)` — assert falsy. Aliases: `false`, `notok`.
 - `t.error(err, msg)` — assert err is falsy. Aliases: `ifError`, `ifErr`, `iferror`.
-- `t.strictEqual(a, b, msg)` — assert `a === b`. Aliases: `is`, `equal`, `equals`, `isEqual`, `strictEquals`.
-- `t.notStrictEqual(a, b, msg)` — assert `a !== b`. Aliases: `not`, `notEqual`, `notEquals`, `isNotEqual`, `doesNotEqual`, `isUnequal`, `notStrictEquals`, `isNot`.
+- `t.strictEqual(a, b, msg)` — assert `a === b`, except that `NaN` equals `NaN`. Aliases: `is`, `equal`, `equals`, `isEqual`, `strictEquals`.
+- `t.notStrictEqual(a, b, msg)` — assert `a !== b`, except that `NaN` equals `NaN`. Aliases: `not`, `notEqual`, `notEquals`, `isNotEqual`, `doesNotEqual`, `isUnequal`, `notStrictEquals`, `isNot`.
 - `t.looseEqual(a, b, msg)` — assert `a == b`. Alias: `looseEquals`.
 - `t.notLooseEqual(a, b, msg)` — assert `a != b`. Alias: `notLooseEquals`.
 - `t.deepEqual(a, b, msg)` — recursive strict deep equality. Aliases: `same`, `deepEquals`, `isEquivalent`.
@@ -107,7 +107,8 @@ The object passed to test functions. Provides assertions and test control.
 
 - `t.plan(n)` — record expected direct-assertion count; emits a `# plan != count: expected N, ran M` TAP comment at test end on mismatch (diagnostic, doesn't fail).
 - `t.comment(msg)` — emit a comment.
-- `t.skipTest(msg)` — skip current test with a message.
+- `t.skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing else (rename an assertion to skip it for now; the test goes on, and functions passed to it are not run).
+- Property-based tests: the `tape-six-fast-check` plugin adds `t.prop()` and `t.scheduler()`; without it, call fast-check's `fc.assert()` inside a plain test.
 - `t.bailOut(msg)` — abort entire test suite; the run is reported as failed and exits non-zero even with no failed assertions.
 
 ### Plugins

@@ -27,7 +27,7 @@ Write or update tape-six tests for a module or feature in this repository.
    - Cover normal operation, edge cases, and error conditions.
    - All `msg` arguments are optional but recommended for clarity.
 4. **Pick the right assertion:**
-   - Primitives: `t.equal(a, b)` (strict). Use `t.deepEqual(a, b)` for objects/arrays.
+   - Primitives: `t.equal(a, b)` (strict: `===`, except that `NaN` equals `NaN`). Use `t.deepEqual(a, b)` for objects/arrays.
    - Truthiness: `t.ok(value)`, `t.notOk(value)`.
    - Errors: `t.error(err)` asserts `err` is falsy (callback-style "no error").
    - Sync throws: `t.throws(fn)`, `t.doesNotThrow(fn)`.
@@ -61,7 +61,7 @@ Write or update tape-six tests for a module or feature in this repository.
 9. **Misc:**
    - `test.skip(name, fn)` / `test.todo(name, fn)` — `skip` doesn't run; `todo` runs but failures don't fail the suite.
    - `t.comment(msg)` — emit a TAP comment line.
-   - `t.skipTest(msg)` — skip the _current_ test from inside it.
+   - `t.skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing else. To skip an assertion for now, rename it: `t.skipTest(a, b, 'msg')` in place of `t.equal(a, b, 'msg')`. The test goes on, and functions passed to it are not run.
    - `t.bailOut(msg)` — stop the entire run (catastrophic).
    - `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps top-level variables on failure. Useful for compact arithmetic/state checks: `eval(t.OK('a + b === 3'))`. Do not use in CSP-restricted contexts.
 10. **Testing HTTP code** — the package exports two subpath modules; in this repo import them via the relative path:
@@ -71,6 +71,7 @@ Write or update tape-six tests for a module or feature in this repository.
     - Reference tests: `tests/cli/test-server.js`, `tests/cli/test-record.js`, `tests/cli/test-response.js` (under `tests/cli/` because they import `node:http` and so can't run in the browser worker; the `tape6.cli` patterns in `package.json` pick them up).
 11. **Browser-specific tests** — see "Browser testing" in `TESTING.md`.
     - Browsers run `.js`/`.mjs` only (no TS, no CJS), or `.html` shims with importmap.
+    - A JS test file runs in a `srcdoc` frame (`testPageSrcdoc` in `src/driver/bootstrap.js`) whose address is `about:srcdoc`, so code under test that calls `history.replaceState` or `history.pushState` throws there. Test such a page from an `.html` test file, which loads by its real URL.
     - Place browser-only files in `tests/browser/` and add patterns to `"browser"` in the `tape6` config.
     - Run: `npx tape6-server --trace`, then open `http://localhost:3000`. Use `?q=<glob>` to filter, `?flags=FO` and `?par=N` to control output and parallelism.
 12. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`); all additive.

@@ -107,8 +107,10 @@ export declare interface Tester {
   comment(msg: string): void;
 
   /**
-   * Skips the test. The test will not be run.
-   * @param args - Optional arguments. The last string argument can be a message.
+   * Stands in for one assertion: reports it as skipped and does nothing else. Rename an
+   * assertion to `skipTest` to skip it for now; the rest of the test still runs, and functions
+   * passed here are not called.
+   * @param args - Optional arguments, ignored. The last string argument is the message.
    */
   skipTest(...args: any[]): void;
 
@@ -457,7 +459,7 @@ export declare interface Tester {
   error(error: Error | null | unknown, message?: string): void;
 
   /**
-   * Asserts that `actual` is strictly equal to `expected`. Uses `===` comparison.
+   * Asserts that `actual` is strictly equal to `expected`. Uses `===` comparison, except that `NaN` equals `NaN`.
    * @param actual - The actual value
    * @param expected - The expected value
    * @param message - Optional message to display if the assertion fails
@@ -465,7 +467,7 @@ export declare interface Tester {
   strictEqual(actual: unknown, expected: unknown, message?: string): void;
 
   /**
-   * Asserts that `actual` is not strictly equal to `expected`. Uses `!==` comparison.
+   * Asserts that `actual` is not strictly equal to `expected`. Uses `!==` comparison, except that `NaN` equals `NaN`.
    * @param actual - The actual value
    * @param expected - The expected value
    * @param message - Optional message to display if the assertion fails

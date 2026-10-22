@@ -27,7 +27,7 @@ Write or update tests using the tape-six testing library.
    - Cover: normal operation, edge cases, error conditions.
    - All `msg` arguments are optional but recommended for clarity.
 4. **Pick the right assertion:**
-   - Primitives: `t.equal(a, b)` (strict). Use `t.deepEqual(a, b)` for objects/arrays.
+   - Primitives: `t.equal(a, b)` (strict: `===`, except that `NaN` equals `NaN`). Use `t.deepEqual(a, b)` for objects/arrays.
    - Truthiness: `t.ok(value)`, `t.notOk(value)`.
    - Errors: `t.error(err)` asserts `err` is falsy (callback-style "no error").
    - Sync throws: `t.throws(fn)`, `t.doesNotThrow(fn)`.
@@ -61,20 +61,38 @@ Write or update tests using the tape-six testing library.
 9. **Misc:**
    - `test.skip(name, fn)` / `test.todo(name, fn)` — `skip` doesn't run; `todo` runs but failures don't fail the suite.
    - `t.comment(msg)` — emit a TAP comment line.
-   - `t.skipTest(msg)` — skip the _current_ test from inside it.
+   - `t.skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing else. To skip an assertion for now, rename it: `t.skipTest(a, b, 'msg')` in place of `t.equal(a, b, 'msg')`. The test goes on, and functions passed to it are not run.
    - `t.bailOut(msg)` — stop the entire run (catastrophic).
    - `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps top-level variables on failure. Useful for compact arithmetic/state checks: `eval(t.OK('a + b === 3'))`. Do not use in CSP-restricted contexts.
-10. **Browser-specific tests** — if the project uses browser testing with `tape6-server`. See "Browser testing" in `TESTING.md`.
+10. **Testing HTTP code** — the package ships two subpath modules for it:
+    - **Server harness** (`tape-six/server.js`) — `withServer(serverHandler, clientHandler, opts?)` for a server scoped to one test, `setupServer(serverHandler, opts?)` for one shared by a suite through `beforeAll`/`afterAll` (it returns a live-getter handle, so don't destructure it at module load), `startServer(server, opts?)` as the procedural primitive, and `record(handler?)`, a recording wrapper. Default host `'127.0.0.1'`. Cross-runtime through `node:http`.
+    - **Response helpers** (`tape-six/response.js`) — `asText`, `asJson`, `asBytes`, `header`, and `headers`, working on both a W3C `Response` and Node's `http.IncomingMessage`.
+    - To check what a client sent, wrap the handler in `record(handler?)`: it buffers each request as `{method, url, headers, body}` (the body read eagerly as UTF-8) onto its `requests` array, then answers `204` or delegates to `handler`. A delegate reads `entry.body`, its third argument, never the already-drained `req` stream. Assert with `t.match` and `t.any`, and reset between tests with `rec.requests.length = 0` in your own `beforeEach`: `setupServer` owns the lifecycle, the caller owns the state.
+      ```js
+      import {withServer, record} from 'tape-six/server.js';
+
+      test('the client posts its payload', async t => {
+        const rec = record();
+        await withServer(rec, async base => {
+          await upload(base + '/upload', {a: 1});
+        });
+        t.match(rec.requests[0], {method: 'POST', url: '/upload', body: '{"a":1}'});
+      });
+      ```
+    - Tests that import `node:http` can't run in a browser; list them under the `"cli"` patterns of the `tape6` config.
+11. **Property-based tests** — for a project that uses [fast-check](https://fast-check.dev/), the [`tape-six-fast-check`](https://www.npmjs.com/package/tape-six-fast-check) plugin adds `t.prop()` for properties and `t.scheduler()` for race-condition tests, each reported as one assertion. Without the plugin, call `fc.assert()` inside a plain test.
+12. **Browser-specific tests** — if the project uses browser testing with `tape6-server`. See "Browser testing" in `TESTING.md`.
     - Browsers run `.js` and `.mjs` only — no TypeScript, no CommonJS.
     - Browsers can also run `.html` shim files (with inline importmap and `<script type="module">`).
+    - A JS test file runs in a `srcdoc` frame whose address is `about:srcdoc`, so code under test that calls `history.replaceState` or `history.pushState` throws there. Test such a page from an `.html` test file, which loads by its real URL.
     - Place browser-only files in `tests/browser/` and add patterns to `"browser"` in the `tape6` config.
     - Run: `npx tape6-server --trace`, then open `http://localhost:3000`. Use `?q=<glob>` to filter, `?flags=FO` and `?par=N` to control output and parallelism.
-11. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`). All are additive. See "Configuring test discovery" in `TESTING.md`.
-12. **Verify (CLI):** run the new test file directly: `node tests/test-<name>.js`
+13. **Environment-specific tests** — the `tape6` config in `package.json` supports per-env patterns (`tests`, `cli`, `node`, `bun`, `deno`, `browser`). All are additive. See "Configuring test discovery" in `TESTING.md`.
+14. **Verify (CLI):** run the new test file directly: `node tests/test-<name>.js`
     - Run the full suite to check for regressions: `npm test`
     - For debugging, use `npm run test:seq` (sequential, in-process).
     - To see which files are being run, add `--flags fo` (overrides the default `--flags FO`).
     - To inspect the resolved config without running, use `npx tape6 --info`.
     - For tests with heavy `beforeAll` (Docker spawn, big fixture loads), bump the worker startup timer with `TAPE6_WORKER_START_TIMEOUT=60000`. The default is 5 s.
-13. **Verify (browser):** start `npx tape6-server --trace`, then open `http://localhost:3000/?q=/tests/test-<name>.js` to run a specific file. Use multiple `?q=` parameters to run several files. Open `http://localhost:3000/` to run all configured tests.
-14. Report results and any failures.
+15. **Verify (browser):** start `npx tape6-server --trace`, then open `http://localhost:3000/?q=/tests/test-<name>.js` to run a specific file. Use multiple `?q=` parameters to run several files. Open `http://localhost:3000/` to run all configured tests.
+16. Report results and any failures.
