@@ -39,20 +39,22 @@ const flagDefs = {
   b: {name: 'showBanner', description: 'Show the banner'},
   d: {name: 'showData', description: 'Show test data'},
   o: {name: 'failOnce', description: 'Stop after first failure'},
-  s: {name: 'showStack', description: 'Show stack traces'},
-  l: {name: 'showLog', description: 'Show console log output'},
+  s: {name: 'showStack', description: 'Show stack traces', webApp: true},
+  l: {name: 'showLog', description: 'Show console log output', webApp: true},
   n: {name: 'showAssertNumber', description: 'Show assertion numbers'},
   m: {name: 'monochrome', description: 'Disable colors (monochrome)'},
-  j: {name: 'useJsonL', description: 'Use JSONL reporter'},
+  j: {name: 'useJsonL', description: 'Use JSONL reporter', webApp: true},
   c: {name: 'noConsoleCapture', description: 'Disable console capture'},
   h: {name: 'hideStreams', description: 'Hide streams'}
 };
 
 export const printFlagOptions = () => {
+  const flags = Object.entries(flagDefs),
+    print = ([flag, {description}]) => console.log('  ' + flag.toUpperCase() + '  ' + description);
   console.log('\nFlags (uppercase = on, lowercase = off):');
-  for (const [flag, {description}] of Object.entries(flagDefs)) {
-    console.log('  ' + flag.toUpperCase() + '  ' + description);
-  }
+  flags.filter(([, def]) => !def.webApp).forEach(print);
+  console.log("\nWeb application only (the ?flags= query of tape6-server's page):");
+  flags.filter(([, def]) => def.webApp).forEach(print);
 };
 
 const exclude = (files, pattern) => {

@@ -602,7 +602,7 @@ Options that take a value accept both space-separated (`--par 4`) and `=`-separa
 - `TAPE6_FLAGS` — flags string (alternative to `--flags`).
 - `TAPE6_PAR` — number of parallel workers.
 - `TAPE6_TAP` — force TAP output format.
-- `TAPE6_JSONL` — force JSONL output format.
+- `TAPE6_JSONL` — force JSONL output format: one JSON event per line. Each test's `end` event carries `fail`, `skip`, `todo`, and `diffTime`, the test's duration in milliseconds, so this is the machine-readable source for per-test outcome and timing. On the command line it is the only way to select the JSONL reporter; the `J` flag applies to the web application only.
 - `TAPE6_MIN` — force minimal output format.
 - `TAPE6_WORKER_START_TIMEOUT` — milliseconds to wait for a worker to register its first test before declaring "no tests found". Default: `5000`. Bump this (e.g., `60000`) for tests with heavy `beforeAll` work like Docker container spawn or large fixture loads.
 

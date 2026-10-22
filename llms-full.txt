@@ -463,7 +463,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - `TAPE6_FLAGS` — flags string.
 - `TAPE6_PAR` — number of parallel workers.
 - `TAPE6_TAP` — force TAP reporter (any non-empty value).
-- `TAPE6_JSONL` — force JSONL reporter (any non-empty value).
+- `TAPE6_JSONL` — force JSONL reporter (any non-empty value): one JSON event per line; each test's `end` event carries `fail`, `skip`, `todo`, and `diffTime` (ms), the source for per-test outcome and timing. The command line's only way to select it; the `J` flag is web-app only.
 - `TAPE6_MIN` — force minimal reporter (any non-empty value).
 - `TAPE6_TEST_FILE_NAME` — set by runners to identify the current test file.
 - `TAPE6_GRACE_TIMEOUT` — ms a worker gets to drain (run cleanup, flush) after the runner asks it to stop, before being force-killed (default: 5000). A force-killed worker's open tests are closed out on the parent side, so the report stays balanced and the run still ends with its summary.
