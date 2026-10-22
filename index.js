@@ -184,7 +184,7 @@ const init = async () => {
   }
 
   if (isCli) {
-    // Control plane (proc transport): a child spawned by tape-six-proc is
+    // Control plane (proc transport): a child spawned by tape6-proc is
     // marked with TAPE6_CONTROL. Open the stdin control channel so the parent
     // can drain / terminate it, and so it stays alive after `end` until told to
     // exit — see dev-docs/worker-control-channel.md.

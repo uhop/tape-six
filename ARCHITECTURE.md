@@ -14,6 +14,7 @@ bin/                  # CLI utilities (all directly executable)
 ├── tape6-bun.js      # Bun parallel test runner
 ├── tape6-deno.js     # Deno parallel test runner
 ├── tape6-seq.js      # Sequential in-process runner (no threads)
+├── tape6-proc.js     # Subprocess runner: one child process per test file, all runtimes
 ├── tape6-server.js   # Pluggable test server CLI (thin shell over src/test-server.js)
 └── tape6-runner.js   # Helper: returns paths to tape6-* executables
 src/                  # Source code
@@ -49,7 +50,8 @@ src/                  # Source code
 │   ├── node/         # Node.js: TestWorker.js + worker.js (worker_threads)
 │   ├── bun/          # Bun: TestWorker.js + worker.js
 │   ├── deno/         # Deno: TestWorker.js + worker.js
-│   └── seq/          # Sequential: TestWorker.js + BypassReporter.js
+│   ├── seq/          # Sequential: TestWorker.js + BypassReporter.js
+│   └── proc/         # Subprocess: TestWorker.js (node:child_process, stdin control channel) + line/JSONL stream helpers
 ├── driver/           # Browser-driver kit (for tape-six-puppeteer / tape-six-playwright; .d.ts sidecars)
 │   ├── bootstrap.js  # In-page harness text (browser-safe)
 │   ├── TestWorker.js # Shared driver-worker base (extends EventServer; 4-member driver adapter)
@@ -149,6 +151,16 @@ Each runtime-specific runner:
 
 `tape6-seq` runs tests sequentially in the same process (no workers).
 
+`tape6-proc` spawns one child process per test file with `node:child_process` (on Bun and
+Deno too), marked `TAPE6_CONTROL` and `TAPE6_JSONL`. The child is an ordinary test file run
+by `index.js`: it reports JSONL lines tagged with a per-run prefix on stdout, and its stdin
+is the control channel. A child that exits without its top-level `end` fails its file with
+the reason (exit code, signal, timeout, or `exited mid-test`), unless a fail-once stop or a
+bail-out caused it; either way the parent reports `terminated` to close the scopes the child
+left open. It replaced the separate `tape-six-proc` package, whose 1.3.1 still imports
+`State.js`, `utils/EventServer.js`, `utils/makeDeferred.js`, `utils/config.js`,
+`utils/timer.js`, and `test.js` from this package.
+
 `tape6-server` serves files for browser-based testing and provides a web UI.
 
 ### Test server
@@ -215,7 +227,8 @@ On the hub side, `State.preprocess` stamps events `processed: true` on first
 touch; an aggregating reporter counts pre-stamped worker events by their own
 flags, so a terminated sibling's early-delivered `stopTest` cannot skip-poison
 the hub chain and mask a still-buffered failure as skipped.
-Each `tape-six-*` provider implements the same contract for its own transport.
+The in-tree proc runner (`src/runners/proc/`) implements it over the child's stdin, and each
+`tape-six-*` provider implements the same contract for its own transport.
 See `dev-docs/worker-control-channel.md`.
 
 ### Deep equality
@@ -241,6 +254,8 @@ bin/tape6.js → bin/tape6-node.js → src/runners/node/TestWorker.js
              → bin/tape6-deno.js → src/runners/deno/TestWorker.js
 
 bin/tape6-seq.js → src/runners/seq/TestWorker.js
+
+bin/tape6-proc.js → src/runners/proc/TestWorker.js → a child process per test file (reports through index.js)
 
 bin/tape6-server.js → src/test-server.js → src/test-server/* (adapter, registry, control, statics, certs, trace)
                                          → src/server.js (startServer)

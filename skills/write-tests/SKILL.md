@@ -11,7 +11,7 @@ Write or update tests using the tape-six testing library.
 
 - `tape-six` supports ES modules (`.js`, `.mjs`, `.ts`, `.mts`) and CommonJS (`.cjs`, `.cts`).
 - TypeScript is supported natively — no transpilation needed (Node 22+, Deno, Bun run `.ts` files directly).
-- The default `tape6` runner uses worker threads for parallel execution. `tape6-seq` runs sequentially in-process — useful for debugging or when tests share state.
+- The default `tape6` runner uses worker threads for parallel execution. `tape6-seq` runs sequentially in-process — useful for debugging or when tests share state. `tape6-proc` runs each file in its own subprocess.
 - `tape-six` catches `AssertionError` automatically, so you can use Chai or `node:assert` inside tape-six tests if a project already uses them.
 
 ## Steps

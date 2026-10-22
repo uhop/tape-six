@@ -15,7 +15,8 @@ const root = fileURLToPath(new URL('../../', import.meta.url)),
   LOAD_ERROR = dir + 'load-error.js',
   UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js',
   PARALLEL = 'bin/tape6.js',
-  SEQUENTIAL = 'bin/tape6-seq.js';
+  SEQUENTIAL = 'bin/tape6-seq.js',
+  PROC = 'bin/tape6-proc.js';
 
 // Spawns the runner and reports what the operating system saw. The runner
 // decides its own verdict, so nothing in-process can stand in for this: the
@@ -24,7 +25,9 @@ const root = fileURLToPath(new URL('../../', import.meta.url)),
 const runSuite = async ({bin, files, flags, par, env: extraEnv}) => {
   const isDeno = typeof Deno == 'object',
     cmd = isDeno ? Deno.execPath() : process.execPath,
-    args = isDeno ? ['run', '-A', bin, ...files] : [bin, ...files],
+    // Deno children don't inherit the parent's permissions
+    childArgs = isDeno && bin === PROC ? ['-r', '-A'] : [],
+    args = isDeno ? ['run', '-A', bin, ...childArgs, ...files] : [bin, ...files],
     env = {...process.env};
   for (const key of Object.keys(env)) {
     if (key.startsWith('TAPE6_')) delete env[key];
@@ -77,6 +80,24 @@ const FAILING_CASES = [
     flags: 'FO',
     par: 2,
     env: {TAPE6_GRACE_TIMEOUT: '300'}
+  },
+  {label: 'proc runner, no failOnce', bin: PROC, files: [FAILING, PASS_B], flags: 'F', par: 2},
+  {label: 'proc runner, failOnce', bin: PROC, files: [FAILING, PASS_B], flags: 'FO', par: 2},
+  {label: 'proc runner, bail-out', bin: PROC, files: [BAIL_OUT, PASS_B], flags: 'FO', par: 2},
+  {
+    label: 'proc runner, file that fails to load',
+    bin: PROC,
+    files: [LOAD_ERROR, PASS_B],
+    flags: 'FO',
+    par: 2
+  },
+  {
+    label: 'proc runner, force-killed sibling, failOnce',
+    bin: PROC,
+    files: [UNRESPONSIVE, FAILING],
+    flags: 'FO',
+    par: 2,
+    env: {TAPE6_GRACE_TIMEOUT: '300'}
   }
 ];
 
@@ -93,7 +114,8 @@ const PASSING_CASES = [
     files: [PASS_A, PASS_B],
     flags: 'FO',
     par: 1
-  }
+  },
+  {label: 'proc runner, failOnce', bin: PROC, files: [PASS_A, PASS_B], flags: 'FO', par: 2}
 ];
 
 // Runs a test file directly, with no runner in front of it — a third surface

@@ -15,7 +15,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       ['--version, -v', 'Show version and exit']
     ]
   );
-  console.log('\nRuntimes: node, deno, bun, seq, server, runner, main (default)');
+  console.log('\nRuntimes: node, deno, bun, seq, proc, server, runner, main (default)');
   process.exit(0);
 }
 if (process.argv.includes('--version') || process.argv.includes('-v')) {
@@ -28,6 +28,7 @@ const runtimeFiles = {
   deno: 'tape6-deno.js',
   bun: 'tape6-bun.js',
   seq: 'tape6-seq.js',
+  proc: 'tape6-proc.js',
   server: 'tape6-server.js',
   runner: 'tape6-runner.js',
   main: 'tape6.js'

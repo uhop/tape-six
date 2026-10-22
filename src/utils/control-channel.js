@@ -1,7 +1,7 @@
 import {runtime, getGraceTimeout} from './config.js';
 
 // Control plane, child side (proc transport). A proc-spawned child is an
-// ordinary test file run by this runtime; tape-six-proc marks it with
+// ordinary test file run by this runtime; tape6-proc marks it with
 // TAPE6_CONTROL and talks to it over stdin (line-delimited, mirroring the JSONL
 // data plane). The contract — see dev-docs/worker-control-channel.md:
 //   - The pending stdin read keeps the event loop open, so the child stays

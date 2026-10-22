@@ -6,14 +6,16 @@ Status: **the tape-six hub and all current worker providers are implemented**
 the Node-side force-kill backstop; their cooperative-drain half goes live
 end-to-end once they depend on the published hub release (tape-six is committed
 but not yet published). Still to come: a DOM-free Web-Worker browser worker for
-in-page force-kill on the standalone (driverless) browser run.
+in-page force-kill on the standalone (driverless) browser run. The subprocess
+transport moved into tape-six as `tape6-proc` (`src/runners/proc/`) on
+2026-10-22, so both halves of its channel now ship in one package.
 
 The channel spans **tape-six** (the worker abstraction + child-side listener;
-the in-tree `par` worker-thread, `seq`
-in-process, and standalone-browser iframe transports) and **all `tape-six-*`
-worker providers** that supply a transport — `tape-six-proc` (subprocess),
-`tape-six-puppeteer` / `tape-six-playwright` (driver-backed browser), and any
-future ones. Each provider implements the control channel for its own transport.
+the in-tree `par` worker-thread, `seq` in-process, `proc` subprocess, and
+standalone-browser iframe transports) and **all `tape-six-*` worker providers**
+that supply a transport — `tape-six-puppeteer` / `tape-six-playwright`
+(driver-backed browser), and any future ones. Each provider implements the
+control channel for its own transport.
 
 ## Implementation status (tape-six hub)
 
@@ -40,7 +42,7 @@ Done, verified on Node / Bun / Deno (`par`, `seq`, and `proc`):
   per-runtime `worker.js` listeners and the seq / browser transports all route
   through it.
 - Proc child-side listener: `src/utils/control-channel.js`, opened by `index.js`
-  when a child is marked `TAPE6_CONTROL` (set by `tape-six-proc`). It reads the
+  when a child is marked `TAPE6_CONTROL` (set by `tape6-proc`). It reads the
   line-delimited control channel off stdin (cross-runtime: `Readable.toWeb`
   on Node, `Bun.stdin.stream()`, `Deno.stdin.readable`), routes `terminate`
   through `Reporter.terminate()`, and the pending read keeps the child alive
@@ -122,7 +124,7 @@ children via env — `TAPE6_JSONL` + prefix; reuse/extend that), the runtime:
   flush, exit `0`.
 - On control-channel EOF: same as `terminate` (soft).
 
-## Proc stdin protocol (tape-six-proc)
+## Proc stdin protocol (tape6-proc)
 
 - Spawn with `stdin: 'pipe'` (today `'ignore'`).
 - Commands are line-delimited, mirroring the JSONL data plane. Minimum: one
@@ -273,7 +275,7 @@ each implements the control channel for its own transport.
   channel just unifies their API — and the standalone-browser iframe worker
   (`tape6-server` + the web-app), which gets cooperative drain via `postMessage`
   but no in-page force-kill.
-- **`tape-six-proc`:** `stdin: 'pipe'` + write `terminate` + end-on-done; treat
+- **`tape6-proc`:** `stdin: 'pipe'` + write `terminate` + end-on-done; treat
   control EOF / `end` as completion instead of racing child exit; honor
   `graceTimeout` before `worker.kill()`.
 - **`tape-six-puppeteer` / `tape-six-playwright`:** driver-backed browser

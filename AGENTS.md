@@ -28,6 +28,9 @@ npm run build
 - **Test sequential (Node):** `npm run test:seq`
 - **Test sequential (Bun):** `npm run test:seq:bun`
 - **Test sequential (Deno):** `npm run test:seq:deno`
+- **Test in subprocesses (Node):** `npm run test:proc`
+- **Test in subprocesses (Bun):** `npm run test:proc:bun`
+- **Test in subprocesses (Deno):** `npm run test:proc:deno`
 - **Start browser test server:** `npm start` (runs `tape6-server --trace` on port 3000)
 - **Lint:** `npm run lint` (Prettier check)
 - **Lint fix:** `npm run lint:fix` (Prettier write)
@@ -40,7 +43,7 @@ tape-six/
 ├── index.js          # Main entry point, exports test, hooks, aliases
 ├── index.d.ts        # TypeScript definitions for the full public API
 ├── package.json      # Package config; "tape6" section configures test discovery
-├── bin/              # CLI utilities: tape6, tape6-server, tape6-node, tape6-bun, tape6-deno, tape6-seq
+├── bin/              # CLI utilities: tape6, tape6-server, tape6-node, tape6-bun, tape6-deno, tape6-seq, tape6-proc
 ├── src/              # Source code
 │   ├── test.js       # Core test registration and execution
 │   ├── Tester.js     # Tester class with all assert methods
@@ -51,7 +54,7 @@ tape-six/
 │   ├── test-server.js # Embeddable test server: createTestServer/withTestServer + plugin contract
 │   ├── test-server/  # Test server internals (adapter, registry, control, statics, certs) + plugins/echo.js
 │   ├── reporters/    # TAP, TTY, JSONL, Proxy, DOM reporters
-│   ├── runners/      # Runtime-specific test runners
+│   ├── runners/      # Test runners: node, bun, deno (worker threads), seq (in-process), proc (subprocesses)
 │   ├── driver/       # Browser-driver kit for tape-six-puppeteer / tape-six-playwright (see dev-docs/browser-driver-kit.md)
 │   ├── utils/        # Timers, console capture, defer, etc.
 │   └── deep6/        # Copied from vendors/deep6 at build time (gitignored)
@@ -81,9 +84,9 @@ tape-six/
 - `Tester` is extensible via `registerTesterMethod(name, fn)` (idempotent for same `fn`, throws on collision with a different `fn`). Plugins live in their own packages and are imported per test file. The built-in `t.OK()` evaluator (`src/OK.js`) is the in-tree worked example.
 - Ambient integrations resolve the current test with `getTester()` (innermost running `Tester`, or `null` outside a test) and report through `Tester.reportAssertion({ok, message?, marker?, operator?, expected?, actual?})` — a marker-preserving assertion primitive whose `marker` keeps the source location at the caller. `index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` for the planned zero-dep `tape-six-invariant` package; see `dev-docs/sister-assert-library.md`.
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
-- `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process.
+- `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process. `tape6-proc` runs each file in its own subprocess (`node:child_process` on all three runtimes) and drives the child over a stdin control channel; it replaced the separate `tape-six-proc` package, whose 1.3.1 still imports `State.js`, `utils/EventServer.js`, `utils/makeDeferred.js`, `utils/config.js`, `utils/timer.js`, and `test.js` from this package, so keep those modules and the names it imports from them.
 - Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop in-flight workers (not just new scheduling), and an optional per-worker deadline (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). A force-kill must finalize the task on the parent side — `close(id)`, a `terminated` event to unwind the scopes the worker left open, and a reported failure for a deadline kill — or the run exits 0 with the failure still buffered. See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and `dev-docs/worker-control-channel.md`.
-- Browser tests use `tape6-server` which serves files and a web UI. It is pluggable: fixture plugins mount under URL prefixes with a WHATWG `fetch(request) → Response | (async) iterable | undefined` contract (static config `tape6.server.plugins` / `--plugin`, or `PUT /--plugins` at runtime), and the core is embeddable via `createTestServer({port: 0})` from `src/test-server.js`; `--h2` serves HTTP/2 (Node-only). See `dev-docs/pluggable-test-server.md`. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright). For process-isolated test execution see [tape-six-proc](https://www.npmjs.com/package/tape-six-proc).
+- Browser tests use `tape6-server` which serves files and a web UI. It is pluggable: fixture plugins mount under URL prefixes with a WHATWG `fetch(request) → Response | (async) iterable | undefined` contract (static config `tape6.server.plugins` / `--plugin`, or `PUT /--plugins` at runtime), and the core is embeddable via `createTestServer({port: 0})` from `src/test-server.js`; `--h2` serves HTTP/2 (Node-only). See `dev-docs/pluggable-test-server.md`. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright).
 - The `deep6` dependency is vendored via git submodule and copied into the source tree at build time.
 
 ## Writing tests

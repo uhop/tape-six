@@ -16,6 +16,7 @@
     "tape6-bun": "bin/tape6-bun.js",
     "tape6-deno": "bin/tape6-deno.js",
     "tape6-seq": "bin/tape6-seq.js",
+    "tape6-proc": "bin/tape6-proc.js",
     "tape6-server": "bin/tape6-server.js",
     "tape6-runner": "bin/tape6-runner.js"
   },
@@ -32,6 +33,9 @@
     "test:seq": "node ./bin/tape6-seq.js --flags FO",
     "test:seq:bun": "bun run ./bin/tape6-seq.js --flags FO",
     "test:seq:deno": "deno run -A ./bin/tape6-seq.js --flags FO",
+    "test:proc": "node ./bin/tape6-proc.js --flags FO",
+    "test:proc:bun": "bun run ./bin/tape6-proc.js --flags FO",
+    "test:proc:deno": "deno run -A ./bin/tape6-proc.js --flags FO -r -A",
     "ts-test": "node ./bin/tape6.js --flags FO \"tests/test-*.*ts\"",
     "ts-test:bun": "bun run ./bin/tape6-bun.js --flags FO \"tests/test-*.*ts\"",
     "ts-test:deno": "deno run -A ./bin/tape6-deno.js --flags FO \"tests/test-*.*ts\"",

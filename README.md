@@ -106,7 +106,7 @@ tape-six/
 ├── index.js          # Main entry point, exports test, hooks, aliases
 ├── index.d.ts        # TypeScript definitions for the public API
 ├── package.json      # Package config; "tape6" section configures test discovery
-├── bin/              # CLI utilities: tape6, tape6-server, tape6-node, tape6-bun, tape6-deno, tape6-seq
+├── bin/              # CLI utilities: tape6, tape6-server, tape6-node, tape6-bun, tape6-deno, tape6-seq, tape6-proc
 ├── src/              # Source code (test engine, reporters, runners, utilities)
 ├── web-app/          # Browser test UI application
 ├── tests/            # Test files (JS + TS)
@@ -376,7 +376,11 @@ tape6 --par 4 # run tests in parallel using 4 threads
 tape6 --par 1 # run one test at a time
 ```
 
-If you want to run tests in separate processes, check out [tape-six-proc](https://www.npmjs.com/package/tape-six-proc). Why do you want to do that? When tests have to modify globals or use single-threaded binary extensions.
+If you want to run tests in separate processes, use the `tape6-proc` command, which uses the same options and configuration as `tape6`. Why do you want to do that? When tests have to modify globals or use single-threaded binary extensions.
+
+```bash
+tape6-proc
+```
 
 If you want to run tests sequentially without expenses of threads and processes, you can use the `tape6-seq` command, which uses the same options and configuration as `tape6`:
 
@@ -415,13 +419,13 @@ See [set-up tests](https://github.com/uhop/tape-six/wiki/Set-up-tests) for detai
 ### Command-line utilities
 
 - [tape6](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6) &mdash; the main utility of the package to run tests in different environments.
+- [tape6-proc](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6-proc) &mdash; runs each test file in its own subprocess. It replaces the separate `tape-six-proc` package: remove that dependency when you update `tape-six`.
 - [tape6-server](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6-server) &mdash; a custom web server with a web application that helps running tests in browsers.
 
 Test output can be controlled by flags. See [Supported flags](https://github.com/uhop/tape-six/wiki/Supported-flags) for details.
 
 ### Related packages
 
-- [tape-six-proc](https://www.npmjs.com/package/tape-six-proc) &mdash; runs test files in separate processes instead of worker threads.
 - [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) &mdash; automates browser testing with Puppeteer.
 - [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) &mdash; automates browser testing with Playwright.
 - [tape-six-fast-check](https://www.npmjs.com/package/tape-six-fast-check) &mdash; property-based testing with fast-check: `t.prop()` and `t.scheduler()`.

@@ -48,8 +48,8 @@ export interface EventServerOptions {
 }
 
 /**
- * Base class for test-worker drivers (the parallel/seq runners and the
- * `tape-six-proc` / `tape-six-puppeteer` / `tape-six-playwright` siblings).
+ * Base class for test-worker drivers (the parallel, seq, and proc runners and
+ * the `tape-six-puppeteer` / `tape-six-playwright` siblings).
  *
  * Two planes: DATA (worker → reporter — the `report()`/`close()`
  * event-ordering machinery) and CONTROL (reporter/runner → worker — a

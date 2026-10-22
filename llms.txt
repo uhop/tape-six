@@ -233,6 +233,7 @@ test.todo('work in progress', t => { t.equal(1, 2); }); // failure not counted
 node test-file.js          # run single file directly
 npx tape6 --flags FO       # run all configured tests, show failures only + fail once
 npx tape6-seq              # run sequentially (no worker threads)
+npx tape6-proc --flags FO  # run each file in its own subprocess
 npx tape6-server --trace   # start browser test server
 ```
 

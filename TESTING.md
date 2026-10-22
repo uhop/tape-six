@@ -544,6 +544,7 @@ deno run -A tests/test-example.js     # Deno
 ```bash
 npx tape6 --flags FO                  # parallel (worker threads)
 npx tape6-seq --flags FO              # sequential (in-process, no workers)
+npx tape6-proc --flags FO             # parallel (a subprocess per test file)
 npx tape6 --par 4 --flags FO          # limit to 4 workers
 npx tape6 --info --flags FO           # show config and exit without running tests
 npx tape6 --flags=FO                  # = form is also supported
@@ -551,7 +552,7 @@ npx tape6 --flags=FO                  # = form is also supported
 
 Options that take a value accept both space-separated (`--flags FO`) and `=`-separated (`--flags=FO`) forms. The `=` form does not support quoting (e.g. `--flags="FO"` won't work); use the space form when values need quoting.
 
-**`tape6` vs `tape6-seq`**: The default `tape6` runner spawns worker threads to run test files in parallel — faster, but each file runs in its own isolated context. `tape6-seq` runs all test files sequentially in a single process — slower, but useful for debugging, for tests that share state, or when worker threads are unavailable.
+**`tape6` vs `tape6-seq`**: The default `tape6` runner spawns worker threads to run test files in parallel — faster, but each file runs in its own isolated context. `tape6-seq` runs all test files sequentially in a single process — slower, but useful for debugging, for tests that share state, or when worker threads are unavailable. `tape6-proc` runs each test file in its own subprocess — for tests that modify process-wide globals or load single-threaded binary extensions. Under Bun and Deno, run it as `` bun run `tape6-proc --self` `` or ``deno run -A `tape6-proc --self` -r -A`` (`-r` passes an argument to each child; Deno children don't inherit the parent's permissions). It replaces the separate `tape-six-proc` package; remove that dependency when you update `tape-six`.
 
 ### Selected test files
 
@@ -905,7 +906,6 @@ Judge each run by its exit status (`npm test; echo "exit=$?"`), never by the cou
 
 ## Related packages
 
-- [tape-six-proc](https://www.npmjs.com/package/tape-six-proc) — runs test files in separate processes instead of worker threads. Useful when tests need full process isolation.
 - [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer. Runs configured browser tests headlessly from the command line.
 - [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright. Same as above but using Playwright.
 - [tape-six-fast-check](https://www.npmjs.com/package/tape-six-fast-check) — property-based testing with [fast-check](https://fast-check.dev/): `t.prop()` for properties and `t.scheduler()` for race-condition tests, each reported as one assertion. Without the plugin, call `fc.assert()` inside a plain test.

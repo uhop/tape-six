@@ -29,6 +29,7 @@ The `tape6` runner exists only for **orchestration**: parallel execution via wor
 
    Optional siblings:
    - `"test:seq": "tape6-seq --flags FO"` — sequential, in-process; easier to debug.
+   - `"test:proc": "tape6-proc --flags FO"` — a subprocess per test file, for tests that change process-wide state.
    - `"test:bun": "tape6-bun --flags FO"` / `"test:deno": "tape6-deno --flags FO"` — explicit-runtime sweeps for cross-runtime libraries.
    - `"start": "tape6-server --trace"` — browser-test HTTP harness.
 
@@ -96,7 +97,7 @@ Pick by environment, not preference. Default `tape6` auto-detects the runtime an
 - **`tape6-bun` / `tape6-deno` / `tape6-node`** — pin to a specific runtime (typically for cross-runtime CI matrices).
 - **`tape6-seq`** — sequential, in-process. Use for debugging or when tests share state.
 - **`tape6-server`** — browser-test HTTP harness. Run `npx tape6-server --trace`, then open `http://localhost:3000`.
-- **`tape-six-proc`** (separate npm package) — process-per-file isolation when worker threads aren't enough.
+- **`tape6-proc`** — process-per-file isolation when worker threads aren't enough. Under Deno pass the children's permissions: ``deno run -A `tape6-proc --self` --flags FO -r -A``. It replaces the separate `tape-six-proc` package; drop that dependency when you update `tape-six`.
 
 ## Further reading (wiki)
 

@@ -277,7 +277,7 @@ test('cli', async t => {
 
 `Tester` is declared as an `interface` in `index.d.ts` to make TS module augmentation natural — plugins extend the interface, no full class shape needed. The built-in `t.OK()` evaluator (`src/OK.js`) uses this exact pattern.
 
-Plugin installation is **per-file**. `tape6-seq` runs all files in one process; `tape6` uses workers; `tape6-proc` (from the sister package `tape-six-proc`) uses subprocesses; browser tests run in iframes. Each isolation context has its own module graph, so a plugin import in file A is invisible to file B when they're in different contexts. Every test file that uses a plugin must import it directly. `registerTesterMethod`'s idempotency makes repeated imports safe. See [Writing plugins](https://github.com/uhop/tape-six/wiki/Writing-plugins) for the full guide.
+Plugin installation is **per-file**. `tape6-seq` runs all files in one process; `tape6` uses workers; `tape6-proc` uses subprocesses; browser tests run in iframes. Each isolation context has its own module graph, so a plugin import in file A is invisible to file B when they're in different contexts. Every test file that uses a plugin must import it directly. `registerTesterMethod`'s idempotency makes repeated imports safe. See [Writing plugins](https://github.com/uhop/tape-six/wiki/Writing-plugins) for the full guide.
 
 ### Ambient integrations
 
@@ -341,6 +341,14 @@ Each reporter also marks the end of the run. Judge by that marker, never by the 
 ### tape6-seq
 
 Sequential in-process runner. Same options as `tape6` but no threads.
+
+### tape6-proc
+
+Subprocess runner: each test file runs in its own child process. Same options and configuration as `tape6`, plus:
+
+- `--runFileArgs`, `-r` — an argument for the interpreter that runs each test file (repeatable). Deno children don't inherit the parent's permissions, so pass them: `` deno run -A `tape6-proc --self` --flags FO -r -A ``.
+
+Under Bun and Deno, run it through `--self`: `` bun run `tape6-proc --self` --flags FO ``. A child that exits before its report ends fails its file with the reason (`exit code: N`, `signal: X`, `timed out`, or `exited mid-test`); a file with no tests passes. `TAPE6_WORKER_TIMEOUT` and `TAPE6_GRACE_TIMEOUT` apply per child. It replaces the separate `tape-six-proc` package: remove that dependency when you update `tape-six`; the command name is the same.
 
 ### tape6-server
 
@@ -490,7 +498,6 @@ Browser: `http://localhost:3000/?flags=FO`
 
 ## Related packages
 
-- tape-six-proc (https://www.npmjs.com/package/tape-six-proc) — runs test files in separate processes instead of worker threads.
 - tape-six-puppeteer (https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer.
 - tape-six-playwright (https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright.
 - tape-six-fast-check (https://www.npmjs.com/package/tape-six-fast-check) — property-based testing with fast-check: `t.prop()` for properties and `t.scheduler()` for race-condition tests, each reported as one assertion with the shrunk counterexample, seed, and replay path as structured data.
