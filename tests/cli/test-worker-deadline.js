@@ -5,9 +5,30 @@ import {PARALLEL, RUNNERS, runSuite} from './helpers/run-suite.js';
 const PASS_B = 'tests/cli/fixtures/exit-code/passing-b.js',
   UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js',
   QUIET_DRAIN = 'tests/cli/fixtures/deadline/quiet-drain.js',
-  NEXT_FILE = /^# start: FILE: \/tests[\\/]cli[\\/]fixtures[\\/]exit-code[\\/]passing-b\.js$/m;
+  SLOW_START = 'tests/cli/fixtures/deadline/slow-start.js';
 
 const countLines = (text, re) => text.split(/\r?\n/).filter(line => re.test(line)).length;
+
+// A TAP report by file, from each `# start: FILE:` line to its `# finish: FILE:`;
+// what falls outside every file is filed under ''.
+const byFile = stdout => {
+  const sections = {'': ''};
+  let current = '';
+  for (const line of stdout.split(/\r?\n/)) {
+    const start = /^# start: FILE: \/(.*)$/.exec(line);
+    if (start) {
+      current = start[1].replace(/\\/g, '/');
+      sections[current] ??= '';
+      continue;
+    }
+    if (/^# finish: FILE: /.test(line)) {
+      current = '';
+      continue;
+    }
+    sections[current] += line + '\n';
+  }
+  return sections;
+};
 
 // A deadline caps one runaway file. However its worker stops, that file fails
 // once and the files queued behind it still run. A drained worker used to
@@ -24,7 +45,13 @@ const DEADLINE_CASES = [
     strict: true
   },
   {label: 'is stopped before its test starts', files: [QUIET_DRAIN, PASS_B], deadline: 1},
-  {label: 'is force-killed', files: [UNRESPONSIVE, PASS_B], deadline: 400, killed: true}
+  {label: 'is force-killed', files: [UNRESPONSIVE, PASS_B], deadline: 400, killed: true},
+  {
+    label: 'is killed before it reports anything',
+    files: [SLOW_START, PASS_B],
+    deadline: 100,
+    killed: true
+  }
 ];
 
 const runDeadline = (bin, files, deadline, extra = {}) =>
@@ -37,17 +64,6 @@ const runDeadline = (bin, files, deadline, extra = {}) =>
     env: {TAPE6_WORKER_TIMEOUT: String(deadline), TAPE6_GRACE_TIMEOUT: '300', ...extra.env}
   });
 
-const deadlineFailures = (stdout, deadline) => {
-  const re = new RegExp(`^not ok \\d+ Terminated after ${deadline}ms`),
-    [capped, ...rest] = stdout.split(NEXT_FILE),
-    queued = rest.join('\n');
-  return {
-    capped: countLines(capped, re),
-    queued: countLines(queued, re),
-    queuedAny: countLines(queued, /^not ok /)
-  };
-};
-
 // the runs are independent, and most of each one is a deadline or a grace window
 test('a worker deadline fails its own file in every mode', {timeout: 120000}, async t => {
   const plan = [];
@@ -56,6 +72,7 @@ test('a worker deadline fails its own file in every mode', {timeout: 120000}, as
       if (testCase.killed && runner.inProcess) continue;
       plan.push({
         label: `${runner.label}, a file that ${testCase.label}`,
+        files: testCase.files,
         deadline: testCase.deadline,
         strict: testCase.strict,
         pending: runDeadline(runner.bin, testCase.files, testCase.deadline)
@@ -63,6 +80,7 @@ test('a worker deadline fails its own file in every mode', {timeout: 120000}, as
     }
     plan.push({
       label: `${runner.label}, failOnce`,
+      files: [QUIET_DRAIN, PASS_B],
       deadline: 400,
       failOnce: true,
       pending: runDeadline(runner.bin, [QUIET_DRAIN, PASS_B], 400, {flags: 'FO'})
@@ -70,21 +88,29 @@ test('a worker deadline fails its own file in every mode', {timeout: 120000}, as
   }
   const tty = runDeadline(PARALLEL, [QUIET_DRAIN, PASS_B], 2000, {env: {TAPE6_TAP: ''}});
 
-  for (const {label, deadline, strict, failOnce, pending} of plan) {
+  for (const {label, files, deadline, strict, failOnce, pending} of plan) {
     const {code, stdout} = await pending,
-      failures = deadlineFailures(stdout, deadline);
+      [capped, next] = files,
+      sections = byFile(stdout),
+      re = new RegExp(`^not ok \\d+ Terminated after ${deadline}ms`);
     t.equal(code, 1, `${label}: exits 1`);
-    t.equal(failures.capped, 1, `${label}: the deadline fails the capped file once`);
+    t.equal(countLines(sections[''], re), 0, `${label}: every deadline failure names its file`);
+    t.equal(
+      countLines(sections[capped] ?? '', re),
+      1,
+      `${label}: the deadline fails the capped file once`
+    );
     t.matchString(stdout, /^# not ok$/m, `${label}: the trailer agrees with the exit code`);
     if (failOnce) {
       t.notOk(/passing-b\.js/.test(stdout), `${label}: the deadline stops the run`);
       continue;
     }
-    t.matchString(stdout, NEXT_FILE, `${label}: the next file still runs`);
+    t.ok(next in sections, `${label}: the next file still runs`);
     if (strict) {
-      t.equal(failures.queuedAny, 0, `${label}: the next file passes`);
+      t.equal(countLines(sections[next] ?? '', /^not ok /), 0, `${label}: the next file passes`);
     } else {
-      t.ok(failures.queued <= 1, `${label}: the queued file fails once at most`);
+      // at a short deadline a loaded machine can start the next file late enough to reach its own
+      t.ok(countLines(sections[next] ?? '', re) <= 1, `${label}: the next file fails once at most`);
     }
   }
 

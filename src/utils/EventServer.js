@@ -7,11 +7,15 @@ import defer from './defer.js';
 // (TAPE6_GRACE_TIMEOUT) via getOptions(); see src/utils/config.js.
 const DEFAULT_GRACE_TIMEOUT = 5_000;
 
+const SCOPE_EVENTS = new Set(['test', 'end', 'terminated']);
+
 // Two planes: DATA (worker -> reporter, the report()/close() event-ordering
 // machinery) and CONTROL (reporter/runner -> worker, a single `terminate`
 // delivered per transport by destroyTask). See dev-docs/worker-control-channel.md.
 export class EventServer {
   #owedTimeouts = new Set();
+  #fileNames = {};
+  #openedTasks = new Set();
   constructor(reporter, numberOfTasks = 1, options = {}) {
     this.reporter = reporter;
     this.numberOfTasks = numberOfTasks;
@@ -33,6 +37,10 @@ export class EventServer {
     this.stopRequested = false;
   }
   report(id, event) {
+    // a killed worker can still deliver what it queued: a late scope event would
+    // open or close another file's scope, while a late failure must still count
+    if (this.closedTasks.has(id) && SCOPE_EVENTS.has(event?.type)) return;
+    if (event?.type === 'test' && event.test === 0) this.#openedTasks.add(id);
     if (this.timedOutTasks.has(id)) {
       // the deadline's terminate marks the worker's later events stopTest: that
       // stops this file, not the run
@@ -77,7 +85,9 @@ export class EventServer {
     // double-decrement totalTasks and end the run early
     if (this.closedTasks.has(id)) return;
     // a task can close with neither `end` nor `terminated` (a worker error)
-    this.#reportTimeout(id);
+    this.#reportTimeout(id, true);
+    delete this.#fileNames[id];
+    this.#openedTasks.delete(id);
     this.closedTasks.add(id);
     this.#clearDeadline(id);
     this.liveTasks.delete(id);
@@ -157,6 +167,7 @@ export class EventServer {
     // a transport may close the task inside makeTask (an unsupported file):
     // tracking it now would leave a dead id live and arm a deadline for it
     if (this.closedTasks.has(id)) return id;
+    this.#fileNames[id] = fileName;
     this.liveTasks.add(id);
     if (this.workerTimeout > 0) {
       this.deadlineTimers[id] = setTimeout(() => this.#onDeadline(id), this.workerTimeout);
@@ -175,9 +186,13 @@ export class EventServer {
     // the deadline is the file's failure, and under failOnce a failure stops the run
     if (this.options.failOnce) this.#requestStop();
   }
-  // one failure per timed-out task, however its worker stopped
-  #reportTimeout(id) {
+  // One failure per timed-out task, however its worker stopped. A worker killed
+  // before it reported its file gets the file's scope, or the failure names no file.
+  #reportTimeout(id, closesScope = false) {
     if (!this.#owedTimeouts.delete(id)) return;
+    const name = 'FILE: /' + this.#fileNames[id],
+      opened = this.#openedTasks.has(id);
+    if (!opened) this.report(id, {type: 'test', test: 0, name});
     this.report(id, {
       type: 'assert',
       name: `Terminated after ${this.workerTimeout}ms`,
@@ -186,6 +201,8 @@ export class EventServer {
       operator: 'error',
       fail: true
     });
+    // otherwise the `end` or `terminated` that follows closes it
+    if (!opened && closesScope) this.report(id, {type: 'end', test: 0, name});
   }
   #clearDeadline(id) {
     const timer = this.deadlineTimers[id];

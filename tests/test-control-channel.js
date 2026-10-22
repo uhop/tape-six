@@ -237,6 +237,45 @@ test('control channel: a deadline is reported when the task closes without an en
   t.equal(deadlineFailures(reporter).length, 1, 'the failure is not lost');
 });
 
+// A killed worker can still deliver a message it queued before the kill. A late
+// file `test` opened a scope nothing closed, the next file nested inside it,
+// and the run's summary never printed. A late failure still counts.
+test('control channel: a closed task opens and closes no scope', t => {
+  const reporter = makeRecorder(),
+    w = new FakeWorker(reporter, 2, {});
+  w.execute(['killed.js', 'next.js']);
+  w.close('1');
+  w.report('1', {type: 'test', test: 0, name: 'FILE: /killed.js'});
+  w.report('1', {type: 'end', test: 0, name: 'FILE: /killed.js'});
+  w.report('1', {type: 'terminated', test: 0});
+  w.report('1', {type: 'assert', fail: true, name: 'late'});
+  t.deepEqual(
+    reporter.seen.map(event => event.name),
+    ['late'],
+    'the scope events are dropped, the failure is not'
+  );
+});
+
+// a worker killed before it reports its file left the failure naming no file
+test('control channel: a deadline opens the file a task never reported', async t => {
+  for (const closing of ['terminated', null]) {
+    const label = closing ? 'killed' : 'closed with no event',
+      reporter = makeRecorder(),
+      w = new FakeWorker(reporter, 1, {workerTimeout: 20});
+    w.execute(['slow.js']);
+    await timeout(50);
+    if (closing) w.report('1', {type: closing, test: 0});
+    w.close('1');
+
+    t.deepEqual(
+      reporter.seen.map(event => event.type),
+      ['test', 'assert', closing || 'end'],
+      `${label}: the failure sits in a scope of its own`
+    );
+    t.equal(reporter.seen[0].name, 'FILE: /slow.js', `${label}: the scope names the file`);
+  }
+});
+
 // The terminate marks the worker's later events stopTest. Read as a stop, they
 // cancelled every file queued behind the capped one.
 test('control channel: a deadline does not stop the other files', async t => {
