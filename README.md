@@ -430,7 +430,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
-- 1.17.0 _`t.throws()`, `t.rejects()`, and `t.resolves()` return what they caught, for further checks. Object patterns use deep6's `match()` again: every key a pattern names must be present, and a plain pattern no longer matches a class instance such as an `Error` (check those with a predicate, the error class, or the returned value). Bug fixes: overlapping `close()` calls and hook runs share one run._
+- 1.17.0 _`t.throws()`, `t.rejects()`, and `t.resolves()` return what they caught. Object patterns use deep6's `match()`. Bug fixes: overlapping `close()` calls and hook runs share one run._
 - 1.16.4 _Bug fixes: failures now show their stack and cause chain on Firefox and Safari/WebKit, not just on V8; `t.bailOut()` fails the run instead of reporting success. The browser dashboard shows progress while a run is in flight._
 - 1.16.3 _Bug fixes: a fail-once run that had to force-kill a worker could exit 0 with no output at all; a worker-deadline kill now fails the run instead of passing silently._
 - 1.16.2 _Bug fixes: fail-once no longer records phantom failures and drops the summary on `asPromise` tests; the web application handles fail-once runs correctly._
