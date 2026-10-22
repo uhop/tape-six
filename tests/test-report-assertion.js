@@ -30,6 +30,8 @@ test('reportAssertion: assert-shaped report for a plain verdict', t => {
 test('reportAssertion: falsy verdict fails; missing marker is fabricated', t => {
   const c = capture(),
     sub = new Tester(0, c.reporter);
+  sub.reportAssertion({ok: 1});
+  t.notOk(c.last.fail, 'a truthy non-boolean verdict passes');
   sub.reportAssertion({ok: 0});
   t.ok(c.last.fail, 'falsy verdict fails');
   t.equal(c.last.data.actual, 0, 'verdict becomes actual when no info given');

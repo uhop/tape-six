@@ -230,6 +230,36 @@ test('object patterns do not match class instances; matchInstanceOf does', t => 
   t.deepEqual(verdicts(reporter), [true, true, false, false, false, false]);
 });
 
+test('t.throws: a function that throws nothing fails, with or without a matcher', t => {
+  const reporter = new SpyReporter();
+  const sub = new Tester(0, reporter);
+  sub.throws(() => {});
+  sub.throws(() => {}, TypeError);
+  sub.throws(() => {}, {code: 'ENOENT'});
+  t.deepEqual(verdicts(reporter), [true, true, true]);
+});
+
+test('matchers: truthy predicates, RegExp on an Error message, strict primitives', t => {
+  const reporter = new SpyReporter();
+  const sub = new Tester(0, reporter);
+  sub.throws(
+    () => {
+      throw 1;
+    },
+    value => value
+  );
+  sub.throws(() => {
+    throw new Error('not found');
+  }, /^not found$/);
+  sub.throws(() => {
+    throw 0;
+  }, 0);
+  sub.throws(() => {
+    throw 0;
+  }, false);
+  t.deepEqual(verdicts(reporter), [false, false, false, true]);
+});
+
 test('object patterns require every key they name', t => {
   const reporter = new SpyReporter();
   const sub = new Tester(0, reporter);
