@@ -84,9 +84,7 @@ export class TestWorker extends EventServer {
     if (this.graceTimers[id]) return; // already draining
     try {
       worker.postMessage({type: 'terminate', reason});
-    } catch (e) {
-      void e;
-    }
+    } catch {}
     this.graceTimers[id] = setTimeout(() => this.#forceKill(id, reason), this.graceTimeout);
   }
   // A force-killed worker never emits its `end`, so nothing else would close the

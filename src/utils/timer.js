@@ -15,7 +15,7 @@ export const selectTimer = async () => {
       const {performance} = await import('node:perf_hooks');
       setTimer({now: () => performance.now() + performance.timeOrigin});
       return;
-    } catch (error) {}
+    } catch {}
   }
   setTimer(Date);
 };

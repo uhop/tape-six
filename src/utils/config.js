@@ -87,7 +87,7 @@ export const getConfig = async (rootFolder, traceFn) => {
 
   try {
     cfg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'tape6.json')));
-  } catch (error) {
+  } catch {
     traceFn && traceFn('Cannot read tape6.json');
   }
 
@@ -95,7 +95,7 @@ export const getConfig = async (rootFolder, traceFn) => {
     try {
       const pkg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'package.json')));
       cfg = pkg.tape6;
-    } catch (error) {
+    } catch {
       traceFn && traceFn('Cannot read package.json');
     }
   }
@@ -312,8 +312,7 @@ export const getOptions = extraOptions => {
     } else {
       try {
         parallel = os.availableParallelism();
-      } catch (e) {
-        void e;
+      } catch {
         parallel = 1;
       }
     }

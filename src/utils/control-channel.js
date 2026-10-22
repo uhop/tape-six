@@ -76,8 +76,8 @@ export const listenControlChannel = async getReporter => {
           terminated = true;
           getReporter()?.terminate();
         }
-      } catch (e) {
-        void e; // ignore a malformed control line
+      } catch {
+        // ignore a malformed control line
       }
     }
   };
@@ -94,8 +94,8 @@ export const listenControlChannel = async getReporter => {
         buffer = buffer.slice(nl + 1);
       }
     }
-  } catch (e) {
-    void e; // a broken pipe reads as EOF for our purposes
+  } catch {
+    // a broken pipe reads as EOF for our purposes
   }
   if (buffer) handleLine(buffer);
 
