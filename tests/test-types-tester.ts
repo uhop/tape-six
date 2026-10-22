@@ -53,10 +53,11 @@ test('assertion signatures', t => {
   t.notDeepLooseEqual({a: 1}, {a: 2});
   t.notDeepLooseEqual({a: 1}, {a: 2}, 'msg');
 
-  // throws / doesNotThrow
-  t.throws(() => {
+  // throws / doesNotThrow; throws returns the thrown value
+  const thrown: unknown = t.throws(() => {
     throw new Error();
   });
+  t.ok(thrown instanceof Error);
   t.throws(() => {
     throw new Error();
   }, 'msg');
@@ -77,13 +78,13 @@ test('assertion signatures', t => {
 });
 
 test('async assertions', async t => {
-  // rejects returns Promise<void>
-  const r1: Promise<void> = t.rejects(Promise.reject(new Error()));
-  await r1;
+  // rejects resolves to the rejection reason
+  const r1: Promise<unknown> = t.rejects(Promise.reject(new Error()));
+  t.ok((await r1) instanceof Error);
 
-  // resolves returns Promise<void>
-  const r2: Promise<void> = t.resolves(Promise.resolve(42));
-  await r2;
+  // resolves resolves to the resolved value, typed from the promise
+  const r2: Promise<number | undefined> = t.resolves(Promise.resolve(42));
+  t.equal(await r2, 42);
 
   t.rejects(Promise.reject(new Error()), 'msg');
   t.resolves(Promise.resolve(42), 'msg');

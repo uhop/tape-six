@@ -532,8 +532,9 @@ export declare interface Tester {
    * Asserts that `fn` throws. Any thrown value counts, not only an `Error`.
    * @param fn - The function to test
    * @param message - Optional message to display if the assertion fails
+   * @returns The thrown value, for further checks; `undefined` when nothing was thrown
    */
-  throws(fn: () => void, message?: string): void;
+  throws(fn: () => void, message?: string): unknown;
   /**
    * Asserts that `fn` throws a value matching `matcher`. Any thrown value counts, not only an `Error`.
    * `matcher` may be:
@@ -545,8 +546,9 @@ export declare interface Tester {
    * @param fn - The function to test
    * @param matcher - The matcher to apply to the thrown value
    * @param message - Optional message to display if the assertion fails
+   * @returns The thrown value, for further checks; `undefined` when nothing was thrown
    */
-  throws(fn: () => void, matcher: AssertionMatcher, message?: string): void;
+  throws(fn: () => void, matcher: AssertionMatcher, message?: string): unknown;
 
   /**
    * Asserts that `fn` does not throw an error.
@@ -591,31 +593,39 @@ export declare interface Tester {
    * Asserts that `promise` is rejected.
    * @param promise - The promise to test
    * @param message - Optional message to display if the assertion fails
+   * @returns The rejection reason, for further checks; `undefined` when the promise resolved
    */
-  rejects(promise: Promise<unknown>, message?: string): Promise<void>;
+  rejects(promise: Promise<unknown>, message?: string): Promise<unknown>;
   /**
    * Asserts that `promise` is rejected with a reason matching `matcher`.
    * See `throws` for the `matcher` semantics.
    * @param promise - The promise to test
    * @param matcher - The matcher to apply to the rejection reason
    * @param message - Optional message to display if the assertion fails
+   * @returns The rejection reason, for further checks; `undefined` when the promise resolved
    */
-  rejects(promise: Promise<unknown>, matcher: AssertionMatcher, message?: string): Promise<void>;
+  rejects(promise: Promise<unknown>, matcher: AssertionMatcher, message?: string): Promise<unknown>;
 
   /**
    * Asserts that `promise` is resolved.
    * @param promise - The promise to test
    * @param message - Optional message to display if the assertion fails
+   * @returns The resolved value, for further checks; `undefined` when the promise rejected
    */
-  resolves(promise: Promise<unknown>, message?: string): Promise<void>;
+  resolves<T>(promise: Promise<T>, message?: string): Promise<T | undefined>;
   /**
    * Asserts that `promise` is resolved with a value matching `matcher`.
    * See `throws` for the `matcher` semantics (applied to the resolved value).
    * @param promise - The promise to test
    * @param matcher - The matcher to apply to the resolved value
    * @param message - Optional message to display if the assertion fails
+   * @returns The resolved value, for further checks; `undefined` when the promise rejected
    */
-  resolves(promise: Promise<unknown>, matcher: AssertionMatcher, message?: string): Promise<void>;
+  resolves<T>(
+    promise: Promise<T>,
+    matcher: AssertionMatcher,
+    message?: string
+  ): Promise<T | undefined>;
 
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.
@@ -879,7 +889,7 @@ export declare interface Tester {
    * @param promise - The promise to test
    * @param message - Optional message to display if the assertion fails
    */
-  doesNotResolve(promise: Promise<unknown>, message?: string): Promise<void>;
+  doesNotResolve(promise: Promise<unknown>, message?: string): Promise<unknown>;
   /**
    * Asserts that `promise` is rejected with a reason matching `matcher`. Alias of `rejects`.
    * @param promise - The promise to test
@@ -890,25 +900,25 @@ export declare interface Tester {
     promise: Promise<unknown>,
     matcher: AssertionMatcher,
     message?: string
-  ): Promise<void>;
+  ): Promise<unknown>;
 
   /**
    * Asserts that `promise` is resolved. Alias of `resolves`.
    * @param promise - The promise to test
    * @param message - Optional message to display if the assertion fails
    */
-  doesNotReject(promise: Promise<unknown>, message?: string): Promise<void>;
+  doesNotReject<T>(promise: Promise<T>, message?: string): Promise<T | undefined>;
   /**
    * Asserts that `promise` is resolved with a value matching `matcher`. Alias of `resolves`.
    * @param promise - The promise to test
    * @param matcher - The matcher to apply to the resolved value
    * @param message - Optional message to display if the assertion fails
    */
-  doesNotReject(
-    promise: Promise<unknown>,
+  doesNotReject<T>(
+    promise: Promise<T>,
     matcher: AssertionMatcher,
     message?: string
-  ): Promise<void>;
+  ): Promise<T | undefined>;
 
   /**
    * Returns a code as a string for evaluation that checks if the condition is truthy.

@@ -166,6 +166,16 @@ Matcher rules:
 
 Falsy reasons (`null`, `0`, `false`, `''`, `NaN`) are correctly handled: `Promise.reject(null)` is still a rejection, and `throw 0` is still a throw.
 
+`t.throws` returns the thrown value, and `t.rejects` and `t.resolves` resolve to the rejection reason and the resolved value, so further checks can follow, each reported on its own:
+
+```js
+const e = await t.rejects(fetchData());
+t.equal(e?.code, 'ENOENT');
+t.equal(e?.status, 404);
+```
+
+When nothing was thrown, or the promise settled the other way, the assertion fails and the value is `undefined`; the `?.` keeps the checks that follow from throwing.
+
 ### Async assertions
 
 `rejects` and `resolves` are async — always `await` them:

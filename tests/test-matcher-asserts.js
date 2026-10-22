@@ -260,6 +260,28 @@ test('matchers: truthy predicates, RegExp on an Error message, strict primitives
   t.deepEqual(verdicts(reporter), [false, false, false, true]);
 });
 
+test('throws, rejects, and resolves return the value they caught', async t => {
+  const reporter = new SpyReporter();
+  const sub = new Tester(0, reporter);
+  const thrown = {code: 'E'},
+    reason = new Error('x');
+  t.equal(
+    sub.throws(() => {
+      throw thrown;
+    }),
+    thrown
+  );
+  t.equal(
+    sub.throws(() => {}),
+    undefined
+  );
+  t.equal(await sub.rejects(Promise.reject(reason)), reason);
+  t.equal(await sub.rejects(Promise.resolve(1)), undefined);
+  t.equal(await sub.resolves(Promise.resolve(42)), 42);
+  t.equal(await sub.resolves(Promise.reject(reason)), undefined);
+  t.deepEqual(verdicts(reporter), [false, true, false, true, false, true]);
+});
+
 test('object patterns require every key they name', t => {
   const reporter = new SpyReporter();
   const sub = new Tester(0, reporter);

@@ -87,14 +87,14 @@ The object passed to test functions. Provides assertions and test control.
 - `t.notDeepEqual(a, b, msg)` — assert not deeply equal. Aliases: `notSame`, `notDeepEquals`, `notEquivalent`, `notDeeply`, `isNotDeepEqual`, `isNotEquivalent`.
 - `t.deepLooseEqual(a, b, msg)` — recursive loose deep equality.
 - `t.notDeepLooseEqual(a, b, msg)` — assert not deeply loosely equal.
-- `t.throws(fn, msg)` — assert fn() throws.
+- `t.throws(fn, msg)` — assert fn() throws. Returns the thrown value (`undefined` when nothing was thrown).
 - `t.doesNotThrow(fn, msg)` — assert fn() does not throw.
 - `t.matchString(string, regexp, msg)` — assert string matches regexp.
 - `t.doesNotMatchString(string, regexp, msg)` — assert string does not match regexp.
 - `t.match(a, b, msg)` — assert a matches pattern b (structural; every key b names must be present).
 - `t.doesNotMatch(a, b, msg)` — assert a does not match pattern b.
-- `t.rejects(promise, msg)` — assert promise rejects. **Async: must await.** Alias: `doesNotResolve`.
-- `t.resolves(promise, msg)` — assert promise resolves. **Async: must await.** Alias: `doesNotReject`.
+- `t.rejects(promise, msg)` — assert promise rejects; resolves to the rejection reason (`undefined` when it resolved). **Async: must await.** Alias: `doesNotResolve`.
+- `t.resolves(promise, msg)` — assert promise resolves; resolves to the resolved value (`undefined` when it rejected). **Async: must await.** Alias: `doesNotReject`.
 
 #### Embedded tests (all async, should be awaited)
 

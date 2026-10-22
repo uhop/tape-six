@@ -45,7 +45,7 @@ Write or update tape-six tests for a module or feature in this repository.
    await t.rejects(fetchData(), /404/);
    await t.resolves(readConfig(), {strict: true}); // deep6 object pattern on the resolved value
    ```
-   A string second arg is still treated as the message for backward compatibility. Code can throw any value and reject with any value, not only an `Error`; the matcher sees it as is. An object pattern requires every key it names and doesn't match a class instance, such as an `Error`: check instances by class, RegExp, or predicate.
+   A string second arg is still treated as the message for backward compatibility. Code can throw any value and reject with any value, not only an `Error`; the matcher sees it as is. An object pattern requires every key it names and doesn't match a class instance, such as an `Error`: check instances by class, RegExp, or predicate. `t.throws` returns the thrown value, and `t.rejects` and `t.resolves` resolve to the reason or the value, so further checks can follow, each reported on its own: `const e = await t.rejects(p); t.equal(e?.code, 'ENOENT');` (the value is `undefined` when the assertion failed).
 6. **Wildcards in deep equality** — use `t.any` (alias `t._`) inside expected values to skip non-deterministic fields:
    ```js
    t.deepEqual(result, {id: t.any, name: 'Alice', createdAt: t.any});

@@ -297,7 +297,7 @@ The following methods are available (all `msg` arguments are optional):
   - `deepLooseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are deeply loosely equal.
     - Individual components of `a` and `b` are compared recursively using the loose equality.
   - `notDeepLooseEqual(a, b, msg)` &mdash; asserts that `a` and `b` are not deeply loosely equal.
-  - `throws(fn, msg)` &mdash; asserts that `fn` throws.
+  - `throws(fn, msg)` &mdash; asserts that `fn` throws. Returns the thrown value for further checks.
     - `fn` is called with no arguments in the global context.
   - `doesNotThrow(fn, msg)` &mdash; asserts that `fn` does not throw.
   - `matchString(string, regexp, msg)` &mdash; asserts that `string` matches `regexp`.
@@ -305,10 +305,10 @@ The following methods are available (all `msg` arguments are optional):
   - `match(a, b, msg)` &mdash; asserts that `a` matches `b`.
     - See [deep6's match()](<https://github.com/uhop/deep6/wiki/match()>) for details.
   - `doesNotMatch(a, b, msg)` &mdash; asserts that `a` does not match `b`.
-  - `rejects(promise, msg)` &mdash; asserts that `promise` rejects.
+  - `rejects(promise, msg)` &mdash; asserts that `promise` rejects. Resolves to the rejection reason for further checks.
     - This is an asynchronous method. It is likely to be waited for.
     - `doesNotResolve()` &mdash; an alias of `rejects()`.
-  - `resolves(promise, msg)` &mdash; asserts that `promise` resolves.
+  - `resolves(promise, msg)` &mdash; asserts that `promise` resolves. Resolves to the resolved value for further checks.
     - This is an asynchronous method. It is likely to be waited for.
     - `doesNotReject()` &mdash; an alias of `resolves()`.
 - Embedded test suites (all of them are asynchronous and should be waited for):

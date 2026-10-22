@@ -167,14 +167,14 @@ The `Tester` object is passed to test functions. All `msg` arguments are optiona
 - `notDeepEqual(a, b, msg)` — not deeply equal. Aliases: `notSame()`, `notDeepEquals()`, `notEquivalent()`, `notDeeply()`, `isNotDeepEqual()`, `isNotEquivalent()`.
 - `deepLooseEqual(a, b, msg)` — deep loose equality.
 - `notDeepLooseEqual(a, b, msg)` — not deeply loosely equal.
-- `throws(fn, msg)` — assert fn throws.
+- `throws(fn, msg)` — assert fn throws. Returns the thrown value for further checks (`undefined` when nothing was thrown).
 - `doesNotThrow(fn, msg)` — assert fn does not throw.
 - `matchString(string, regexp, msg)` — assert string matches regexp.
 - `doesNotMatchString(string, regexp, msg)` — assert string does not match regexp.
 - `match(a, b, msg)` — deep structural match via deep6's `match()` (supports wildcards; every key the pattern names must be present; a plain-object pattern doesn't match a class instance, so check classes with deep6's `matchInstanceOf`).
 - `doesNotMatch(a, b, msg)` — assert no deep match.
-- `rejects(promise, msg)` — assert promise rejects (async, await it). Alias: `doesNotResolve()`.
-- `resolves(promise, msg)` — assert promise resolves (async, await it). Alias: `doesNotReject()`.
+- `rejects(promise, msg)` — assert promise rejects (async, await it); resolves to the rejection reason for further checks (`undefined` when it resolved). Alias: `doesNotResolve()`.
+- `resolves(promise, msg)` — assert promise resolves (async, await it); resolves to the resolved value for further checks (`undefined` when it rejected). Alias: `doesNotReject()`.
 
 ### Embedded test methods
 

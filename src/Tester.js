@@ -320,6 +320,7 @@ export class Tester {
         actual: threw ? error : null
       }
     });
+    return threw ? error : undefined;
   }
 
   doesNotThrow(fn, msg) {
@@ -431,6 +432,7 @@ export class Tester {
             actual: resolved ? null : error
           }
         });
+        return resolved ? undefined : error;
       });
   }
 
@@ -460,6 +462,7 @@ export class Tester {
             actual: resolved ? (matcher === undefined ? null : value) : error
           }
         });
+        return resolved ? value : undefined;
       });
   }
 }
