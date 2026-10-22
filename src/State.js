@@ -140,10 +140,10 @@ const serialize = object => {
   try {
     const result = JSON.stringify(object, replacer());
     if (typeof result == 'string') return result;
-  } catch (error) {}
+  } catch {}
   try {
     return JSON.stringify({type: 'String', value: String(object)});
-  } catch (error) {}
+  } catch {}
   return JSON.stringify({
     type: 'Problem',
     value: 'cannot convert value to JSON or string',
@@ -199,22 +199,40 @@ export class State {
     this.parent.failed += this.failed;
   }
 
+  #beforeAllRun = null;
+  #afterAllRun = null;
+
+  // overlapping callers share one run of the hooks
   async runBeforeAll() {
-    for (const fn of this.beforeAll) {
-      await fn();
+    const run = (this.#beforeAllRun ??= (async () => {
+      for (const fn of this.beforeAll) {
+        await fn();
+      }
+      // beforeAll hooks run only once
+      this.beforeAll = [];
+      this.isBeforeAllUsed = true;
+    })());
+    try {
+      await run;
+    } finally {
+      if (this.#beforeAllRun === run) this.#beforeAllRun = null;
     }
-    // beforeAll hooks run only once
-    this.beforeAll = [];
-    this.isBeforeAllUsed = true;
   }
 
   async runAfterAll() {
     if (!this.isBeforeAllUsed) return;
-    for (let i = this.afterAll.length - 1; i >= 0; --i) {
-      await this.afterAll[i]();
+    const run = (this.#afterAllRun ??= (async () => {
+      for (let i = this.afterAll.length - 1; i >= 0; --i) {
+        await this.afterAll[i]();
+      }
+      this.afterAll = [];
+      this.isBeforeAllUsed = false;
+    })());
+    try {
+      await run;
+    } finally {
+      if (this.#afterAllRun === run) this.#afterAllRun = null;
     }
-    this.afterAll = [];
-    this.isBeforeAllUsed = false;
   }
 
   async runBeforeEach() {

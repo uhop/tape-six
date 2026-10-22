@@ -224,17 +224,22 @@ const getTestFileName = ({isBrowser, isBun, isDeno, isNode}) => {
   return testFileName;
 };
 
-let settings = null;
+// shared by overlapping runs; a failed init is dropped so the next run retries it
+let settingsRun = null;
 
 const testRunner = async () => {
   // ref'd keep-alive — a bare run holds no other ref'd handle, so a test awaiting
   // only an unref'd timer (AbortSignal.timeout on Node/Bun) would exit 0 mid-suite
   const keepAlive = setInterval(() => {}, 2 ** 31 - 1);
   try {
-    if (!settings) {
+    settingsRun ??= (async () => {
       await selectTimer();
-      settings = await init();
-    }
+      return init();
+    })().catch(error => {
+      settingsRun = null;
+      throw error;
+    });
+    const settings = await settingsRun;
 
     const {isBrowser, isCli} = settings,
       reporter = getReporter(),

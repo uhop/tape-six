@@ -121,14 +121,14 @@ export const createTestServer = async (options = {}) => {
     throw error;
   }
 
-  let closed = false;
-  const close = async () => {
-    if (closed) return;
-    closed = true;
-    await registry.closeAll();
-    if (sessions) for (const session of sessions) session.destroy();
-    await lifecycle.close();
-  };
+  // every caller waits for the same close
+  let closing = null;
+  const close = () =>
+    (closing ??= (async () => {
+      await registry.closeAll();
+      if (sessions) for (const session of sessions) session.destroy();
+      await lifecycle.close();
+    })());
 
   return {
     server,

@@ -20,7 +20,8 @@ export const isProtocolMismatch = error =>
   !!error && (error.code === 'EPROTO' || /wrong version number/i.test(error.message || ''));
 
 export const createControlFetch = (rootFolder = process.cwd()) => {
-  let tlsOptions = null;
+  let tlsOptions = null,
+    probing = null;
   const get = (url, options) =>
     new Promise((resolve, reject) => {
       const request = https.get(url, options, response => {
@@ -54,9 +55,7 @@ export const createControlFetch = (rootFolder = process.cwd()) => {
         reject(error);
       });
     });
-  return async url => {
-    if (!/^https:/i.test(url)) return fetch(url, {signal: AbortSignal.timeout(TIMEOUT)});
-    if (tlsOptions) return get(url, tlsOptions);
+  const probe = async url => {
     const certPath = process.env.TAPE6_CERT;
     if (certPath) {
       // explicit pin: failures stay loud, no fallback
@@ -84,5 +83,17 @@ export const createControlFetch = (rootFolder = process.cwd()) => {
     const response = await get(url, options);
     tlsOptions = options;
     return response;
+  };
+  return async url => {
+    if (!/^https:/i.test(url)) return fetch(url, {signal: AbortSignal.timeout(TIMEOUT)});
+    // overlapping first requests share one probe
+    if (!tlsOptions && probing) await probing.catch(() => null);
+    if (tlsOptions) return get(url, tlsOptions);
+    const run = (probing = probe(url));
+    try {
+      return await run;
+    } finally {
+      if (probing === run) probing = null;
+    }
   };
 };

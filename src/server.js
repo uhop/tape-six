@@ -19,14 +19,14 @@ export const startServer = async (server, {host = DEFAULT_HOST, port = 0} = {}) 
   const actualPort = typeof addr === 'object' && addr ? addr.port : port;
   const base = `http://${host}:${actualPort}`;
 
-  let closed = false;
-  const close = async () => {
-    if (closed) return;
-    closed = true;
-    server.closeAllConnections?.();
-    server.close();
-    await once(server, 'close');
-  };
+  // every caller waits for the same close
+  let closing = null;
+  const close = () =>
+    (closing ??= (async () => {
+      server.closeAllConnections?.();
+      server.close();
+      await once(server, 'close');
+    })());
 
   return {server, base, port: actualPort, host, close};
 };

@@ -29,6 +29,17 @@ test('startServer: close() is idempotent', async t => {
   t.pass('second close did not throw');
 });
 
+test('startServer: a second close() waits for the server to close', async t => {
+  const lc = await startServer(http.createServer(echo));
+  const order = [];
+  lc.server.once('close', () => order.push('closed'));
+  await Promise.all([
+    lc.close().then(() => order.push('first')),
+    lc.close().then(() => order.push('second'))
+  ]);
+  t.deepEqual(order, ['closed', 'first', 'second']);
+});
+
 test('startServer: rejects on port conflict instead of hanging', async t => {
   const first = await startServer(http.createServer(echo));
   try {

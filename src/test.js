@@ -72,7 +72,7 @@ const processArgs = (name, options, testFn) => {
   return options;
 };
 
-let isTimerSet = false;
+let timerSelected = null;
 export const test = async (name, options, testFn) => {
   const currentTester = getTester();
   if (currentTester) {
@@ -80,10 +80,7 @@ export const test = async (name, options, testFn) => {
   }
 
   options = processArgs(name, options, testFn);
-  if (!isTimerSet) {
-    await selectTimer();
-    isTimerSet = true;
-  }
+  await (timerSelected ??= selectTimer());
   const deferred = makeDeferred();
   if (tests.push({options, deferred}) === 1 && notifyCallback.size) {
     for (const callback of notifyCallback) defer(callback);

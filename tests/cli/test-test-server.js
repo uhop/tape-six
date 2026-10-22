@@ -48,6 +48,17 @@ test('test server: statics + control endpoints', async t => {
   }
 });
 
+test('test server: a second close() waits for the server to close', async t => {
+  const ts = await createTestServer({rootFolder});
+  const order = [];
+  ts.server.once('close', () => order.push('closed'));
+  await Promise.all([
+    ts.close().then(() => order.push('first')),
+    ts.close().then(() => order.push('second'))
+  ]);
+  t.deepEqual(order, ['closed', 'first', 'second']);
+});
+
 test('test server: echo plugin (inline registration)', async t => {
   const ts = await createTestServer({rootFolder, plugins: [echo]});
   try {

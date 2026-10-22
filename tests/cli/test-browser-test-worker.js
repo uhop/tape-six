@@ -109,6 +109,20 @@ test('a task runs to completion through the fake driver', async t => {
   t.ok(driver.browserClosed, 'cleanup closes the browser');
 });
 
+test('cleanup closes the browser once when two calls overlap', async t => {
+  const driver = makeFakeDriver(),
+    worker = new FakeWorker(makeReporter(), 1, {...OPTIONS}, driver);
+  let closes = 0;
+  worker.browser = {
+    close: async () => {
+      ++closes;
+      await tick();
+    }
+  };
+  await Promise.all([worker.cleanup(), worker.cleanup()]);
+  t.equal(closes, 1);
+});
+
 test('an unsupported file type fails without a browser', async t => {
   const driver = makeFakeDriver(),
     reporter = makeReporter(),

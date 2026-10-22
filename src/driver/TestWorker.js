@@ -285,10 +285,10 @@ export class TestWorker extends EventServer {
     // Drop task tracking first so the page 'close' events fired by browser.close()
     // below are no-ops (the run has already finished by the time cleanup runs).
     this.tasks = {};
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-    }
+    // cleared before the await: an overlapping cleanup() must not close it twice
+    const browser = this.browser;
+    this.browser = null;
+    if (browser) await browser.close();
   }
 }
 
