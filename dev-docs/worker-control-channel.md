@@ -226,6 +226,16 @@ fn)` (`test.js:157`): on expiry it reports `TIMED OUT`, calls
   commit). The sequential runner shares its process with the test, so it can
   only ask a file to stop: a test that ignores `t.signal` runs on.
 
+  **A killed worker may have reported nothing, or may report too late.** A
+  worker killed before its file's `test` event leaves the failure with no file
+  to sit in, so the server opens that file's scope itself, under
+  `FILE: /<path>`, and closes it when no closing event follows. And a killed
+  worker can still deliver a message it queued before the kill: a late `test`
+  opened a scope nothing closed, the next file nested inside it, and the run
+  lost its final summary. The server drops scope events (`test`, `end`,
+  `terminated`) from a closed task and forwards anything else, since a late
+  failure must still count.
+
 So Layer 1 stays the ergonomic per-test annotation; Layer 2 is the backstop
 that makes any deadline real even when the test won't cooperate. The per-test
 `timeout` and the worker deadline are not redundant — one reports inside the

@@ -434,6 +434,7 @@ Test output can be controlled by flags. See [Supported flags](https://github.com
 
 The most recent releases:
 
+- 1.18.1 _Bug fixes: `TAPE6_WORKER_TIMEOUT` fails the file that reaches it and no longer stops the files after it, fail-once stops a `tape6-seq` run under the TAP reporter, `tape6-proc` no longer waits out the grace period after a crash._
 - 1.18.0 _`tape6-proc` ships with tape-six: remove the `tape-six-proc` dependency. Bug fixes: a subprocess run no longer passes when a child crashes, times out, or exits mid-test._
 - 1.17.0 _`t.throws()`, `t.rejects()`, and `t.resolves()` return what they caught. Object patterns use deep6's `match()`. Bug fixes: overlapping `close()` calls and hook runs share one run._
 - 1.16.4 _Bug fixes: failures now show their stack and cause chain on Firefox and Safari/WebKit, not just on V8; `t.bailOut()` fails the run instead of reporting success. The browser dashboard shows progress while a run is in flight._

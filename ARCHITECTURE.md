@@ -222,7 +222,11 @@ completes), and reports a `terminated` event so `Reporter.onTerminated` unwinds
 the scopes the worker left open. A `timeout` is the file's own failure however
 its worker stops: `EventServer` reports `Terminated after <n>ms` once, before the
 event that closes the file, and clears the `stopTest` marks the terminate leaves
-on that worker's events, so a deadline stops the run only under failOnce. `close`
+on that worker's events, so a deadline stops the run only under failOnce; for a
+worker killed before it reported its file, the server opens the file's scope so the
+failure names the file. A closed task's late scope events (`test`, `end`,
+`terminated`) are dropped, since a killed worker can still deliver what it queued,
+while any other late event still counts. `close`
 is idempotent (`closedTasks`), and completion flushes any events still buffered
 in a retained lane rather than dropping them.
 On the hub side, `State.preprocess` stamps events `processed: true` on first
