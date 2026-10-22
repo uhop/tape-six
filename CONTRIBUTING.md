@@ -22,6 +22,25 @@ still reviewed against it.
 To report a security vulnerability, don't use a public discussion or issue: follow
 [SECURITY.md](./SECURITY.md).
 
+### What a change has to fit
+
+Read the README and the [wiki](https://github.com/uhop/tape-six/wiki) first: they say what
+tape-six is for and how it is meant to be used.
+
+- **The project's purpose.** tape-six is a zero-dependency test runner with one core for Node,
+  Deno, Bun, and browsers. A change that takes it outside that purpose, or that serves one
+  application's special needs, belongs in a fork you maintain yourself. The license allows it, and
+  for a special need it is the better path.
+- **The cost of keeping it.** A merged change is maintained here from then on, by the maintainer:
+  its author rarely comes back to fix what turns up later. Each feature also grows the API and the
+  documentation every user has to learn. A change has to be worth that cost, and a feature can be
+  declined for that reason alone.
+- **Speed.** tape-six exists partly because other test runners are slow. A change to the runners,
+  the reporters, or the assertions comes with timings before and after, and doesn't slow the
+  common case.
+- **One concern per pull request.** A pull request that mixes several changes goes back to its
+  author to be split.
+
 ## Getting started
 
 This project uses git submodules. Clone and build:
