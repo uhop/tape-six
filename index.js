@@ -31,6 +31,7 @@ import {
 import {isStopTest} from './src/State.js';
 import {selectTimer} from './src/utils/timer.js';
 import defer from './src/utils/defer.js';
+import {setInterval, clearInterval, queueMicrotask} from './src/utils/real-timers.js';
 import TapReporter from './src/reporters/TapReporter.js';
 
 // Must be at module load, not init(): tape-six-invariant snapshots hasHost at

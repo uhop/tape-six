@@ -1,6 +1,7 @@
 // @ts-self-types="./EventServer.d.ts"
 
 import defer from './defer.js';
+import {setTimeout, clearTimeout} from './real-timers.js';
 
 // Fallback used when no graceTimeout is supplied through options (e.g. the
 // in-browser web-app worker). CLI runners inject the env-configurable value

@@ -1,4 +1,6 @@
-let deferImplementation = globalThis.setTimeout;
+import {setTimeout} from './real-timers.js';
+
+let deferImplementation = setTimeout;
 
 do {
   // queueMicrotask / process.nextTick were tried and rejected (the latter unreliable on Bun).

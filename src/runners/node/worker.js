@@ -1,6 +1,8 @@
 import process from 'node:process';
 import {parentPort} from 'node:worker_threads';
 
+import {setTimeout, clearTimeout} from '../../utils/real-timers.js';
+
 const DEFAULT_START_TIMEOUT = 5_000;
 
 const getTimeout = () => {

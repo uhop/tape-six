@@ -1,4 +1,5 @@
 import {runtime, getGraceTimeout} from './config.js';
+import {setTimeout} from './real-timers.js';
 
 // Control plane, child side (proc transport). A proc-spawned child is an
 // ordinary test file run by this runtime; tape6-proc marks it with

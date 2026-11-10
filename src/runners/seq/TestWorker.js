@@ -15,6 +15,7 @@ import {
   unregisterNotifyCallback
 } from '../../test.js';
 import BypassReporter from './BypassReporter.js';
+import {setTimeout, clearTimeout} from '../../utils/real-timers.js';
 
 const baseName = pathToFileURL(process.cwd() + sep);
 

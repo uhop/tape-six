@@ -1,3 +1,5 @@
+import {setTimeout, clearTimeout} from '../../utils/real-timers.js';
+
 const DEFAULT_START_TIMEOUT = 5_000;
 
 const getTimeout = () => {

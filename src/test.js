@@ -4,6 +4,7 @@ import {selectTimer} from './utils/timer.js';
 import {isAssertionError, isStopTest} from './State.js';
 import makeDeferred from './utils/makeDeferred.js';
 import defer from './utils/defer.js';
+import {setTimeout, clearTimeout} from './utils/real-timers.js';
 
 import Tester from './Tester.js';
 import './OK.js';

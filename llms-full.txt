@@ -510,7 +510,7 @@ Browser: `http://localhost:3000/?flags=FO`
 - `node:assert` — built-in to Node/Bun/Deno, throws `AssertionError`. Cleanest path.
 - `chai` — `expect`/`should`/`assert` styles, throws `AssertionError`. Works in browsers via importmap entry.
 - `expect` (Jest's standalone) — throws plain `Error`, not `AssertionError`. Works but failures render as `UNEXPECTED EXCEPTION` with ANSI-colored messages. Wrap negative cases in `t.throws()`.
-- `node:test` mock — built-in spies/stubs/timers via `import {mock} from 'node:test'`. Doesn't throw; assert on `spy.mock.calls` with `t.*`.
+- `node:test` mock — built-in spies/stubs/timers via `import {mock} from 'node:test'`, on Node, Bun, and Deno. Doesn't throw; assert on `spy.mock.calls` with `t.*`. tape-six's own timers hold the real ones, so a test that fakes `setTimeout` keeps its `timeout` on Node and Bun; on Deno, `mock.timers` stops them too. Restore with `test.afterEach(() => mock.timers.reset())`.
 - `sinon` — same pattern as `node:test` mock. Assert on `spy.callCount` / `spy.firstCall.args`.
 - `fast-check` — property-based testing. Throws plain `Error` on counterexample (with seed + path for repro). Wrap negative cases in `t.throws()`. The `tape-six-fast-check` plugin (Related packages) reports properties as assertions instead.
 
