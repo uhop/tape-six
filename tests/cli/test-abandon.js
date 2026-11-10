@@ -1,3 +1,7 @@
+import {mkdtempSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+
 import test from '../../index.js';
 
 import {PARALLEL, PROC, RUNNERS, runSuite} from './helpers/run-suite.js';
@@ -43,21 +47,30 @@ test('a body that fails in a callback ends cleanly under fail-once', {timeout: 1
   }
 });
 
+// the failing file waits for the sibling's test to start: a stop that lands before it
+// rightly runs neither its test nor its hooks, and CI landed it there
 test('a body stopped by a failing sibling ends cleanly', {timeout: 60000}, async t => {
   for (const mode of [
     {label: 'parallel', bin: PARALLEL},
     {label: 'proc runner', bin: PROC}
   ]) {
-    const {code, stdout, killed} = await runMode(
-      mode,
-      [dir + 'fails-now.js', dir + 'asserts-later.js'],
-      'O',
-      2
-    );
-    t.notOk(killed, `${mode.label}: ends`);
-    t.equal(code, 1, `${mode.label}: exits 1`);
-    t.ok(failedOnce(stdout), `${mode.label}: counts one failure`);
-    t.matchString(stdout, /MARK afterAll/, `${mode.label}: runs the sibling's afterAll`);
+    const tempDir = mkdtempSync(join(tmpdir(), 'tape6-abandon-'));
+    try {
+      const {code, stdout, killed} = await runSuite({
+        bin: mode.bin,
+        files: [dir + 'fails-now.js', dir + 'asserts-later.js'],
+        flags: 'O',
+        par: 2,
+        env: {TAPE6_GRACE_TIMEOUT: '1000', SIBLING_STARTED: join(tempDir, 'started')},
+        timeout: CAP
+      });
+      t.notOk(killed, `${mode.label}: ends`);
+      t.equal(code, 1, `${mode.label}: exits 1`);
+      t.ok(failedOnce(stdout), `${mode.label}: counts one failure`);
+      t.matchString(stdout, /MARK afterAll/, `${mode.label}: runs the sibling's afterAll`);
+    } finally {
+      rmSync(tempDir, {recursive: true, force: true});
+    }
   }
 });
 

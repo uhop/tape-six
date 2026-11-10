@@ -3,8 +3,8 @@ import {existsSync} from 'node:fs';
 import process from 'node:process';
 
 // Waits for fail-and-hold.js to fail, so its events queue behind that file's.
-const deadline = Date.now() + 10_000;
-while (!existsSync(process.env.CRASH_MARKER) && Date.now() < deadline) {
+const deadline = performance.now() + 10_000;
+while (!existsSync(process.env.CRASH_MARKER) && performance.now() < deadline) {
   await new Promise(resolve => setTimeout(resolve, 10));
 }
 

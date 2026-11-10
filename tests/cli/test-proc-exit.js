@@ -94,13 +94,13 @@ test('a worker that exits 0 with a test open fails the run', {timeout: 30_000}, 
 // still registered, and the stop armed a grace kill for a process already gone:
 // the run then waited out the whole grace window before it could exit.
 test('a crash under fail-once does not wait out the grace window', {timeout: 30_000}, async t => {
-  const start = Date.now(),
+  const start = performance.now(),
     {code} = await runProc(['tests/cli/fixtures/exit-code/load-error.js'], {
       TAPE6_FLAGS: 'FO',
       TAPE6_GRACE_TIMEOUT: '10000'
     });
   t.equal(code, 1, 'exit status');
-  t.ok(Date.now() - start < 5000, 'the run ends without waiting for the grace kill');
+  t.ok(performance.now() - start < 5000, 'the run ends without waiting for the grace kill');
 });
 
 test('a child its watchdog forces out exits non-zero', {timeout: 30_000}, async t => {

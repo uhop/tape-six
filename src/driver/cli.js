@@ -140,8 +140,8 @@ export const runDriverCli = async ({
     if (status === 'mismatch') {
       // chained runs: the previous run's h1 server child may still be releasing
       // the port — give it a grace window before self-launching
-      const graceDeadline = Date.now() + 4000;
-      while (status === 'mismatch' && Date.now() < graceDeadline) {
+      const graceDeadline = performance.now() + 4000;
+      while (status === 'mismatch' && performance.now() < graceDeadline) {
         await sleep(250);
         status = await probeServer(serverUrl);
       }
@@ -182,8 +182,8 @@ export const runDriverCli = async ({
     });
     child.unref();
 
-    const startDeadline = Date.now() + 15000;
-    while (Date.now() < startDeadline) {
+    const startDeadline = performance.now() + 15000;
+    while (performance.now() < startDeadline) {
       await sleep(500);
       if (exited) {
         console.error(

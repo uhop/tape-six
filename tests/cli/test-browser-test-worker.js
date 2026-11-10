@@ -4,9 +4,9 @@ import DriverTestWorker from '../../src/driver/TestWorker.js';
 const tick = (ms = 5) => new Promise(resolve => setTimeout(resolve, ms));
 
 const waitFor = async (predicate, deadline = 2000) => {
-  const stop = Date.now() + deadline;
+  const stop = performance.now() + deadline;
   while (!predicate()) {
-    if (Date.now() > stop) throw new Error('waitFor timed out');
+    if (performance.now() > stop) throw new Error('waitFor timed out');
     await tick();
   }
 };
