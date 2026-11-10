@@ -39,7 +39,7 @@ const webFrameRe = /^.*@(?:.*:\d+:\d+|\[native code\])$/;
 
 export const getStackList = error => {
   const stackList = [];
-  for (const line of error.stack.split('\n')) {
+  for (const line of error.stack.split(/\r?\n/)) {
     const result = /^\s+at\s+(.*)$/.exec(line);
     if (result) {
       stackList.push(result[1].trimEnd());

@@ -183,7 +183,7 @@ export class DomReporter extends Reporter {
               name.appendChild(document.createTextNode('stack:'));
               value.className = 'value';
               stack
-                .split('\n')
+                .split(/\r?\n/)
                 .forEach(line => value.appendChild(document.createTextNode(line + '\n')));
               row.appendChild(name);
               row.appendChild(value);

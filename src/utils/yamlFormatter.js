@@ -18,7 +18,7 @@ const hasNewline = /\n/,
 const getDataEncoding = value => {
   switch (typeof value) {
     case 'string':
-      if (hasNewline.test(value)) return {inline: true, string: value.split('\n')};
+      if (hasNewline.test(value)) return {inline: true, string: value.split(/\r?\n/)};
       if (forceQuotes.test(value)) return {inline: true, string: '"' + value + '"'};
       if (!isNaN(value)) return {inline: true, string: '"' + value + '"'};
       {
@@ -50,7 +50,7 @@ const getDataEncoding = value => {
 
 const getKeyEncoding = key => {
   if (forceQuotes.test(key)) return {string: '"' + key + '"'};
-  if (hasNewline.test(key)) return {string: key.split('\n')};
+  if (hasNewline.test(key)) return {string: key.split(/\r?\n/)};
   const encoded = JSON.stringify(key);
   if (key.length + 2 === encoded.length) {
     if (yamlUnsafe.test(key)) return {inline: true, string: encoded};

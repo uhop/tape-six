@@ -22,3 +22,12 @@ test('yamlFormatter quotes dates', t => {
 test('yamlFormatter quotes hostile keys', t => {
   t.deepEqual(yamlFormatter({'a #b': 1}), ['"a #b": 1'], 'comment intro in a key');
 });
+
+test('yamlFormatter splits CRLF text like LF text', t => {
+  t.deepEqual(
+    yamlFormatter({s: 'one\r\ntwo'}),
+    yamlFormatter({s: 'one\ntwo'}),
+    'a multi-line value'
+  );
+  t.deepEqual(yamlFormatter({'one\r\ntwo': 1}), yamlFormatter({'one\ntwo': 1}), 'a multi-line key');
+});

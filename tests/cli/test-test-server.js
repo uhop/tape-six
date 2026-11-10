@@ -119,7 +119,7 @@ test('test server: generator plugin streams JSONL', t =>
       const res = await fetch(base + '/--numbers?n=4');
       t.equal(res.status, 200);
       t.equal(res.headers.get('content-type'), 'application/x-ndjson');
-      const lines = (await res.text()).trimEnd().split('\n');
+      const lines = (await res.text()).trimEnd().split(/\r?\n/);
       t.deepEqual(
         lines.map(line => JSON.parse(line)),
         [{n: 0}, {n: 1}, {n: 2}, {n: 3}]
