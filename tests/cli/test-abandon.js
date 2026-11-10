@@ -164,3 +164,42 @@ test('an abandoned body cannot start an embedded test', {timeout: 60000}, async 
     t.matchString(stdout, /^# tests \d+$/m, `${mode.label}: reports a summary`);
   }
 });
+
+// tape6-seq reported through a suppressed path: a stopped body never threw and ran on
+test('fail-once stops a body at its failing assert everywhere', {timeout: 60000}, async t => {
+  for (const mode of MODES) {
+    const {code, stdout} = await runMode(mode, [dir + 'fails-then-runs-on.js'], 'O');
+    t.equal(code, 1, `${mode.label}: exits 1`);
+    t.notOk(/ran past the failure/.test(stdout), `${mode.label}: stops at the failure`);
+  }
+});
+
+test('a callback failure that never settles ends the run', {timeout: 120000}, async t => {
+  for (const mode of MODES) {
+    const {code, stdout, killed} = await runMode(
+      mode,
+      [dir + 'fails-in-callback-never-settles.js'],
+      'O'
+    );
+    t.notOk(killed, `${mode.label}: ends`);
+    t.equal(code, 1, `${mode.label}: exits 1`);
+    t.matchString(stdout, /MARK afterAll/, `${mode.label}: runs afterAll`);
+  }
+});
+
+// tape6-seq cannot kill a file: its deadline stops a body at the next assert, as the drain does
+test('a tape6-seq deadline stops a body that keeps asserting', {timeout: 60000}, async t => {
+  const {code, stdout, killed} = await runSuite({
+    bin: RUNNERS[1].bin,
+    files: [dir + 'asserts-past-deadline.js', dir + 'runs-after.js'],
+    flags: '',
+    par: 1,
+    env: {TAPE6_WORKER_TIMEOUT: '300'},
+    timeout: CAP
+  });
+  t.notOk(killed, 'ends');
+  t.equal(code, 1, 'exits 1');
+  t.matchString(stdout, /Terminated after 300ms/, 'reports the deadline');
+  t.notOk(/tick (?:[1-4]\d)\b/.test(stdout), 'stops at the next assert after it');
+  t.matchString(stdout, /^ok \d+ the next file ran/m, 'runs the next file');
+});

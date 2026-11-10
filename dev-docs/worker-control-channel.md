@@ -208,8 +208,10 @@ Time-based termination decomposes into two layers that share the same `terminate
   run's stop owes no deadline failure, and a file's `end` disarms its deadline, since a subprocess
   or a page closes after it. Before 2026-10-22 a drained worker reported nothing, and its stop marks
   cancelled the queue, so the run exited 1 under `# ok` (CI on the 1.18.0 release commit). The
-  sequential runner shares its process with the test, so it can only ask a file to stop: a test that
-  ignores `t.signal` runs on.
+  sequential runner shares its process with the test, so it can only ask a file to stop: the test
+  unwinds at its next assert, as under the other runners (since 2026-11-09; `BypassReporter` had
+  reported with the throw suppressed), and a test that neither asserts nor honors `t.signal` runs
+  on.
 
   **A killed worker may have reported nothing, or may report too late.** A worker killed before its
   file's `test` event leaves the failure with no file to sit in, so the server opens that file's

@@ -339,7 +339,7 @@ Each reporter also marks the end of the run. Judge by that marker, never by the 
 
 ### tape6-seq
 
-Sequential in-process runner. Same options as `tape6` but no threads. With no worker to kill, its `TAPE6_WORKER_TIMEOUT` stops a file only when the test honors `t.signal`; use `tape6` or `tape6-proc` to stop a hung test.
+Sequential in-process runner. Same options as `tape6` but no threads. With no worker to kill, its `TAPE6_WORKER_TIMEOUT` stops a file only when the test asserts again or honors `t.signal`; use `tape6` or `tape6-proc` to stop a hung test.
 
 ### tape6-proc
 

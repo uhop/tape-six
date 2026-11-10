@@ -30,6 +30,10 @@ export class BypassReporter {
 
   report(event, suppressStopTest = false) {
     this.reportTo(event, suppressStopTest);
+    // EventServer reports with the throw suppressed; the test still unwinds at its next assert
+    const state = this.reporter.state;
+    if (suppressStopTest || !state?.stopTest) return;
+    state.postprocess({...event, type: event.type || 'assert', stopTest: true});
   }
 }
 

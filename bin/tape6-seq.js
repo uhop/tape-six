@@ -22,6 +22,7 @@ import {
   hasAbandonedTests
 } from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
+import {isStopTest} from '../src/State.js';
 
 import TestWorker from '../src/runners/seq/TestWorker.js';
 
@@ -79,6 +80,8 @@ const main = async () => {
   const console = globalThis.console;
 
   process.on('uncaughtException', (error, origin) => {
+    // a test file's own handler, from index.js, abandons the test it escaped
+    if (isStopTest(error)) return;
     console.error('UNHANDLED ERROR:', origin, error);
     process.exit(1);
   });
