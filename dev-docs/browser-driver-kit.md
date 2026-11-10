@@ -90,8 +90,11 @@ diff class outright.
 the bins share: option/env parsing (`--server-url`/`-u`, `--browser`, `--flags`, `--parallel`,
 `--start-server`, help/version/self; `TAPE6_SERVER_URL`, `TAPE6_BROWSER`), config + protocol
 resolution (typed via `Tape6ServerConfig` since 1.14.1+), the `controlFetch` readiness probe,
-`ensureServer` with its deadlines and protocol-mismatch diagnostics, the per-engine run loop, and
-summary/exit-code handling. A sister bin collapses to a shebang, two imports, and one call.
+`ensureServer` with its deadlines and protocol-mismatch diagnostics, test-file selection
+(command-line patterns through `/--patterns`, else the configured tests through `/--tests`; patterns
+that match nothing fail the run with `noFilesMessage()`, as the runners do), the per-engine run
+loop, and summary/exit-code handling. A sister bin collapses to a shebang, two imports, and one
+call.
 
 ## What stays in the sisters
 

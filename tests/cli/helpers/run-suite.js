@@ -1,4 +1,5 @@
 import {execFile} from 'node:child_process';
+import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {promisify} from 'node:util';
 
@@ -20,12 +21,13 @@ export const RUNNERS = [
 // decides its own verdict, so nothing in-process can stand in for this: the
 // 1.16.3 bug reported success through the very path that was broken, and
 // tape-six's own suite runs `--flags FO`, so a green run was not proof.
-export const runSuite = async ({bin, files, flags, par, env: extraEnv}) => {
+export const runSuite = async ({bin, files, flags, par, env: extraEnv, cwd = root}) => {
   const isDeno = typeof Deno == 'object',
     cmd = isDeno ? Deno.execPath() : process.execPath,
     // Deno children don't inherit the parent's permissions
     childArgs = isDeno && bin === PROC ? ['-r', '-A'] : [],
-    args = isDeno ? ['run', '-A', bin, ...childArgs, ...files] : [bin, ...files],
+    binPath = join(root, bin),
+    args = isDeno ? ['run', '-A', binPath, ...childArgs, ...files] : [binPath, ...files],
     env = {...process.env};
   for (const key of Object.keys(env)) {
     if (key.startsWith('TAPE6_')) delete env[key];
@@ -37,7 +39,7 @@ export const runSuite = async ({bin, files, flags, par, env: extraEnv}) => {
     TAPE6_PAR: String(par),
     ...extraEnv
   });
-  const result = await run(cmd, args, {cwd: root, env}).catch(error => error);
+  const result = await run(cmd, args, {cwd, env}).catch(error => error);
   return {
     code: result.code === undefined ? 0 : result.code,
     stdout: result.stdout || '',

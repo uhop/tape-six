@@ -151,5 +151,16 @@ export const initReporter: (
 /** Explicit `files` win; otherwise resolve the configured test sets for `type`. */
 export const initFiles: (files: string[], rootFolder: string, type?: string) => Promise<string[]>;
 
+/**
+ * The text a run prints when no file matches: `headline`, the patterns `initFiles` used and
+ * their source, and a hint for a pattern that arrived with its quotes.
+ */
+export const noFilesMessage: (
+  files: string[],
+  rootFolder: string,
+  type?: string,
+  headline?: string
+) => Promise<string>;
+
 /** Print the runtime / reporter / parallelism / flags / files banner. */
 export const showInfo: (options: RunnerOptions, files?: string[] | null) => void;

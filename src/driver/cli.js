@@ -9,6 +9,7 @@ import {
   getOptions,
   getConfig,
   initReporter,
+  noFilesMessage,
   showInfo,
   printFlagOptions,
   runtime
@@ -282,19 +283,22 @@ export const runDriverCli = async ({
 
   let files = [];
   try {
-    if (options.files.length) {
-      const query = options.files.map(p => 'q=' + encodeURIComponent(p)).join('&');
-      const response = await controlFetch(serverUrl + '/--patterns?' + query);
-      if (response.ok) files = await response.json();
-    }
-    if (!files.length) {
-      const response = await controlFetch(serverUrl + '/--tests');
-      if (response.ok) files = await response.json();
-    }
+    const request = options.files.length
+        ? '/--patterns?' + options.files.map(p => 'q=' + encodeURIComponent(p)).join('&')
+        : '/--tests',
+      response = await controlFetch(serverUrl + request);
+    if (response.ok) files = await response.json();
   } catch {}
 
   if (!files.length) {
-    console.log('No test files found on the server.');
+    console.log(
+      await noFilesMessage(
+        options.files,
+        rootFolder,
+        'browser',
+        'No test files found on the server.'
+      )
+    );
     shutdown(1);
   }
 

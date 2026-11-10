@@ -328,7 +328,7 @@ tape6 [options...] [tests...]
 - No arguments: runs tests from configuration.
 - Options accept `--flags FO` or `--flags=FO`. The `=` form does not support quoting.
 
-The exit status is the verdict: `0` when every test passed, `1` when the run failed (a failed assertion outside a `todo` test, a bail-out, a file that throws while loading or declares no tests, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or no files found). A test file run directly exits the same way. Read the status apart from the output: `npm test; echo "exit=$?"`. A pipe such as `npm test | tail` reports the status of `tail`; to keep the status of `npm test`, set `pipefail` in the same command: `set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"`.
+The exit status is the verdict: `0` when every test passed, `1` when the run failed (a failed assertion outside a `todo` test, a bail-out, a file that throws while loading or declares no tests, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or no files found). A test file run directly exits the same way. When no file matches, the message lists the patterns and where they came from, and marks a pattern that arrived with its quotes. Read the status apart from the output: `npm test; echo "exit=$?"`. A pipe such as `npm test | tail` reports the status of `tail`; to keep the status of `npm test`, set `pipefail` in the same command: `set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"`.
 
 Each reporter also marks the end of the run. Judge by that marker, never by the counts: a bail-out stops the run without a failed assertion, so the TTY summary reads `failed: 0`.
 

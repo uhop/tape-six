@@ -159,7 +159,8 @@ tape6 → detects runtime → imports tape6-node / tape6-bun / tape6-deno
 Each runtime-specific runner:
 
 1. Reads configuration from `tape6.json` or `package.json`.
-2. Resolves test file patterns using glob matching.
+2. Resolves test file patterns using glob matching. When none matches, it prints `noFilesMessage()`
+   (the patterns, their source, and a hint for a quoted pattern) and exits 1.
 3. Spawns worker threads to run test files in parallel.
 4. Aggregates results and reports via the configured reporter.
 

@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {
   getOptions,
   initFiles,
+  noFilesMessage,
   initReporter,
   showInfo,
   printVersion,
@@ -88,7 +89,7 @@ const main = async () => {
   }
 
   if (!files.length) {
-    console.log('No files found.');
+    console.log(await noFilesMessage(currentOptions.files, rootFolder));
     await new Promise(r => process.stdout.write('', r));
     process.exitCode = 1;
     return;

@@ -1,3 +1,5 @@
+import {join} from 'node:path';
+
 import test from '../../index.js';
 
 import {PARALLEL, PROC, RUNNERS, SEQUENTIAL, root, run, runSuite} from './helpers/run-suite.js';
@@ -10,6 +12,8 @@ const dir = 'tests/cli/fixtures/exit-code/',
   LOAD_ERROR = dir + 'load-error.js',
   NO_TESTS = dir + 'no-tests.js',
   TIMED_OUT = dir + 'timed-out.js',
+  NO_MATCH = 'tests/cli/fixtures/no-such-dir/test-*.js',
+  NO_FILES_DIR = join(root, 'tests/cli/fixtures/no-files'),
   UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js';
 
 // Every mode a failing suite can be run in. `parallel + failOnce` is where the
@@ -177,6 +181,48 @@ test('a test past its timeout fails everywhere', {timeout: 60000}, async t => {
   const direct = await runFile(TIMED_OUT);
   t.equal(direct.code, 1, 'a directly-run file exits 1 too');
   t.matchString(direct.stdout, /^not ok \d+ Timed out after 100ms/m, 'and reports the failure');
+});
+
+// a bare "No files found." named neither the patterns nor where they came from
+test('a run that matches no files names its patterns', {timeout: 60000}, async t => {
+  for (const runner of RUNNERS) {
+    const fromCli = await runSuite({bin: runner.bin, files: [NO_MATCH], flags: 'FO', par: 1});
+    t.equal(fromCli.code, 1, `${runner.label}, command line: exits 1`);
+    t.matchString(fromCli.stdout, /^No files found\.$/m, `${runner.label}, command line: says so`);
+    t.matchString(
+      fromCli.stdout,
+      /^Patterns from the command line:\r?\n {2}tests\/cli\/fixtures\/no-such-dir\/test-\*\.js$/m,
+      `${runner.label}, command line: names the pattern and its source`
+    );
+    t.notOk(/with its quotes/.test(fromCli.stdout), `${runner.label}: no hint without quotes`);
+
+    const quoted = await runSuite({bin: runner.bin, files: [`'${PASS_A}'`], flags: 'FO', par: 1});
+    t.equal(quoted.code, 1, `${runner.label}, quoted: exits 1`);
+    t.matchString(
+      quoted.stdout,
+      /^ {2}'tests\/cli\/fixtures\/exit-code\/passing-a\.js' \(arrived with its quotes\)$/m,
+      `${runner.label}, quoted: marks the pattern`
+    );
+    t.matchString(
+      quoted.stdout,
+      /escaped double quotes: \\"tests\/cli\/fixtures\/exit-code\/passing-a\.js\\"/,
+      `${runner.label}, quoted: shows the npm script form`
+    );
+
+    const fromConfig = await runSuite({
+      bin: runner.bin,
+      files: [],
+      flags: 'FO',
+      par: 1,
+      cwd: NO_FILES_DIR
+    });
+    t.equal(fromConfig.code, 1, `${runner.label}, configured: exits 1`);
+    t.matchString(
+      fromConfig.stdout,
+      /^Patterns from tape6\.json:\r?\n {2}\/nothing-here\/test-\*\.js$/m,
+      `${runner.label}, configured: names the pattern and its source`
+    );
+  }
 });
 
 // The sequential runner's tests report straight to the run's reporter, so its

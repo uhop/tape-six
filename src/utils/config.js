@@ -84,8 +84,9 @@ export const resolvePatterns = async (rootFolder, patterns) => {
   return files;
 };
 
-export const getConfig = async (rootFolder, traceFn) => {
-  let cfg = null;
+const readConfig = async (rootFolder, traceFn) => {
+  let cfg = null,
+    source = 'tape6.json';
 
   try {
     cfg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'tape6.json')));
@@ -94,6 +95,7 @@ export const getConfig = async (rootFolder, traceFn) => {
   }
 
   if (!cfg) {
+    source = 'the "tape6" section of package.json';
     try {
       const pkg = JSON.parse(await fsp.readFile(path.join(rootFolder, 'package.json')));
       cfg = pkg.tape6;
@@ -102,13 +104,18 @@ export const getConfig = async (rootFolder, traceFn) => {
     }
   }
 
-  if (!cfg) cfg = {tests: ['/tests/test-*.js', '/tests/test-*.mjs'], cli: ['/tests/test-*.cjs']};
+  if (!cfg) {
+    cfg = {tests: ['/tests/test-*.js', '/tests/test-*.mjs'], cli: ['/tests/test-*.cjs']};
+    source = 'the defaults';
+  }
 
-  return cfg;
+  return {cfg, source};
 };
 
-export const resolveTests = async (rootFolder, type, traceFn) => {
-  const cfg = await getConfig(rootFolder, traceFn);
+export const getConfig = async (rootFolder, traceFn) => (await readConfig(rootFolder, traceFn)).cfg;
+
+const getTestPatterns = async (rootFolder, type, traceFn) => {
+  const {cfg, source} = await readConfig(rootFolder, traceFn);
 
   let patterns = [];
   if (cfg[type]) {
@@ -133,7 +140,34 @@ export const resolveTests = async (rootFolder, type, traceFn) => {
     patterns.push(cfg.tests);
   }
 
-  return resolvePatterns(rootFolder, patterns);
+  return {patterns, source};
+};
+
+export const resolveTests = async (rootFolder, type, traceFn) =>
+  resolvePatterns(rootFolder, (await getTestPatterns(rootFolder, type, traceFn)).patterns);
+
+// a Windows shell can pass a single-quoted argument on with its quotes
+const quotedPattern = /^(['"]).*\1$/;
+
+export const noFilesMessage = async (files, rootFolder, type, headline = 'No files found.') => {
+  const {patterns, source} = files.length
+      ? {patterns: files, source: 'the command line'}
+      : await getTestPatterns(rootFolder, type || runtime.name),
+    lines = [headline, `Patterns from ${source}:`];
+  if (!patterns.length) lines.push('  none');
+  let unquoted = null;
+  for (const pattern of patterns) {
+    if (!quotedPattern.test(pattern)) {
+      lines.push('  ' + pattern);
+      continue;
+    }
+    lines.push('  ' + pattern + ' (arrived with its quotes)');
+    unquoted ??= pattern.slice(1, -1);
+  }
+  if (unquoted !== null) {
+    lines.push(`In npm scripts, quote patterns with escaped double quotes: \\"${unquoted}\\".`);
+  }
+  return lines.join('\n');
 };
 
 export const runtime = {name: 'unknown', getEnvVar: () => undefined};
