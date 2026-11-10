@@ -36,7 +36,7 @@ export declare interface TestOptions {
   todo?: boolean;
 
   /**
-   * The timeout for the test in milliseconds. If the test takes longer than this, it will be stopped.
+   * The timeout for the test in milliseconds. If the test takes longer than this, it fails, and its `signal` is aborted.
    * If not specified, no timeout is used for the test.
    */
   timeout?: number;

@@ -71,7 +71,7 @@ Arguments:
   - `name` — overridden by the `name` argument.
   - `skip` (boolean) — skip this test.
   - `todo` (boolean) — mark as TODO.
-  - `timeout` (number, ms) — timeout for async tests.
+  - `timeout` (number, ms) — timeout for async tests. Exceeding it fails the test and aborts `signal`.
   - `beforeAll`, `afterAll`, `beforeEach`, `afterEach` — hook functions.
   - `before` — alias for `beforeAll`.
   - `after` — alias for `afterAll`.

@@ -194,8 +194,8 @@ The arguments mentioned above are:
     of the test function or `'(anonymous)'`.
     - Can be overridden by the `name` argument.
   - `timeout` &mdash; the optional timeout in milliseconds. It is used for asynchronous tests.
-    - If the timeout is exceeded, `tape6` will use the tester's `signal` to indicate cancellation
-      and stop waiting for the test to finish.
+    - If the timeout is exceeded, the test fails, and `tape6` will use the tester's `signal` to
+      indicate cancellation and stop waiting for the test to finish.
     - The default: no timeout.
   - Hooks:
     - `beforeAll` &mdash; a function to be executed before all tests in the suite.

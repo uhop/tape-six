@@ -9,6 +9,7 @@ const dir = 'tests/cli/fixtures/exit-code/',
   BAIL_OUT = dir + 'bail-out.js',
   LOAD_ERROR = dir + 'load-error.js',
   NO_TESTS = dir + 'no-tests.js',
+  TIMED_OUT = dir + 'timed-out.js',
   UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js';
 
 // Every mode a failing suite can be run in. `parallel + failOnce` is where the
@@ -154,6 +155,28 @@ test('a file that declares no tests fails under every runner', {timeout: 60000},
     t.equal(code, 1, `${runner.label}: exits 1`);
     t.matchString(stdout, /No tests found/, `${runner.label}: says why`);
   }
+});
+
+// a test past its `timeout` passed with only a comment, which failure-only mode hid
+test('a test past its timeout fails everywhere', {timeout: 60000}, async t => {
+  for (const runner of RUNNERS) {
+    for (const flags of ['F', 'FO']) {
+      const label = `${runner.label}, ${flags}`,
+        {code, stdout} = await runSuite({
+          bin: runner.bin,
+          files: [TIMED_OUT],
+          flags,
+          par: 1,
+          env: {TAPE6_TAP: ''}
+        });
+      t.equal(code, 1, `${label}: exits 1`);
+      t.matchString(stdout, /Timed out after 100ms/, `${label}: shows the failure`);
+    }
+  }
+
+  const direct = await runFile(TIMED_OUT);
+  t.equal(direct.code, 1, 'a directly-run file exits 1 too');
+  t.matchString(direct.stdout, /^not ok \d+ Timed out after 100ms/m, 'and reports the failure');
 });
 
 // The sequential runner's tests report straight to the run's reporter, so its

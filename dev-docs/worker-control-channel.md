@@ -168,13 +168,14 @@ When a test file runs as a controlled child (the `proc` runner already marks chi
 
 Time-based termination decomposes into two layers that share the same `terminate` machinery:
 
-- **Layer 1 — per-test `timeout` (exists; in-process).** `test('…', {timeout}, fn)` (`test.js:157`):
-  on expiry it reports `TIMED OUT`, calls `reporter.abort()` (fires `t.signal`), then
-  `await result`. Because it's shared `test.js` running wherever the test executes, it's **uniform
-  across all workers** — verified firing identically under par / seq / bun / deno / proc:node /
-  proc:bun (browser runs the same code; comments arrive via the proxy reporter). **It is cooperative
-  by design:** the `await result` means it reports + signals but then waits for the test's own
-  promise to settle, so it cannot force-stop a test that ignores `t.signal` and never resolves.
+- **Layer 1 — per-test `timeout` (exists; in-process).** `test('…', {timeout}, fn)` (`runTests` in
+  `src/test.js`): on expiry it reports a failing `Timed out after <n>ms` assert, calls
+  `reporter.abort()` (fires `t.signal`), then `await result`. Because it's shared `test.js` running
+  wherever the test executes, it's **uniform across all workers** — verified firing identically
+  under par / seq / bun / deno / proc:node / proc:bun (browser runs the same code; its events arrive
+  via the proxy reporter). **It is cooperative by design:** the `await result` means it reports +
+  signals but then waits for the test's own promise to settle, so it cannot force-stop a test that
+  ignores `t.signal` and never resolves.
 - **Layer 2 — worker/file-level deadline (new; via this channel).** The runner/parent arms a
   wall-clock budget per task; on expiry it issues `terminate` — i.e. drain → grace → kill (edge #2).
   This is the enforcement Layer 1 lacks: it actually stops a hung worker. It is the _same_ code path
@@ -242,9 +243,11 @@ can route DOM tests to a real browser and the rest to Web Workers. Future design
 the control channel itself.
 
 Verified (per-test `timeout`, Layer 1): fires identically in real browsers under **both** puppeteer
-and playwright (headless Chromium / Chrome) — the `TIMED OUT` comment reaches the reporter through
-the iframe → proxy-reporter path like every other event. (Playwright on a too-new host OS needs
-`PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` for the browser install.)
+and playwright (headless Chromium / Chrome) — the timeout's report reaches the reporter through the
+iframe → proxy-reporter path like every other event. (Verified with the `TIMED OUT` comment it was
+then; the failing assert that replaced it on 2026-11-09 is another event on the same path.)
+(Playwright on a too-new host OS needs `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` for the
+browser install.)
 
 ## Scope / ownership
 

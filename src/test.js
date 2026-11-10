@@ -3,7 +3,6 @@
 import {selectTimer} from './utils/timer.js';
 import {isAssertionError, isStopTest} from './State.js';
 import makeDeferred from './utils/makeDeferred.js';
-import {formatTime} from './utils/formatters.js';
 import defer from './utils/defer.js';
 
 import Tester from './Tester.js';
@@ -160,14 +159,21 @@ export const runTests = async tests => {
             ]);
             clearTimeout(timer);
             if (timedOut) {
-              tester.reporter.report({
-                type: 'comment',
-                name: 'TIMED OUT after ' + formatTime(options.timeout) + ', test: ' + options.name,
-                test: testNumber,
-                time: tester.timer.now()
-              });
-              tester.reporter.abort();
-              await result;
+              try {
+                tester.reporter.report({
+                  type: 'assert',
+                  name: 'Timed out after ' + options.timeout + 'ms',
+                  test: testNumber,
+                  marker: new Error(),
+                  time: tester.timer.now(),
+                  operator: 'error',
+                  fail: true
+                });
+              } finally {
+                // a failOnce StopTest from the report still waits for the body
+                tester.reporter.abort();
+                await result;
+              }
             }
           }
         } else {
