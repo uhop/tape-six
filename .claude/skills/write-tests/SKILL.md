@@ -15,6 +15,18 @@ Write or update tape-six tests for a module or feature in this repository.
 - Default `tape6` runner uses worker threads. `tape6-seq` runs sequentially in-process — easier to debug.
 - `tape-six` catches `AssertionError` automatically, so Chai or `node:assert` work inside tests if useful.
 
+## What makes a test worth keeping
+
+A test is worth keeping when it fails on wrong code. Check each test against these rules:
+
+- Take the expected behavior from the documentation and the stated contract of the code. A test written from the implementation certifies its bugs too. When a test contradicts the docs, fix the test.
+- A test for a fix fails on the code before the fix. Run it there and see it fail first.
+- Write the expected value out, or derive it another way. A value computed by the code under test agrees with every bug in that code.
+- Check a value or a relation. Printing output, or checking that a call ran, passes on wrong code too.
+- If the test would still pass with every function under test returning `undefined`, rewrite it.
+- Test the usage the API supports. A test of an unsupported call pins behavior the docs leave open.
+- Reproduce a hard bug in a scratch harness outside the suite, then commit the smallest test that fails without the fix.
+
 ## Steps
 
 1. Read `TESTING.md` for the full API reference and patterns.

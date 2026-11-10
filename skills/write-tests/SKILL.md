@@ -14,6 +14,18 @@ Write or update tests using the tape-six testing library.
 - The default `tape6` runner uses worker threads for parallel execution. `tape6-seq` runs sequentially in-process — useful for debugging or when tests share state. `tape6-proc` runs each file in its own subprocess.
 - `tape-six` catches `AssertionError` automatically, so you can use Chai or `node:assert` inside tape-six tests if a project already uses them.
 
+## What makes a test worth keeping
+
+A test is worth keeping when it fails on wrong code. Check each test against these rules:
+
+- Take the expected behavior from the documentation and the stated contract of the code. A test written from the implementation certifies its bugs too. When a test contradicts the docs, fix the test.
+- A test for a fix fails on the code before the fix. Run it there and see it fail first.
+- Write the expected value out, or derive it another way. A value computed by the code under test agrees with every bug in that code.
+- Check a value or a relation. Printing output, or checking that a call ran, passes on wrong code too.
+- If the test would still pass with every function under test returning `undefined`, rewrite it.
+- Test the usage the API supports. A test of an unsupported call pins behavior the docs leave open.
+- Reproduce a hard bug in a scratch harness outside the suite, then commit the smallest test that fails without the fix.
+
 ## Steps
 
 1. Read the testing guide at `node_modules/tape-six/TESTING.md` for the full API reference and patterns.
