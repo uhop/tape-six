@@ -121,7 +121,6 @@ export class TestWorker extends EventServer {
           if (worker.signalCode) {
             reason.push(`signal: ${worker.signalCode}`);
           }
-          // a file with no tests also exits 0 without `end`, but it never sends a `test` event
           if (!reason.length && task.started) {
             reason.push('exited mid-test');
           }
@@ -130,6 +129,18 @@ export class TestWorker extends EventServer {
               // State.preprocess defaults a missing type to 'assert'; explicit for the typed TestEvent
               type: 'assert',
               name: 'process has failed, ' + reason.join(', '),
+              test: 0,
+              marker: new Error(),
+              operator: 'error',
+              fail: true
+            });
+          } else {
+            // a clean exit with no `test` event: the file declared no tests, which
+            // the worker runners fail after their start timeout
+            self.report(id, {type: 'test', test: 0, name: 'FILE: /' + fileName});
+            self.report(id, {
+              type: 'assert',
+              name: 'No tests found',
               test: 0,
               marker: new Error(),
               operator: 'error',

@@ -35,7 +35,7 @@ All test scripts pass `--flags FO` by default.
 The exit status is the verdict. Read it first, and read the output only to find what failed.
 
 - `0` — every test passed.
-- `1` — the run failed: a failed assertion outside a `todo` test, a bail-out (`t.bailOut()`), a test file that throws while loading, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or "No files found." when the patterns match nothing.
+- `1` — the run failed: a failed assertion outside a `todo` test, a bail-out (`t.bailOut()`), a test file that throws while loading or declares no tests, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or "No files found." when the patterns match nothing.
 
 A test file run directly (`node tests/test-foo.js`) exits the same way. A file that throws while loading then prints only Node's error.
 

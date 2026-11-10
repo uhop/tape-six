@@ -8,6 +8,7 @@ const dir = 'tests/cli/fixtures/exit-code/',
   FAILING = dir + 'failing.js',
   BAIL_OUT = dir + 'bail-out.js',
   LOAD_ERROR = dir + 'load-error.js',
+  NO_TESTS = dir + 'no-tests.js',
   UNRESPONSIVE = 'tests/cli/fixtures/force-kill/unresponsive.js';
 
 // Every mode a failing suite can be run in. `parallel + failOnce` is where the
@@ -137,6 +138,21 @@ test('a passing suite exits 0 in every mode', {timeout: 60000}, async t => {
     const {code, stdout} = await runSuite(testCase);
     t.equal(code, 0, `${testCase.label}: exits 0`);
     t.matchString(stdout, /^# tests \d+$/m, `${testCase.label}: reports a summary`);
+  }
+});
+
+// tape6-proc passed such a file with `tests: 0` while the worker runners failed it
+test('a file that declares no tests fails under every runner', {timeout: 60000}, async t => {
+  for (const runner of RUNNERS) {
+    const {code, stdout} = await runSuite({
+      bin: runner.bin,
+      files: [NO_TESTS],
+      flags: 'FO',
+      par: 1,
+      env: {TAPE6_WORKER_START_TIMEOUT: '300'}
+    });
+    t.equal(code, 1, `${runner.label}: exits 1`);
+    t.matchString(stdout, /No tests found/, `${runner.label}: says why`);
   }
 });
 

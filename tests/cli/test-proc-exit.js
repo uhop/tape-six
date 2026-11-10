@@ -103,12 +103,6 @@ test('a crash under fail-once does not wait out the grace window', {timeout: 30_
   t.ok(Date.now() - start < 5000, 'the run ends without waiting for the grace kill');
 });
 
-test('a file with no tests still passes', {timeout: 30_000}, async t => {
-  const {code, output} = await runProc([dir + 'no-tests.js']);
-  t.equal(code, 0, 'exit status');
-  t.matchString(output, /tests: 0, asserts: 0, passed: 0, failed: 0\b/, 'summary');
-});
-
 test('a child its watchdog forces out exits non-zero', {timeout: 30_000}, async t => {
   const {code} = await runChild(dir + 'hung.js');
   t.equal(code, 1, 'exit status');

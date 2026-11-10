@@ -328,7 +328,7 @@ tape6 [options...] [tests...]
 - No arguments: runs tests from configuration.
 - Options accept `--flags FO` or `--flags=FO`. The `=` form does not support quoting.
 
-The exit status is the verdict: `0` when every test passed, `1` when the run failed (a failed assertion outside a `todo` test, a bail-out, a file that throws while loading, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or no files found). A test file run directly exits the same way. Read the status apart from the output: `npm test; echo "exit=$?"`. A pipe such as `npm test | tail` reports the status of `tail`; to keep the status of `npm test`, set `pipefail` in the same command: `set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"`.
+The exit status is the verdict: `0` when every test passed, `1` when the run failed (a failed assertion outside a `todo` test, a bail-out, a file that throws while loading or declares no tests, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or no files found). A test file run directly exits the same way. Read the status apart from the output: `npm test; echo "exit=$?"`. A pipe such as `npm test | tail` reports the status of `tail`; to keep the status of `npm test`, set `pipefail` in the same command: `set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"`.
 
 Each reporter also marks the end of the run. Judge by that marker, never by the counts: a bail-out stops the run without a failed assertion, so the TTY summary reads `failed: 0`.
 
@@ -347,7 +347,7 @@ Subprocess runner: each test file runs in its own child process. Same options an
 
 - `--runFileArgs`, `-r` — an argument for the interpreter that runs each test file (repeatable). Deno children don't inherit the parent's permissions, so pass them: `` deno run -A `tape6-proc --self` --flags FO -r -A ``.
 
-Under Bun and Deno, run it through `--self`: `` bun run `tape6-proc --self` --flags FO ``. A child that exits before its report ends fails its file with the reason (`exit code: N`, `signal: X`, or `exited mid-test`), and one stopped at its `TAPE6_WORKER_TIMEOUT` fails with `Terminated after <n>ms`; a file with no tests passes. `TAPE6_WORKER_TIMEOUT` and `TAPE6_GRACE_TIMEOUT` apply per child. It replaces the separate `tape-six-proc` package: remove that dependency when you update `tape-six`; the command name is the same.
+Under Bun and Deno, run it through `--self`: `` bun run `tape6-proc --self` --flags FO ``. A child that exits before its report ends fails its file with the reason (`exit code: N`, `signal: X`, or `exited mid-test`), and one stopped at its `TAPE6_WORKER_TIMEOUT` fails with `Terminated after <n>ms`; a file with no tests fails with `No tests found`, as under the other runners. `TAPE6_WORKER_TIMEOUT` and `TAPE6_GRACE_TIMEOUT` apply per child. It replaces the separate `tape-six-proc` package: remove that dependency when you update `tape-six`; the command name is the same.
 
 ### tape6-server
 
