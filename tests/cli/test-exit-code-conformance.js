@@ -8,6 +8,7 @@ const dir = 'tests/cli/fixtures/exit-code/',
   PASS_A = dir + 'passing-a.js',
   PASS_B = dir + 'passing-b.js',
   FAILING = dir + 'failing.js',
+  FAILS_THEN_PASSES = dir + 'fails-then-passes.js',
   BAIL_OUT = dir + 'bail-out.js',
   LOAD_ERROR = dir + 'load-error.js',
   NO_TESTS = dir + 'no-tests.js',
@@ -249,5 +250,24 @@ test('fail-once stops the queued files under every reporter', {timeout: 60000}, 
     const {code, stdout} = await pending;
     t.equal(code, 1, `${label}: exits 1`);
     t.notOk(/passing[- ]b/i.test(stdout), `${label}: the queued file does not run`);
+  }
+});
+
+// a directly-run file builds its own reporter, and the TAP one was built without fail-once
+test('fail-once stops a directly-run file under every reporter', {timeout: 60000}, async t => {
+  for (const reporter of [
+    {label: 'TAP', env: {TAPE6_TAP: '1'}},
+    {label: 'TTY', env: {TAPE6_TAP: ''}},
+    {label: 'JSONL', env: {TAPE6_TAP: '', TAPE6_JSONL: '1'}},
+    {label: 'MIN', env: {TAPE6_TAP: '', TAPE6_MIN: '1'}}
+  ]) {
+    const {code, stdout} = await runSuite({
+      files: [FAILS_THEN_PASSES],
+      flags: 'O',
+      par: 1,
+      env: reporter.env
+    });
+    t.equal(code, 1, `${reporter.label}: exits 1`);
+    t.notOk(/after the failure/.test(stdout), `${reporter.label}: the next test does not run`);
   }
 });

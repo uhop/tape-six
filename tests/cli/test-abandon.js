@@ -7,14 +7,13 @@ const dir = 'tests/cli/fixtures/abandon/',
   CAP = 15000,
   MODES = [...RUNNERS, {label: 'direct', bin: null}];
 
-// a direct run honors fail-once only under TTY (queue item: the TAP fallback drops `failOnce`)
 const runMode = (mode, files, flags, par = 1) =>
   runSuite({
     bin: mode.bin,
     files,
     flags,
     par,
-    env: {TAPE6_TAP: mode.bin || !flags.includes('O') ? '1' : '', TAPE6_GRACE_TIMEOUT: '1000'},
+    env: {TAPE6_GRACE_TIMEOUT: '1000'},
     timeout: CAP
   });
 
@@ -27,7 +26,7 @@ const UNHANDLED_REJECTION =
 // a runtime colors its own crash report when the suite runs under FORCE_COLOR
 const plain = text => text.replace(/\x1b\[[0-9;]*m/g, '');
 
-const failedOnce = stdout => /^# fail {2}1$/m.test(stdout) || /failed: 1,/.test(stdout);
+const failedOnce = stdout => /^# fail {2}1$/m.test(stdout);
 
 // an assert in a callback after a fail-once stop threw StopTest past every handler: the
 // worker or child crashed, the crash counted as a second failure, and afterAll never ran

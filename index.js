@@ -172,6 +172,7 @@ const init = async () => {
       useJson: true,
       // flat TAP stream: nested-test ids repeat, consumers need 1..N
       renumberAsserts: true,
+      failOnce: options.failOnce,
       originalConsole,
       hasColors
     });
