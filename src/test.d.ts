@@ -66,6 +66,15 @@ export const clearAfterEach: () => void;
 export const runTests: (tests: QueuedTest[]) => Promise<boolean>;
 
 /**
+ * Stop waiting for every test body in flight, innermost first, ending each with
+ * `Stop tests: <error>`. Called with the `StopTest` that reached the top level.
+ */
+export const abandonTests: (error: unknown) => void;
+
+/** Whether this process stopped waiting for a test body: at its timeout, or by `abandonTests`. */
+export const hasAbandonedTests: () => boolean;
+
+/**
  * Register a top-level test (delegates to the innermost tester when called
  * inside a running test). Carries `skip` / `todo` / `asPromise` and the hook
  * registrars as properties — see the `Test` interface.

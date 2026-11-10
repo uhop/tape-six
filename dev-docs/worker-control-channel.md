@@ -130,8 +130,19 @@ When a test file runs as a controlled child (the `proc` runner already marks chi
    gracefully — `StopTest` throws at the next assertion (`State.postprocess` already does this on
    failOnce / bailOut), any signal-aware `await` rejects, and the test's `finally` / `afterEach` /
    `afterAll` run (user cleanup). This reuses the existing **timeout** path, which already does
-   `reporter.abort()` + the `StopTest` throw (`test.js:157–171`). Same in-process action for `par`
-   and `proc`; only the delivery of "terminate" differs.
+   `reporter.abort()` + the `StopTest` throw (`runTests` in `src/test.js`). Same in-process action
+   for `par` and `proc`; only the delivery of "terminate" differs.
+
+   **A `StopTest` that escapes the body** (since 2026-11-09, defects plan arc 5). An assert in a
+   callback outside the body's promise chain throws `StopTest` where nothing catches it; that
+   crashed the worker or child, skipped `afterAll`, and in the assert-before-`resolve` order left
+   the body unable to settle. `index.js` now catches a `StopTest` that reaches the top level
+   (`uncaughtException` / `unhandledRejection` on Node and Bun, the `error` / `unhandledrejection`
+   events on Deno and in browsers) and calls `abandonTests()`: `runTests` stops waiting for every
+   body in flight, reports `Stop tests`, runs the hooks, and sends `end`. Any other error keeps its
+   default handling. A body stopped at its own assert still unwinds as above, its `finally` before
+   `afterAll`; abandoning at the stop itself was measured and rejected, since `afterAll` then ran
+   before the body's `finally`, and under `par` the `finally` never ran.
 
    **Caveat — drain is cooperative.** `StopTest` only lands at the _next assertion_, and `t.signal`
    only interrupts `await`s that were handed the signal; a test hung in a non-signal-aware `await`
@@ -170,12 +181,18 @@ Time-based termination decomposes into two layers that share the same `terminate
 
 - **Layer 1 — per-test `timeout` (exists; in-process).** `test('…', {timeout}, fn)` (`runTests` in
   `src/test.js`): on expiry it reports a failing `Timed out after <n>ms` assert, calls
-  `reporter.abort()` (fires `t.signal`), then `await result`. Because it's shared `test.js` running
-  wherever the test executes, it's **uniform across all workers** — verified firing identically
-  under par / seq / bun / deno / proc:node / proc:bun (browser runs the same code; its events arrive
-  via the proxy reporter). **It is cooperative by design:** the `await result` means it reports +
-  signals but then waits for the test's own promise to settle, so it cannot force-stop a test that
-  ignores `t.signal` and never resolves.
+  `reporter.abort()` (fires `t.signal`), and stops waiting for the body, along with any embedded
+  test still in flight in it (those end first, since the reporter's states nest). Because it's
+  shared `test.js` running wherever the test executes, it's **uniform across all workers** —
+  verified firing identically under par / seq / bun / deno / proc:node / proc:bun (browser runs the
+  same code; its events arrive via the proxy reporter). **It cannot stop the code:** the abandoned
+  body keeps running, a later failure of it is reported as late, and every report it makes after its
+  test's `end` is prefixed `LATE (from "<test name>"): ` (`LateReporter`). A body holding a timer
+  keeps its process alive, so a direct run and `tape6-seq` exit after their report when they
+  abandoned one (`hasAbandonedTests()`), while `par` and `proc` end the worker from the parent. An
+  abandoned or ended tester refuses `t.test()` with a failure (`closedTesters`), since the scope it
+  opened would nest inside whichever test runs then and unbalance the report. Until 2026-11-09 the
+  timeout awaited the body, so a body that never settled hung the run.
 - **Layer 2 — worker/file-level deadline (new; via this channel).** The runner/parent arms a
   wall-clock budget per task; on expiry it issues `terminate` — i.e. drain → grace → kill (edge #2).
   This is the enforcement Layer 1 lacks: it actually stops a hung worker. It is the _same_ code path

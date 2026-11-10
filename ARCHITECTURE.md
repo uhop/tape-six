@@ -222,23 +222,26 @@ events) it owns a one-command control plane (runner → worker `terminate`), exp
 failOnce / bail — stop the rest), or `timeout` (the optional per-worker deadline, env
 `TAPE6_WORKER_TIMEOUT`, ran out). The worker drains cooperatively — `Reporter.terminate()` arms
 `stopTest` and fires the abort signal so the running test unwinds and its cleanup hooks run — and is
-force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms. A killed worker sends
-nothing more, so the parent stands in for it: it calls `close(id)` itself (nothing else will, and an
-unclosed task means the run never completes), and reports a `terminated` event so
-`Reporter.onTerminated` unwinds the scopes the worker left open. A `timeout` is the file's own
-failure however its worker stops: `EventServer` reports `Terminated after <n>ms` once, before the
-event that closes the file, and clears the `stopTest` marks the terminate leaves on that worker's
-events, so a deadline stops the run only under failOnce; for a worker killed before it reported its
-file, the server opens the file's scope so the failure names the file. A closed task's late scope
-events (`test`, `end`, `terminated`) are dropped, since a killed worker can still deliver what it
-queued, while any other late event still counts. `close` is idempotent (`closedTasks`), and
-completion flushes any events still buffered in a retained lane rather than dropping them. On the
-hub side, `State.preprocess` stamps events `processed: true` on first touch; an aggregating reporter
-counts pre-stamped worker events by their own flags, so a terminated sibling's early-delivered
-`stopTest` cannot skip-poison the hub chain and mask a still-buffered failure as skipped. The
-in-tree proc runner (`src/runners/proc/`) implements it over the child's stdin, and each
-`tape-six-*` provider implements the same contract for its own transport. See
-`dev-docs/worker-control-channel.md`.
+force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms. A `StopTest` thrown in a
+callback, outside the body's promise chain, reaches the top level, where `index.js` catches it and
+calls `abandonTests()`: `runTests` stops waiting for the bodies in flight and ends them, as it does
+for a body past its `timeout`. Reports an abandoned body makes after its `end` carry
+`LATE (from "<test name>"): `. A killed worker sends nothing more, so the parent stands in for it:
+it calls `close(id)` itself (nothing else will, and an unclosed task means the run never completes),
+and reports a `terminated` event so `Reporter.onTerminated` unwinds the scopes the worker left open.
+A `timeout` is the file's own failure however its worker stops: `EventServer` reports
+`Terminated after <n>ms` once, before the event that closes the file, and clears the `stopTest`
+marks the terminate leaves on that worker's events, so a deadline stops the run only under failOnce;
+for a worker killed before it reported its file, the server opens the file's scope so the failure
+names the file. A closed task's late scope events (`test`, `end`, `terminated`) are dropped, since a
+killed worker can still deliver what it queued, while any other late event still counts. `close` is
+idempotent (`closedTasks`), and completion flushes any events still buffered in a retained lane
+rather than dropping them. On the hub side, `State.preprocess` stamps events `processed: true` on
+first touch; an aggregating reporter counts pre-stamped worker events by their own flags, so a
+terminated sibling's early-delivered `stopTest` cannot skip-poison the hub chain and mask a
+still-buffered failure as skipped. The in-tree proc runner (`src/runners/proc/`) implements it over
+the child's stdin, and each `tape-six-*` provider implements the same contract for its own
+transport. See `dev-docs/worker-control-channel.md`.
 
 ### Deep equality
 

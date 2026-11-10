@@ -109,11 +109,13 @@ tape-six/
 - Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop
   in-flight workers (not just new scheduling), and an optional per-worker deadline
   (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a
-  force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). A force-kill must finalize the task on
-  the parent side — `close(id)` and a `terminated` event to unwind the scopes the worker left open —
-  or the run exits 0 with the failure still buffered. A deadline is its file's own failure:
-  `EventServer` reports it once, however the worker stops, and it stops the run only under
-  `failOnce`. See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and
+  force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). A test body is abandoned at its
+  `timeout` and when a `StopTest` escapes it to the top level (`abandonTests()`), never at the stop
+  itself, so a body stopped at its own assert runs its `finally` before `afterAll`. A force-kill
+  must finalize the task on the parent side — `close(id)` and a `terminated` event to unwind the
+  scopes the worker left open — or the run exits 0 with the failure still buffered. A deadline is
+  its file's own failure: `EventServer` reports it once, however the worker stops, and it stops the
+  run only under `failOnce`. See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and
   `dev-docs/worker-control-channel.md`.
 - Browser tests use `tape6-server` which serves files and a web UI. It is pluggable: fixture plugins
   mount under URL prefixes with a WHATWG `fetch(request) → Response | (async) iterable | undefined`

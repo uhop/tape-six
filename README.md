@@ -196,6 +196,8 @@ The arguments mentioned above are:
   - `timeout` &mdash; the optional timeout in milliseconds. It is used for asynchronous tests.
     - If the timeout is exceeded, the test fails, and `tape6` will use the tester's `signal` to
       indicate cancellation and stop waiting for the test to finish.
+    - An assert the test makes after it has ended is reported under the test running then, its
+      message prefixed with `LATE (from "<test name>"): `.
     - The default: no timeout.
   - Hooks:
     - `beforeAll` &mdash; a function to be executed before all tests in the suite.

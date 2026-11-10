@@ -24,8 +24,11 @@ import {
   getBeforeEach,
   clearBeforeEach,
   getAfterEach,
-  clearAfterEach
+  clearAfterEach,
+  abandonTests,
+  hasAbandonedTests
 } from './src/test.js';
+import {isStopTest} from './src/State.js';
 import {selectTimer} from './src/utils/timer.js';
 import defer from './src/utils/defer.js';
 import TapReporter from './src/reporters/TapReporter.js';
@@ -95,6 +98,7 @@ const init = async () => {
   }
 
   let reporter = getReporter();
+  const startsReporter = !reporter;
   if (!reporter) {
     let hasColors = !options.monochrome;
     if (isBrowser) {
@@ -175,6 +179,42 @@ const init = async () => {
     setCurrentReporter?.(reporter);
   }
 
+  // a StopTest thrown outside every test body, as from a callback, abandons the bodies
+  // in flight; any other error keeps its default handling
+  const handleStray = error => {
+    if (!isStopTest(error)) return false;
+    abandonTests(error);
+    return true;
+  };
+  if (isBrowser || isDeno) {
+    addEventListener('error', event => {
+      if (handleStray(event.error)) event.preventDefault();
+    });
+    addEventListener('unhandledrejection', event => {
+      if (handleStray(event.reason)) event.preventDefault();
+    });
+  } else if (isCli) {
+    // another listener owns what we pass on; with none, the runtime's default takes it back
+    const stopListening = () => {
+      process.off('uncaughtException', onException);
+      process.off('unhandledRejection', onRejection);
+    };
+    const onException = error => {
+      if (handleStray(error) || process.listenerCount('uncaughtException') > 1) return;
+      stopListening();
+      queueMicrotask(() => {
+        throw error;
+      });
+    };
+    const onRejection = reason => {
+      if (handleStray(reason) || process.listenerCount('unhandledRejection') > 1) return;
+      stopListening();
+      Promise.reject(reason);
+    };
+    process.on('uncaughtException', onException);
+    process.on('unhandledRejection', onRejection);
+  }
+
   if (isBrowser && typeof window.addEventListener == 'function') {
     // Control plane: the parent page posts `tape6-terminate` to drain a running
     // test; there is no in-page force-kill — see dev-docs/worker-control-channel.md.
@@ -183,24 +223,25 @@ const init = async () => {
     });
   }
 
-  if (isCli) {
-    // Control plane (proc transport): a child spawned by tape6-proc is
-    // marked with TAPE6_CONTROL. Open the stdin control channel so the parent
-    // can drain / terminate it, and so it stays alive after `end` until told to
-    // exit — see dev-docs/worker-control-channel.md.
-    const controlled =
-      (isDeno && Deno.env.get('TAPE6_CONTROL')) ||
-      (isBun && Bun.env.TAPE6_CONTROL) ||
-      (isNode && process.env.TAPE6_CONTROL);
-    if (controlled) {
-      const {listenControlChannel} = await import(
-        new URL('./src/utils/control-channel.js', import.meta.url)
-      );
-      listenControlChannel(getReporter);
-    }
+  // Control plane (proc transport): a child spawned by tape6-proc is
+  // marked with TAPE6_CONTROL. Open the stdin control channel so the parent
+  // can drain / terminate it, and so it stays alive after `end` until told to
+  // exit — see dev-docs/worker-control-channel.md.
+  const controlled =
+    (isDeno && Deno.env.get('TAPE6_CONTROL')) ||
+    (isBun && Bun.env.TAPE6_CONTROL) ||
+    (isNode && process.env.TAPE6_CONTROL);
+  if (controlled) {
+    const {listenControlChannel} = await import(
+      new URL('./src/utils/control-channel.js', import.meta.url)
+    );
+    listenControlChannel(getReporter);
   }
 
-  return {options, isBrowser, isBun, isDeno, isNode, isCli};
+  // a direct run: no runner set the reporter, and no parent ends the process
+  const ownsProcess = isCli && startsReporter && !controlled;
+
+  return {options, isBrowser, isBun, isDeno, isNode, isCli, ownsProcess};
 };
 
 const getTestFileName = ({isBrowser, isBun, isDeno, isNode}) => {
@@ -292,6 +333,11 @@ const testRunner = async () => {
     }
     if (isBrowser && typeof __tape6_reportResults == 'function') {
       __tape6_reportResults(runHasFailed ? 'failure' : 'success');
+    }
+    if (settings.ownsProcess && hasAbandonedTests()) {
+      // an abandoned body's timers would keep the process alive
+      await new Promise(resolve => process.stdout.write('', resolve));
+      process.exit();
     }
   } finally {
     clearInterval(keepAlive);

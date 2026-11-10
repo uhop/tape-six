@@ -57,7 +57,7 @@ Registers a test using callback-style completion: `(t, resolve, reject) => void`
 - `testFn` (function) — test function.
 - `skip` (boolean) — skip this test.
 - `todo` (boolean) — mark as TODO.
-- `timeout` (number) — timeout in ms. Test is marked failed if exceeded.
+- `timeout` (number) — timeout in ms. Test is marked failed if exceeded, and the run stops waiting for it; an assert it makes later is labeled `LATE (from "<test name>"): `.
 - `beforeAll` / `before` (function) — run before all embedded tests.
 - `afterAll` / `after` (function) — run after all embedded tests.
 - `beforeEach` (function) — run before each embedded test.

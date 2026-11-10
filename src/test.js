@@ -114,6 +114,131 @@ export const clearBeforeEach = () => void (hooks.beforeEach = []);
 export const getAfterEach = () => hooks.afterEach;
 export const clearAfterEach = () => void (hooks.afterEach = []);
 
+const abandons = new Map();
+
+// a StopTest that reached the top level was thrown outside every body's promise chain
+export const abandonTests = error => {
+  for (let i = testers.length - 1; i >= 0; --i) abandons.get(testers[i])?.(error);
+};
+
+// a body abandoned or past its end: its t.test() would open a scope inside another test
+const closedTesters = new WeakSet();
+
+const reportError = (tester, error) => {
+  if (isAssertionError(error)) {
+    tester.reporter.report({
+      type: 'assertion-error',
+      name: String(error),
+      test: tester.testNumber,
+      marker: new Error(),
+      time: tester.timer.now(),
+      operator: error.operator,
+      generatedMessage: error.generatedMessage,
+      fail: true,
+      data: {
+        actual: error.actual,
+        expected: error.expected,
+        error
+      }
+    });
+    return;
+  }
+  tester.reporter.report({
+    type: 'assert',
+    name: 'UNEXPECTED EXCEPTION: ' + String(error),
+    test: tester.testNumber,
+    marker: new Error(),
+    time: tester.timer.now(),
+    operator: 'exception',
+    fail: true,
+    data: {
+      actual: error
+    }
+  });
+  tester.state?.failOnce &&
+    tester.reporter.report({
+      type: 'comment',
+      name: 'Stop tests: ' + String(error),
+      test: tester.testNumber,
+      marker: new Error(),
+      time: tester.timer.now()
+    });
+};
+
+const SETTLED = 'settled',
+  TIMED_OUT = 'timed out';
+
+let abandonedBodies = 0;
+export const hasAbandonedTests = () => abandonedBodies > 0;
+
+const settleOrAbandon = async (tester, options, result) => {
+  let timer = null;
+  const outcomes = [
+    result.then(() => SETTLED),
+    new Promise(resolve => abandons.set(tester, resolve))
+  ];
+  if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
+    // cleared when the body wins: a ref'd timer keeps the process alive to its end
+    outcomes.push(
+      new Promise(resolve => (timer = setTimeout(resolve, options.timeout, TIMED_OUT)))
+    );
+  }
+  let outcome;
+  try {
+    outcome = await Promise.race(outcomes);
+  } finally {
+    clearTimeout(timer);
+    abandons.delete(tester);
+  }
+  if (outcome === SETTLED) return;
+  ++abandonedBodies;
+  closedTesters.add(tester);
+  result.then(null, error => isStopTest(error) || reportError(tester, error));
+  if (outcome === TIMED_OUT) {
+    try {
+      tester.reporter.report({
+        type: 'assert',
+        name: 'Timed out after ' + options.timeout + 'ms',
+        test: tester.testNumber,
+        marker: new Error(),
+        time: tester.timer.now(),
+        operator: 'error',
+        fail: true
+      });
+    } finally {
+      tester.reporter.abort();
+      // its embedded tests end first: the reporter's states nest
+      for (let i = testers.indexOf(tester) + 1, n = testers.length; i < n; ++i) {
+        abandons.get(testers[i])?.(null);
+      }
+    }
+    return;
+  }
+  // null: its parent timed out; otherwise the StopTest that escaped it
+  if (outcome) throw outcome;
+};
+
+class LateReporter {
+  constructor(reporter, testName, signal) {
+    this.reporter = reporter;
+    this.prefix = 'LATE (from "' + testName + '"): ';
+    this.ownSignal = signal;
+  }
+  get state() {
+    return this.reporter.state;
+  }
+  get signal() {
+    return this.ownSignal;
+  }
+  get timer() {
+    return this.reporter.timer;
+  }
+  abort() {}
+  report(event, suppressStopTest) {
+    this.reporter.report({...event, name: this.prefix + (event.name ?? '')}, suppressStopTest);
+  }
+}
+
 export const runTests = async tests => {
   const reporter = getReporter();
   if (reporter.state.stopTest) return false;
@@ -129,6 +254,7 @@ export const runTests = async tests => {
       continue;
     }
     testers.push(tester);
+    let ownSignal = null;
     try {
       await reporter.state.runBeforeEach();
       tester.reporter.report({
@@ -139,6 +265,7 @@ export const runTests = async tests => {
         todo: options.todo,
         time: tester.timer.now()
       });
+      ownSignal = reporter.state.signal;
       if (typeof options.beforeAll == 'function') reporter.state.beforeAll.push(options.beforeAll);
       if (typeof options.before == 'function') reporter.state.beforeAll.push(options.before);
       if (typeof options.afterAll == 'function') reporter.state.afterAll.push(options.afterAll);
@@ -147,37 +274,9 @@ export const runTests = async tests => {
         reporter.state.beforeEach.push(options.beforeEach);
       if (typeof options.afterEach == 'function') reporter.state.afterEach.push(options.afterEach);
       if (options.testFn) {
-        if (options.timeout && !isNaN(options.timeout) && options.timeout > 0) {
-          const result = options.testFn(tester);
-          if (result && typeof result == 'object' && typeof result.then == 'function') {
-            // the timer must be cleared when the test wins the race — a stray
-            // ref'd timer keeps the process alive until the full timeout expires
-            let timer = null;
-            const timedOut = await Promise.race([
-              result.then(() => false),
-              new Promise(resolve => (timer = setTimeout(resolve, options.timeout, true)))
-            ]);
-            clearTimeout(timer);
-            if (timedOut) {
-              try {
-                tester.reporter.report({
-                  type: 'assert',
-                  name: 'Timed out after ' + options.timeout + 'ms',
-                  test: testNumber,
-                  marker: new Error(),
-                  time: tester.timer.now(),
-                  operator: 'error',
-                  fail: true
-                });
-              } finally {
-                // a failOnce StopTest from the report still waits for the body
-                tester.reporter.abort();
-                await result;
-              }
-            }
-          }
-        } else {
-          await options.testFn(tester);
+        const result = options.testFn(tester);
+        if (result && typeof result == 'object' && typeof result.then == 'function') {
+          await settleOrAbandon(tester, options, result);
         }
       }
     } catch (error) {
@@ -189,43 +288,8 @@ export const runTests = async tests => {
           marker: new Error(),
           time: tester.timer.now()
         });
-      } else if (isAssertionError(error)) {
-        tester.reporter.report({
-          type: 'assertion-error',
-          name: String(error),
-          test: testNumber,
-          marker: new Error(),
-          time: tester.timer.now(),
-          operator: error.operator,
-          generatedMessage: error.generatedMessage,
-          fail: true,
-          data: {
-            actual: error.actual,
-            expected: error.expected,
-            error
-          }
-        });
       } else {
-        tester.reporter.report({
-          type: 'assert',
-          name: 'UNEXPECTED EXCEPTION: ' + String(error),
-          test: testNumber,
-          marker: new Error(),
-          time: tester.timer.now(),
-          operator: 'exception',
-          fail: true,
-          data: {
-            actual: error
-          }
-        });
-        tester.state?.failOnce &&
-          tester.reporter.report({
-            type: 'comment',
-            name: 'Stop tests: ' + String(error),
-            test: testNumber,
-            marker: new Error(),
-            time: tester.timer.now()
-          });
+        reportError(tester, error);
       }
     }
     await tester.dispose();
@@ -253,6 +317,8 @@ export const runTests = async tests => {
       // announces its end as a success to every `event.fail` consumer
       fail: tester.state?.failed > 0 || tester.state?.bailedOut
     });
+    closedTesters.add(tester);
+    tester.reporter = new LateReporter(reporter, options.name, ownSignal);
     await reporter.state.runAfterEach();
     deferred && deferred.resolve(tester.state);
   }
@@ -307,12 +373,28 @@ test.asPromise = function asPromise(name, options, testFn) {
 
 // test() (an embedded test runner) is added here to ./Tester.js to avoid circular dependencies
 
+const refuseEmbedded = (tester, options) =>
+  tester.reporter.report({
+    type: 'assert',
+    name: 'Embedded test not run, its parent stopped: ' + options.name,
+    test: tester.testNumber,
+    marker: new Error(),
+    time: tester.timer.now(),
+    operator: 'error',
+    fail: true
+  });
+
 const queueEmbedded = async function (tester, options) {
+  if (closedTesters.has(tester)) return refuseEmbedded(tester, options);
   if (tester.lastEmbeddedTest) {
     const last = tester.lastEmbeddedTest,
       deferred = makeDeferred();
     tester.lastEmbeddedTest = deferred.promise;
     await last;
+    if (closedTesters.has(tester)) {
+      deferred.resolve();
+      return refuseEmbedded(tester, options);
+    }
     return runTests([{options}]).then(deferred.resolve, deferred.reject);
   }
   return (tester.lastEmbeddedTest = runTests([{options}]));

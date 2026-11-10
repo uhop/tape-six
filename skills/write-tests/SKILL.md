@@ -57,7 +57,7 @@ Write or update tests using the tape-six testing library.
      t.equal(res.status, 200);
    });
    ```
-8. **Test options** — `test(name, options, fn)` accepts `{timeout, skip, todo, before, after, beforeAll, afterAll, beforeEach, afterEach}`. Use `timeout` (ms) for tests with bounded async work; the test fails and `t.signal` fires when exceeded.
+8. **Test options** — `test(name, options, fn)` accepts `{timeout, skip, todo, before, after, beforeAll, afterAll, beforeEach, afterEach}`. Use `timeout` (ms) for tests with bounded async work; when exceeded, the test fails, `t.signal` fires, and the run stops waiting for it. An assert made after the test ended is labeled `LATE (from "<test name>"): `.
 9. **Misc:**
    - `test.skip(name, fn)` / `test.todo(name, fn)` — `skip` doesn't run; `todo` runs but failures don't fail the suite.
    - `t.comment(msg)` — emit a TAP comment line.

@@ -14,7 +14,13 @@ import {
   printFlagOptions
 } from '../src/utils/config.js';
 
-import {getReporter, setReporter, setConfiguredFlag, testRunner} from '../src/test.js';
+import {
+  getReporter,
+  setReporter,
+  setConfiguredFlag,
+  testRunner,
+  hasAbandonedTests
+} from '../src/test.js';
 import {selectTimer} from '../src/utils/timer.js';
 
 import TestWorker from '../src/runners/seq/TestWorker.js';
@@ -113,6 +119,8 @@ const main = async () => {
 
   await new Promise(r => process.stdout.write('', r));
   process.exitCode = hasFailed ? 1 : 0;
+  // an abandoned body's timers would keep the process alive
+  if (hasAbandonedTests()) process.exit();
 };
 
 main().catch(error => console.error('ERROR:', error));

@@ -21,13 +21,22 @@ export const RUNNERS = [
 // decides its own verdict, so nothing in-process can stand in for this: the
 // 1.16.3 bug reported success through the very path that was broken, and
 // tape-six's own suite runs `--flags FO`, so a green run was not proof.
-export const runSuite = async ({bin, files, flags, par, env: extraEnv, cwd = root}) => {
+// With no `bin`, the one file runs directly. `timeout` caps a run that hangs: `killed` says so.
+export const runSuite = async ({
+  bin,
+  files,
+  flags,
+  par,
+  env: extraEnv,
+  cwd = root,
+  timeout = 0
+}) => {
   const isDeno = typeof Deno == 'object',
     cmd = isDeno ? Deno.execPath() : process.execPath,
     // Deno children don't inherit the parent's permissions
     childArgs = isDeno && bin === PROC ? ['-r', '-A'] : [],
-    binPath = join(root, bin),
-    args = isDeno ? ['run', '-A', binPath, ...childArgs, ...files] : [binPath, ...files],
+    script = bin ? [join(root, bin), ...childArgs, ...files] : files,
+    args = isDeno ? ['run', '-A', ...script] : script,
     env = {...process.env};
   for (const key of Object.keys(env)) {
     if (key.startsWith('TAPE6_')) delete env[key];
@@ -39,10 +48,11 @@ export const runSuite = async ({bin, files, flags, par, env: extraEnv, cwd = roo
     TAPE6_PAR: String(par),
     ...extraEnv
   });
-  const result = await run(cmd, args, {cwd, env}).catch(error => error);
+  const result = await run(cmd, args, {cwd, env, timeout}).catch(error => error);
   return {
     code: result.code === undefined ? 0 : result.code,
     stdout: result.stdout || '',
-    stderr: result.stderr || ''
+    stderr: result.stderr || '',
+    killed: result.killed === true
   };
 };

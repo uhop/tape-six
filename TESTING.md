@@ -225,16 +225,16 @@ test('aborts on test end', async t => {
 `test(name, options, fn)` accepts an options object. Type-recognition makes the form flexible (any
 of `test(opts, fn)`, `test(name, fn)`, `test(name, opts, fn)` is valid).
 
-| Option                 | Effect                                                     |
-| ---------------------- | ---------------------------------------------------------- |
-| `name`                 | Test name (overrides positional)                           |
-| `timeout`              | Milliseconds; test fails and `t.signal` aborts if exceeded |
-| `skip`                 | Skip the test (does not run)                               |
-| `todo`                 | Run, but failures don't count                              |
-| `beforeAll` / `before` | Run once before the test's first embedded test             |
-| `afterAll` / `after`   | Run once after the test's last embedded test               |
-| `beforeEach`           | Run before each embedded test                              |
-| `afterEach`            | Run after each embedded test                               |
+| Option                 | Effect                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `name`                 | Test name (overrides positional)                                                               |
+| `timeout`              | Milliseconds; if exceeded, the test fails, `t.signal` aborts, and the run stops waiting for it |
+| `skip`                 | Skip the test (does not run)                                                                   |
+| `todo`                 | Run, but failures don't count                                                                  |
+| `beforeAll` / `before` | Run once before the test's first embedded test                                                 |
+| `afterAll` / `after`   | Run once after the test's last embedded test                                                   |
+| `beforeEach`           | Run before each embedded test                                                                  |
+| `afterEach`            | Run after each embedded test                                                                   |
 
 ```js
 test('with timeout', {timeout: 5000}, async t => {
@@ -244,6 +244,11 @@ test('with timeout', {timeout: 5000}, async t => {
 
 By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture suite to apply it
 broadly.
+
+A test the run stopped waiting for keeps running. An assert it makes after its end is reported under
+the test running then, its message prefixed with `LATE (from "<test name>"): `. The same holds for
+an assert any test makes from a callback that fires after its end. An embedded test such a body
+starts is not run and fails with `Embedded test not run, its parent stopped: <name>`.
 
 ### Other tester methods
 

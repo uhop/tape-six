@@ -71,7 +71,7 @@ Arguments:
   - `name` — overridden by the `name` argument.
   - `skip` (boolean) — skip this test.
   - `todo` (boolean) — mark as TODO.
-  - `timeout` (number, ms) — timeout for async tests. Exceeding it fails the test and aborts `signal`.
+  - `timeout` (number, ms) — timeout for async tests. Exceeding it fails the test, aborts `signal`, and stops the run waiting for it. An assert a test makes after its end, as from a callback, is reported under the test running then with its message prefixed `LATE (from "<test name>"): `.
   - `beforeAll`, `afterAll`, `beforeEach`, `afterEach` — hook functions.
   - `before` — alias for `beforeAll`.
   - `after` — alias for `afterAll`.
