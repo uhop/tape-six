@@ -3,5 +3,12 @@
   "singleQuote": true,
   "bracketSpacing": false,
   "arrowParens": "avoid",
-  "trailingComma": "none"
+  "trailingComma": "none",
+  "proseWrap": "always",
+  "overrides": [
+    {
+      "files": ["**/SKILL.md"],
+      "options": {"proseWrap": "preserve"}
+    }
+  ]
 }

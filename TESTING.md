@@ -1,9 +1,10 @@
 # Testing with tape-six
 
-> This guide is for AI agents and developers working on projects that use `tape-six` for testing.
-> It covers how to write tests, run them, and configure test discovery.
+> This guide is for AI agents and developers working on projects that use `tape-six` for testing. It
+> covers how to write tests, run them, and configure test discovery.
 
-`tape-six` supports ES modules and CommonJS. TypeScript is supported natively — no transpilation needed (Node 22+, Deno, Bun all run `.ts` files directly).
+`tape-six` supports ES modules and CommonJS. TypeScript is supported natively — no transpilation
+needed (Node 22+, Deno, Bun all run `.ts` files directly).
 
 ## Install
 
@@ -72,7 +73,10 @@ test('async test', async t => {
 
 Aliases: `suite()`, `describe()`, `it()` — all identical to `test()`.
 
-When called inside a test body, top-level functions (`test`, `it`, `describe`, and all hooks) automatically delegate to the current tester. Using `t.test()`, `t.before()`, etc. is still preferred because it makes the delegation explicit. The top-level form is convenient when porting tests from frameworks like Mocha or Jest:
+When called inside a test body, top-level functions (`test`, `it`, `describe`, and all hooks)
+automatically delegate to the current tester. Using `t.test()`, `t.before()`, etc. is still
+preferred because it makes the delegation explicit. The top-level form is convenient when porting
+tests from frameworks like Mocha or Jest:
 
 ```js
 import {describe, it, before, beforeEach} from 'tape-six';
@@ -136,9 +140,11 @@ All `msg` arguments are optional. If omitted, a generic message is used.
 
 ### Matchers for thrown and resolved values
 
-`t.throws`, `t.rejects`, and `t.resolves` accept an optional **matcher** as their second argument. If the second argument is a string, it's still treated as the message (backward compatible).
+`t.throws`, `t.rejects`, and `t.resolves` accept an optional **matcher** as their second argument.
+If the second argument is a string, it's still treated as the message (backward compatible).
 
-JavaScript lets code throw any value and reject a promise with any value, not only an `Error`. The matcher sees the thrown value, the rejection reason, or the resolved value as is.
+JavaScript lets code throw any value and reject a promise with any value, not only an `Error`. The
+matcher sees the thrown value, the rejection reason, or the resolved value as is.
 
 ```js
 t.throws(() => parse(''), TypeError); // Error subclass — instanceof
@@ -155,18 +161,20 @@ await t.resolves(readConfig(), {strict: true}); // deep6 object pattern on the r
 Matcher rules:
 
 - **Error subclass** (a function whose prototype is Error) → `instanceof` check.
-- **RegExp** → tested against `value.message` when the value is an `Error`, otherwise against `String(value)`.
+- **RegExp** → tested against `value.message` when the value is an `Error`, otherwise against
+  `String(value)`.
 - **Function** (non-Error-class) → predicate; truthy return = match.
-- **Object** (non-null, non-RegExp) → uses deep6's `match()` for partial structural matching:
-  every key the pattern names must be present in the value, and keys the pattern doesn't name are
-  ignored. A plain-object pattern doesn't match a class instance, such as an `Error`: check an
-  instance with its class, a RegExp, or a predicate, and inside a pattern with deep6's
-  `matchInstanceOf`.
+- **Object** (non-null, non-RegExp) → uses deep6's `match()` for partial structural matching: every
+  key the pattern names must be present in the value, and keys the pattern doesn't name are ignored.
+  A plain-object pattern doesn't match a class instance, such as an `Error`: check an instance with
+  its class, a RegExp, or a predicate, and inside a pattern with deep6's `matchInstanceOf`.
 - **`null` or any primitive** → strict equality.
 
-Falsy reasons (`null`, `0`, `false`, `''`, `NaN`) are correctly handled: `Promise.reject(null)` is still a rejection, and `throw 0` is still a throw.
+Falsy reasons (`null`, `0`, `false`, `''`, `NaN`) are correctly handled: `Promise.reject(null)` is
+still a rejection, and `throw 0` is still a throw.
 
-`t.throws` returns the thrown value, and `t.rejects` and `t.resolves` resolve to the rejection reason and the resolved value, so further checks can follow, each reported on its own:
+`t.throws` returns the thrown value, and `t.rejects` and `t.resolves` resolve to the rejection
+reason and the resolved value, so further checks can follow, each reported on its own:
 
 ```js
 const e = await t.rejects(fetchData());
@@ -174,7 +182,8 @@ t.equal(e?.code, 'ENOENT');
 t.equal(e?.status, 404);
 ```
 
-When nothing was thrown, or the promise settled the other way, the assertion fails and the value is `undefined`; the `?.` keeps the checks that follow from throwing.
+When nothing was thrown, or the promise settled the other way, the assertion fails and the value is
+`undefined`; the `?.` keeps the checks that follow from throwing.
 
 ### Async assertions
 
@@ -189,7 +198,8 @@ test('async asserts', async t => {
 
 ### Wildcards in deep equality
 
-Use `t.any` (or its alias `t._`) inside an expected value to accept any value at that position. Useful for non-deterministic fields like timestamps or generated IDs:
+Use `t.any` (or its alias `t._`) inside an expected value to accept any value at that position.
+Useful for non-deterministic fields like timestamps or generated IDs:
 
 ```js
 test('partial match', t => {
@@ -200,7 +210,8 @@ test('partial match', t => {
 
 ### Async cancellation with `t.signal`
 
-`t.signal` is an `AbortSignal` that fires when the test ends, times out, or is stopped. Pass it to long-running async work so it cancels cleanly:
+`t.signal` is an `AbortSignal` that fires when the test ends, times out, or is stopped. Pass it to
+long-running async work so it cancels cleanly:
 
 ```js
 test('aborts on test end', async t => {
@@ -211,7 +222,8 @@ test('aborts on test end', async t => {
 
 ### Test options
 
-`test(name, options, fn)` accepts an options object. Type-recognition makes the form flexible (any of `test(opts, fn)`, `test(name, fn)`, `test(name, opts, fn)` is valid).
+`test(name, options, fn)` accepts an options object. Type-recognition makes the form flexible (any
+of `test(opts, fn)`, `test(name, fn)`, `test(name, opts, fn)` is valid).
 
 | Option                 | Effect                                                     |
 | ---------------------- | ---------------------------------------------------------- |
@@ -230,15 +242,25 @@ test('with timeout', {timeout: 5000}, async t => {
 });
 ```
 
-By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture suite to apply it broadly.
+By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture suite to apply it
+broadly.
 
 ### Other tester methods
 
 - `t.comment(msg)` — emit a TAP comment line.
-- `t.skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing else. To skip an assertion for now, rename it: `t.skipTest(a, b, 'msg')` in place of `t.equal(a, b, 'msg')`. The rest of the test still runs, and functions passed to `skipTest` are not called. To skip a whole test, use `test.skip()` or the `skip` option.
-- `t.bailOut(msg)` — stop the entire run. Catastrophic; use sparingly. The run is reported as failed (`# not ok`, exit 1) even though no assertion failed — the counts stay truthful, the verdict does not read green.
-- `t.plan(n)` — record the expected number of direct assertions. If the count diverges at test end, a `# plan != count: expected N, ran M` TAP comment is emitted (diagnostic only, doesn't fail the test). Subtest assertions don't count toward the parent's plan.
-- `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts an expression and dumps the values of the top-level identifiers in the expression on failure. Useful for compact arithmetic/state checks. Not usable in CSP-restricted contexts (uses `eval`).
+- `t.skipTest(...args, msg)` — stands in for one assertion: reports it as skipped and does nothing
+  else. To skip an assertion for now, rename it: `t.skipTest(a, b, 'msg')` in place of
+  `t.equal(a, b, 'msg')`. The rest of the test still runs, and functions passed to `skipTest` are
+  not called. To skip a whole test, use `test.skip()` or the `skip` option.
+- `t.bailOut(msg)` — stop the entire run. Catastrophic; use sparingly. The run is reported as failed
+  (`# not ok`, exit 1) even though no assertion failed — the counts stay truthful, the verdict does
+  not read green.
+- `t.plan(n)` — record the expected number of direct assertions. If the count diverges at test end,
+  a `# plan != count: expected N, ran M` TAP comment is emitted (diagnostic only, doesn't fail the
+  test). Subtest assertions don't count toward the parent's plan.
+- `t.OK(expr, msg)` (aliases `t.TRUE`, `t.ASSERT`) — returns a code string for `eval()` that asserts
+  an expression and dumps the values of the top-level identifiers in the expression on failure.
+  Useful for compact arithmetic/state checks. Not usable in CSP-restricted contexts (uses `eval`).
 
   ```js
   test('OK evaluator', t => {
@@ -252,7 +274,9 @@ By default tests have **no timeout**. Set `timeout` per test, or wrap a fixture 
 
 ### Nested (embedded) tests
 
-Tests can be nested. The preferred way is `t.test()` because it makes the delegation explicit. Top-level `test()`/`it()` are equivalent inside a test body — they auto-delegate to the current tester:
+Tests can be nested. The preferred way is `t.test()` because it makes the delegation explicit.
+Top-level `test()`/`it()` are equivalent inside a test body — they auto-delegate to the current
+tester:
 
 ```js
 import {test, it} from 'tape-six';
@@ -275,7 +299,9 @@ Embedded tests must be `await`ed to preserve execution order.
 
 Hooks are scoped — they only affect tests at their registration level.
 
-`before` is an alias for `beforeAll`, `after` is an alias for `afterAll`. These aliases work everywhere: as named exports, on `test.before`/`test.after`, on `t.before`/`t.after`, and in options objects.
+`before` is an alias for `beforeAll`, `after` is an alias for `afterAll`. These aliases work
+everywhere: as named exports, on `test.before`/`test.after`, on `t.before`/`t.after`, and in options
+objects.
 
 **Top-level hooks** (affect all top-level tests in the file):
 
@@ -300,7 +326,8 @@ afterEach(() => {
 
 **Nested hooks** (affect embedded tests within a suite):
 
-The preferred way is `t.before()`/`t.after()` because it makes the scope explicit. Top-level `before()`/`after()` are equivalent inside a test body — they auto-delegate to the current tester:
+The preferred way is `t.before()`/`t.after()` because it makes the scope explicit. Top-level
+`before()`/`after()` are equivalent inside a test body — they auto-delegate to the current tester:
 
 ```js
 import {test, before, after, beforeEach} from 'tape-six';
@@ -353,7 +380,9 @@ test('suite B', dbOpts, async t => {
 
 ## Migrating from other test frameworks
 
-`tape-six` supports `describe`/`it` and `before`/`after` aliases. When called inside a test body, all top-level functions automatically delegate to the current tester. This means migration from Mocha, Jest, or `node:test` is nearly mechanical — change the import and swap assertions.
+`tape-six` supports `describe`/`it` and `before`/`after` aliases. When called inside a test body,
+all top-level functions automatically delegate to the current tester. This means migration from
+Mocha, Jest, or `node:test` is nearly mechanical — change the import and swap assertions.
 
 ### Mocha / Jest → tape-six
 
@@ -403,11 +432,14 @@ Key differences from Mocha/Jest:
 - The test function receives a `t` argument for assertions.
 - No magic globals — everything is imported explicitly.
 - `it()` inside `describe()` is auto-delegated, no need to use `t.test()`.
-- `before()`/`after()` inside `describe()` are auto-delegated, no need to use `t.before()`/`t.after()`.
+- `before()`/`after()` inside `describe()` are auto-delegated, no need to use
+  `t.before()`/`t.after()`.
 
 ### Chai → tape-six
 
-Chai is commonly used with Mocha and other test frameworks. Its `expect`/`should`/`assert` styles all throw `AssertionError`, which `tape-six` catches automatically. You can use Chai assertions directly inside `tape-six` tests, or replace them with `t.*` equivalents:
+Chai is commonly used with Mocha and other test frameworks. Its `expect`/`should`/`assert` styles
+all throw `AssertionError`, which `tape-six` catches automatically. You can use Chai assertions
+directly inside `tape-six` tests, or replace them with `t.*` equivalents:
 
 ```js
 // Chai expect style
@@ -482,7 +514,8 @@ describe('module', () => {
 });
 ```
 
-Note: you can also keep using `node:assert` inside tape-six tests — `AssertionError` is caught automatically (see [3rd-party assertion libraries](#3rd-party-assertion-libraries)).
+Note: you can also keep using `node:assert` inside tape-six tests — `AssertionError` is caught
+automatically (see [3rd-party assertion libraries](#3rd-party-assertion-libraries)).
 
 ### Quick reference
 
@@ -550,9 +583,18 @@ npx tape6 --info --flags FO           # show config and exit without running tes
 npx tape6 --flags=FO                  # = form is also supported
 ```
 
-Options that take a value accept both space-separated (`--flags FO`) and `=`-separated (`--flags=FO`) forms. The `=` form does not support quoting (e.g. `--flags="FO"` won't work); use the space form when values need quoting.
+Options that take a value accept both space-separated (`--flags FO`) and `=`-separated
+(`--flags=FO`) forms. The `=` form does not support quoting (e.g. `--flags="FO"` won't work); use
+the space form when values need quoting.
 
-**`tape6` vs `tape6-seq`**: The default `tape6` runner spawns worker threads to run test files in parallel — faster, but each file runs in its own isolated context. `tape6-seq` runs all test files sequentially in a single process — slower, but useful for debugging, for tests that share state, or when worker threads are unavailable. `tape6-proc` runs each test file in its own subprocess — for tests that modify process-wide globals or load single-threaded binary extensions. Under Bun and Deno, run it as `` bun run `tape6-proc --self` `` or ``deno run -A `tape6-proc --self` -r -A`` (`-r` passes an argument to each child; Deno children don't inherit the parent's permissions). It replaces the separate `tape-six-proc` package; remove that dependency when you update `tape-six`.
+**`tape6` vs `tape6-seq`**: The default `tape6` runner spawns worker threads to run test files in
+parallel — faster, but each file runs in its own isolated context. `tape6-seq` runs all test files
+sequentially in a single process — slower, but useful for debugging, for tests that share state, or
+when worker threads are unavailable. `tape6-proc` runs each test file in its own subprocess — for
+tests that modify process-wide globals or load single-threaded binary extensions. Under Bun and
+Deno, run it as `` bun run `tape6-proc --self` `` or ``deno run -A `tape6-proc --self` -r -A`` (`-r`
+passes an argument to each child; Deno children don't inherit the parent's permissions). It replaces
+the separate `tape-six-proc` package; remove that dependency when you update `tape-six`.
 
 ### Selected test files
 
@@ -594,7 +636,8 @@ Flags control test output. Uppercase = enabled, lowercase = disabled.
 
 Common combinations: `FO` (failures only + stop at first), `FOT` (+ show time).
 
-When multiple `--flags` are given, the last one wins. To see which files are being run (overriding `--flags FO` from a script), append `--flags fo` — lowercase disables the flags.
+When multiple `--flags` are given, the last one wins. To see which files are being run (overriding
+`--flags FO` from a script), append `--flags fo` — lowercase disables the flags.
 
 ### Other CLI options
 
@@ -606,39 +649,51 @@ When multiple `--flags` are given, the last one wins. To see which files are bei
 | `--help`, `-h`    | Show usage.                                                           |
 | `--version`, `-v` | Show version.                                                         |
 
-Options that take a value accept both space-separated (`--par 4`) and `=`-separated (`--par=4`) forms.
+Options that take a value accept both space-separated (`--par 4`) and `=`-separated (`--par=4`)
+forms.
 
 ### Environment variables
 
 - `TAPE6_FLAGS` — flags string (alternative to `--flags`).
 - `TAPE6_PAR` — number of parallel workers.
 - `TAPE6_TAP` — force TAP output format.
-- `TAPE6_JSONL` — force JSONL output format: one JSON event per line. Each test's `end` event carries `fail`, `skip`, `todo`, and `diffTime`, the test's duration in milliseconds, so this is the machine-readable source for per-test outcome and timing. On the command line it is the only way to select the JSONL reporter; the `J` flag applies to the web application only.
+- `TAPE6_JSONL` — force JSONL output format: one JSON event per line. Each test's `end` event
+  carries `fail`, `skip`, `todo`, and `diffTime`, the test's duration in milliseconds, so this is
+  the machine-readable source for per-test outcome and timing. On the command line it is the only
+  way to select the JSONL reporter; the `J` flag applies to the web application only.
 - `TAPE6_MIN` — force minimal output format.
-- `TAPE6_WORKER_START_TIMEOUT` — milliseconds to wait for a worker to register its first test before declaring "no tests found". Default: `5000`. Bump this (e.g., `60000`) for tests with heavy `beforeAll` work like Docker container spawn or large fixture loads.
+- `TAPE6_WORKER_START_TIMEOUT` — milliseconds to wait for a worker to register its first test before
+  declaring "no tests found". Default: `5000`. Bump this (e.g., `60000`) for tests with heavy
+  `beforeAll` work like Docker container spawn or large fixture loads.
 
 ### Reading the result
 
 The exit status is the verdict. Read it first, and read the output only to find what failed.
 
 - `0` — every test passed.
-- `1` — the run failed: a failed assertion outside a `todo` test, a bail-out (`t.bailOut()`), a test file that throws while loading, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or "No files found." when the patterns match nothing.
+- `1` — the run failed: a failed assertion outside a `todo` test, a bail-out (`t.bailOut()`), a test
+  file that throws while loading, a worker stopped by `TAPE6_WORKER_TIMEOUT`, or "No files found."
+  when the patterns match nothing.
 
-A test file run directly (`node tests/test-foo.js`) exits the same way. A file that throws while loading then prints only Node's error.
+A test file run directly (`node tests/test-foo.js`) exits the same way. A file that throws while
+loading then prints only Node's error.
 
-A pipe hides the status: `npm test | tail -20` reports the status of `tail`, which is `0`. Run the command on its own and print its status:
+A pipe hides the status: `npm test | tail -20` reports the status of `tail`, which is `0`. Run the
+command on its own and print its status:
 
 ```bash
 npm test; echo "exit=$?"
 ```
 
-To shorten long output, set `pipefail` in the same command, so that the pipe reports the status of `npm test`:
+To shorten long output, set `pipefail` in the same command, so that the pipe reports the status of
+`npm test`:
 
 ```bash
 set -o pipefail; npm test 2>&1 | tail -40; echo "exit=$?"
 ```
 
-Each reporter also marks the end of the run. Judge by that marker, never by the counts: a bail-out stops the run without a failed assertion, so the TTY summary reads `failed: 0` next to `⛔`.
+Each reporter also marks the end of the run. Judge by that marker, never by the counts: a bail-out
+stops the run without a failed assertion, so the TTY summary reads `failed: 0` next to `⛔`.
 
 | Reporter      | Selected by          | Passed                                                           | Failed                                                                                 |
 | ------------- | -------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -647,7 +702,10 @@ Each reporter also marks the end of the run. Judge by that marker, never by the 
 | MIN           | `TAPE6_MIN=1`        | the last line is `Test: 0 Type: end Name: undefined Fail: false` | the same line ends with `Fail: true`                                                   |
 | JSONL         | `TAPE6_JSONL=1`      | the last event is `{"type":"end","test":0,"fail":false,…}`       | the same event carries `"fail":true`; `"stopTest":true` marks a run stopped early      |
 
-With the `F` flag (failures only), a green run prints only the summary line, so short output is normal. Under the runner, a file that throws while loading appears as a failed assertion, `✗ Error: …`. For a script that checks the result, set `TAPE6_JSONL=1`: every test's `end` event carries `fail`, and the event's `name` says which test it was.
+With the `F` flag (failures only), a green run prints only the summary line, so short output is
+normal. Under the runner, a file that throws while loading appears as a failed assertion,
+`✗ Error: …`. For a script that checks the result, set `TAPE6_JSONL=1`: every test's `end` event
+carries `fail`, and the event's `name` says which test it was.
 
 ## Configuring test discovery
 
@@ -669,10 +727,16 @@ Add to `package.json`:
 }
 ```
 
-- `tests` — glob patterns for test files (relative to project root with leading `/`). Common for all environments.
-- `cli` — additional patterns for CLI-only environments (Node, Bun, Deno). Typically used for `.cjs` files that browsers cannot run. For CLI-only projects (no browser testing), it doesn't matter whether `.cjs` patterns go in `cli` or `tests` — all CLI runners handle both.
-- `node`, `deno`, `bun`, `browser` — additional patterns specific to a given environment. These are **not overrides** — they are added to `tests` (and `cli` for non-browser).
-- `importmap` — import map for browser testing (standard [import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap) format).
+- `tests` — glob patterns for test files (relative to project root with leading `/`). Common for all
+  environments.
+- `cli` — additional patterns for CLI-only environments (Node, Bun, Deno). Typically used for `.cjs`
+  files that browsers cannot run. For CLI-only projects (no browser testing), it doesn't matter
+  whether `.cjs` patterns go in `cli` or `tests` — all CLI runners handle both.
+- `node`, `deno`, `bun`, `browser` — additional patterns specific to a given environment. These are
+  **not overrides** — they are added to `tests` (and `cli` for non-browser).
+- `importmap` — import map for browser testing (standard
+  [import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap)
+  format).
 
 Example with environment-specific tests:
 
@@ -694,11 +758,19 @@ Example with environment-specific tests:
 }
 ```
 
-In this example, running `tape6` on Node will execute tests matching `/tests/node/test-*.js` + `/tests/test-*.cjs` (cli) + `/tests/test-*.*js` (tests). Running in a browser will execute `/tests/browser/test-*.html` + `/tests/test-*.*js` (tests) — `cli` patterns are skipped.
+In this example, running `tape6` on Node will execute tests matching `/tests/node/test-*.js` +
+`/tests/test-*.cjs` (cli) + `/tests/test-*.*js` (tests). Running in a browser will execute
+`/tests/browser/test-*.html` + `/tests/test-*.*js` (tests) — `cli` patterns are skipped.
 
 ## Browser testing
 
-Browser tests use `tape6-server`, a pluggable test server bundled with `tape-six` that serves static files and provides a web UI for running tests. Fixture plugins can be mounted under URL prefixes (`--plugin`, the `tape6.server.plugins` config, or `PUT /--plugins` at runtime), the core is embeddable in tests via `createTestServer()` from `tape-six/test-server.js`, and `--h2` switches to HTTP/2 (Node-only). See the [tape6-server wiki page](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6%E2%80%90server) for the plugin contract.
+Browser tests use `tape6-server`, a pluggable test server bundled with `tape-six` that serves static
+files and provides a web UI for running tests. Fixture plugins can be mounted under URL prefixes
+(`--plugin`, the `tape6.server.plugins` config, or `PUT /--plugins` at runtime), the core is
+embeddable in tests via `createTestServer()` from `tape-six/test-server.js`, and `--h2` switches to
+HTTP/2 (Node-only). See the
+[tape6-server wiki page](https://github.com/uhop/tape-six/wiki/Utility-%E2%80%90-tape6%E2%80%90server)
+for the plugin contract.
 
 ### Setup
 
@@ -781,7 +853,8 @@ Create an HTML file that loads test scripts directly with an inline import map:
 </html>
 ```
 
-Navigate to the HTML file directly (e.g., `http://localhost:3000/tests/browser/test-simple.html`). Results appear in the browser console. This approach does not use the web UI.
+Navigate to the HTML file directly (e.g., `http://localhost:3000/tests/browser/test-simple.html`).
+Results appear in the browser console. This approach does not use the web UI.
 
 ### Flags and parallel execution in the browser
 
@@ -795,24 +868,33 @@ http://localhost:3000/?flags=FO&par=3
 
 For automated headless browser testing, use the dedicated packages:
 
-- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — runs configured browser tests with Puppeteer.
-- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — runs configured browser tests with Playwright.
+- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — runs configured browser
+  tests with Puppeteer.
+- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — runs configured browser
+  tests with Playwright.
 
-Both integrate with `tape6-server` and the `__tape6_reportResults` callback to report pass/fail from the command line.
+Both integrate with `tape6-server` and the `__tape6_reportResults` callback to report pass/fail from
+the command line.
 
 ### Browser limitations
 
 - Browsers cannot run TypeScript files directly — only `.js` and `.mjs`.
 - Browsers cannot run CommonJS (`.cjs`) files.
 - Browsers can run HTML shim files in addition to JS files.
-- A JS test file runs in a `srcdoc` frame whose address is `about:srcdoc`, so code under test that calls `history.replaceState` or `history.pushState` throws a `SecurityError` there. Test such a page from an HTML test file, which loads by its real URL. If the page rewrites its address, copy the harness's `id`, `test-file-name`, and `flags` query parameters into `window.__tape6_id`, `window.__tape6_testFileName`, and `window.__tape6_flags` in a classic script before any module loads, so the reporter still finds them.
+- A JS test file runs in a `srcdoc` frame whose address is `about:srcdoc`, so code under test that
+  calls `history.replaceState` or `history.pushState` throws a `SecurityError` there. Test such a
+  page from an HTML test file, which loads by its real URL. If the page rewrites its address, copy
+  the harness's `id`, `test-file-name`, and `flags` query parameters into `window.__tape6_id`,
+  `window.__tape6_testFileName`, and `window.__tape6_flags` in a classic script before any module
+  loads, so the reporter still finds them.
 
 ## Test file conventions
 
 - **Naming**: `test-*.js`, `test-*.mjs`, `test-*.cjs`, `test-*.ts`, `test-*.mts`, `test-*.cts`.
 - **Location**: typically `tests/` directory.
 - **Self-contained**: each test file should be directly executable with `node`.
-- **One concern per file**: group related tests in a single file, use embedded tests for sub-grouping.
+- **One concern per file**: group related tests in a single file, use embedded tests for
+  sub-grouping.
 
 ## Patterns for AI agents writing tests
 
@@ -882,7 +964,10 @@ test('myFunction from CJS', t => {
 });
 ```
 
-> **IMPORTANT:** Do NOT use `await import()` as a substitute for `require()`. It is only needed when the module under test uses top-level `await` (which is rare). For local project modules, verify first — e.g., grep for `^await` at the top level of the source file. If it has no top-level `await`, use `require()`.
+> **IMPORTANT:** Do NOT use `await import()` as a substitute for `require()`. It is only needed when
+> the module under test uses top-level `await` (which is rare). For local project modules, verify
+> first — e.g., grep for `^await` at the top level of the source file. If it has no top-level
+> `await`, use `require()`.
 
 Rare fallback for modules with top-level `await`:
 
@@ -902,13 +987,19 @@ node tests/test-<name>.js    # run your new test file directly
 npm test                      # run full suite to check for regressions
 ```
 
-Judge each run by its exit status (`npm test; echo "exit=$?"`), never by the counts in the summary. See [Reading the result](#reading-the-result).
+Judge each run by its exit status (`npm test; echo "exit=$?"`), never by the counts in the summary.
+See [Reading the result](#reading-the-result).
 
 ## Related packages
 
-- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing with Puppeteer. Runs configured browser tests headlessly from the command line.
-- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — automates browser testing with Playwright. Same as above but using Playwright.
-- [tape-six-fast-check](https://www.npmjs.com/package/tape-six-fast-check) — property-based testing with [fast-check](https://fast-check.dev/): `t.prop()` for properties and `t.scheduler()` for race-condition tests, each reported as one assertion. Without the plugin, call `fc.assert()` inside a plain test.
+- [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) — automates browser testing
+  with Puppeteer. Runs configured browser tests headlessly from the command line.
+- [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright) — automates browser
+  testing with Playwright. Same as above but using Playwright.
+- [tape-six-fast-check](https://www.npmjs.com/package/tape-six-fast-check) — property-based testing
+  with [fast-check](https://fast-check.dev/): `t.prop()` for properties and `t.scheduler()` for
+  race-condition tests, each reported as one assertion. Without the plugin, call `fc.assert()`
+  inside a plain test.
 
 ## Links
 

@@ -1,6 +1,8 @@
 # Architecture
 
-`tape-six` is a TAP-based unit testing library for modern JavaScript (ES6+). It has **zero runtime dependencies** — only dev dependencies for type-checking, formatting, and browser automation. The vendored `deep6` library is copied into the source tree at build time.
+`tape-six` is a TAP-based unit testing library for modern JavaScript (ES6+). It has **zero runtime
+dependencies** — only dev dependencies for type-checking, formatting, and browser automation. The
+vendored `deep6` library is copied into the source tree at build time.
 
 ## Project layout
 
@@ -100,20 +102,31 @@ skills/               # Agent Skills (agentskills.io) shipped to consumers via n
 2. `index.js` auto-detects the runtime (Node/Deno/Bun/browser).
 3. It selects and configures the appropriate reporter (TTY, TAP, JSONL, Proxy, or DOM).
 4. `test()` calls register test functions into a queue.
-5. The test runner (`testRunner` in `index.js`) executes queued tests sequentially, running hooks at the appropriate points.
+5. The test runner (`testRunner` in `index.js`) executes queued tests sequentially, running hooks at
+   the appropriate points.
 6. Each test receives a `Tester` object with assert methods.
 7. Results are reported via the configured reporter.
 
 ### Two main objects
 
-- **`test()`** — registers test suites. Aliased as `suite()`, `describe()`, `it()`. Supports `test.skip()`, `test.todo()`, `test.asPromise()`.
-- **`Tester`** — passed to test functions. Provides all assert methods (`ok`, `equal`, `deepEqual`, `throws`, `rejects`, etc.), embedded test methods (`t.test()`, `t.skip()`, `t.todo()`), hooks (`t.beforeAll()`, `t.afterAll()`, `t.beforeEach()`, `t.afterEach()`), and utilities (`t.plan()`, `t.comment()`, `t.any`). Extensible via `registerTesterMethod(name, fn)` from plugins; `Tester` is declared as an `interface` in `index.d.ts` so TS module-augmentation works naturally. Ambient integrations use `getTester()` (current `Tester` or `null`) and `Tester.reportAssertion({ok, message, marker, …})` to report into the running test; `index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` (see `dev-docs/sister-assert-library.md`).
+- **`test()`** — registers test suites. Aliased as `suite()`, `describe()`, `it()`. Supports
+  `test.skip()`, `test.todo()`, `test.asPromise()`.
+- **`Tester`** — passed to test functions. Provides all assert methods (`ok`, `equal`, `deepEqual`,
+  `throws`, `rejects`, etc.), embedded test methods (`t.test()`, `t.skip()`, `t.todo()`), hooks
+  (`t.beforeAll()`, `t.afterAll()`, `t.beforeEach()`, `t.afterEach()`), and utilities (`t.plan()`,
+  `t.comment()`, `t.any`). Extensible via `registerTesterMethod(name, fn)` from plugins; `Tester` is
+  declared as an `interface` in `index.d.ts` so TS module-augmentation works naturally. Ambient
+  integrations use `getTester()` (current `Tester` or `null`) and
+  `Tester.reportAssertion({ok, message, marker, …})` to report into the running test; `index.js`
+  installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` (see
+  `dev-docs/sister-assert-library.md`).
 
 ### Hooks
 
 Hooks are scoped to their registration level:
 
-- **Top-level**: `beforeAll()`, `afterAll()`, `beforeEach()`, `afterEach()` from `tape-six` affect top-level tests.
+- **Top-level**: `beforeAll()`, `afterAll()`, `beforeEach()`, `afterEach()` from `tape-six` affect
+  top-level tests.
 - **Nested**: `t.beforeAll()`, etc., on a `Tester` object affect that test's embedded tests.
 - **Options**: hooks can also be passed in `TestOptions`.
 
@@ -132,7 +145,8 @@ All reporters implement `report(event, suppressStopTest = false)`. The method:
 
 1. Calls `this.state?.preprocess(event)` to update counters and enrich the event.
 2. Handles the event (output, DOM updates, forwarding, etc.).
-3. Calls `this.state?.postprocess(event, suppressStopTest)` to throw `StopTest` when `failOnce` is active and an assertion fails — unless `suppressStopTest` is `true`.
+3. Calls `this.state?.postprocess(event, suppressStopTest)` to throw `StopTest` when `failOnce` is
+   active and an assertion fails — unless `suppressStopTest` is `true`.
 
 ### CLI architecture
 
@@ -151,91 +165,79 @@ Each runtime-specific runner:
 
 `tape6-seq` runs tests sequentially in the same process (no workers).
 
-`tape6-proc` spawns one child process per test file with `node:child_process` (on Bun and
-Deno too), marked `TAPE6_CONTROL` and `TAPE6_JSONL`. The child is an ordinary test file run
-by `index.js`: it reports JSONL lines tagged with a per-run prefix on stdout, and its stdin
-is the control channel. A child that exits without its top-level `end` fails its file with
-the reason (exit code, signal, timeout, or `exited mid-test`), unless a fail-once stop or a
-bail-out caused it; either way the parent reports `terminated` to close the scopes the child
-left open. It replaced the separate `tape-six-proc` package, whose 1.3.1 still imports
-`State.js`, `utils/EventServer.js`, `utils/makeDeferred.js`, `utils/config.js`,
-`utils/timer.js`, and `test.js` from this package.
+`tape6-proc` spawns one child process per test file with `node:child_process` (on Bun and Deno too),
+marked `TAPE6_CONTROL` and `TAPE6_JSONL`. The child is an ordinary test file run by `index.js`: it
+reports JSONL lines tagged with a per-run prefix on stdout, and its stdin is the control channel. A
+child that exits without its top-level `end` fails its file with the reason (exit code, signal,
+timeout, or `exited mid-test`), unless a fail-once stop or a bail-out caused it; either way the
+parent reports `terminated` to close the scopes the child left open. It replaced the separate
+`tape-six-proc` package, whose 1.3.1 still imports `State.js`, `utils/EventServer.js`,
+`utils/makeDeferred.js`, `utils/config.js`, `utils/timer.js`, and `test.js` from this package.
 
 `tape6-server` serves files for browser-based testing and provides a web UI.
 
 ### Test server
 
 `bin/tape6-server.js` is a thin CLI shell over `src/test-server.js`, which exports
-`createTestServer()` (embeddable; `port: 0` gives parallel test files collision-free servers)
-and `withTestServer()` (scoped wrapper). Request routing: reserved control endpoints
-(`/--tests`, `/--patterns`, `/--importmap`, `/--plugins`) → fixture plugins by longest URL
-prefix → static files (GET/HEAD only; plugins see all verbs).
+`createTestServer()` (embeddable; `port: 0` gives parallel test files collision-free servers) and
+`withTestServer()` (scoped wrapper). Request routing: reserved control endpoints (`/--tests`,
+`/--patterns`, `/--importmap`, `/--plugins`) → fixture plugins by longest URL prefix → static files
+(GET/HEAD only; plugins see all verbs).
 
-Plugins speak WHATWG `Request`/`Response` behind a small adapter (streamed bodies,
-`duplex: 'half'` request streams, client disconnect wired to `request.signal`); `fetch` may
-return an (async) iterable for streamed output (objects become JSONL), and `raw(req, res)` is
-the escape hatch on raw Node objects. Registration is static (`tape6.server.plugins` config +
-`--plugin`) and dynamic (`PUT`/`DELETE /--plugins`, contained to rootFolder-relative modules;
-`--no-remote-plugins` disables). `--h2` switches to `http2.createSecureServer({allowHTTP1:
-true})` with a cert ladder (`TAPE6_CERT`/`TAPE6_KEY` → cached openssl self-signed) — Node-only
-server mode, needed for browser `fetch()` upload streaming (Chromium, h2/h3-only). Full
-design: `dev-docs/pluggable-test-server.md`.
+Plugins speak WHATWG `Request`/`Response` behind a small adapter (streamed bodies, `duplex: 'half'`
+request streams, client disconnect wired to `request.signal`); `fetch` may return an (async)
+iterable for streamed output (objects become JSONL), and `raw(req, res)` is the escape hatch on raw
+Node objects. Registration is static (`tape6.server.plugins` config + `--plugin`) and dynamic
+(`PUT`/`DELETE /--plugins`, contained to rootFolder-relative modules; `--no-remote-plugins`
+disables). `--h2` switches to `http2.createSecureServer({allowHTTP1: true})` with a cert ladder
+(`TAPE6_CERT`/`TAPE6_KEY` → cached openssl self-signed) — Node-only server mode, needed for browser
+`fetch()` upload streaming (Chromium, h2/h3-only). Full design: `dev-docs/pluggable-test-server.md`.
 
-The client half of the control plane ships as `src/utils/controlFetch.js`
-(`createControlFetch`, `isProtocolMismatch`): every control request carries a 3s hard
-deadline (a dying listener can accept and never answer), and `https:` requests walk a TLS
-trust ladder scoped to control requests only — `TAPE6_CERT` pinned as CA, else the cached
-self-signed cert (`node_modules/.cache/tape6/cert.pem`, written by `certs.js`), else relaxed
-verification. The endpoints and the cert-cache location are core's contract; the
-`tape-six-*` browser providers import this client instead of hand-mirroring it.
+The client half of the control plane ships as `src/utils/controlFetch.js` (`createControlFetch`,
+`isProtocolMismatch`): every control request carries a 3s hard deadline (a dying listener can accept
+and never answer), and `https:` requests walk a TLS trust ladder scoped to control requests only —
+`TAPE6_CERT` pinned as CA, else the cached self-signed cert (`node_modules/.cache/tape6/cert.pem`,
+written by `certs.js`), else relaxed verification. The endpoints and the cert-cache location are
+core's contract; the `tape-six-*` browser providers import this client instead of hand-mirroring it.
 
 ### Browser-driver kit
 
-Everything the driver-backed browser providers (`tape-six-puppeteer`,
-`tape-six-playwright`) share lives in core; a provider keeps only a four-member
-driver adapter (`supportedBrowsers`, `launchBrowser`, `newContext`,
-`pageErrorEvent`) plus its bin identity. Three modules:
-`src/driver/bootstrap.js` (browser-safe in-page harness text: srcdoc /
-URL forms, the `__tape6_*` globals, the `tape6-terminate` message shape),
-`src/driver/TestWorker.js` (extends `EventServer`; the per-task
-BrowserContext + Page lifecycle driven by the page `close` event, iframe
-injection, cooperative drain + `graceTimeout` force-kill), and
-`src/driver/cli.js` (`runDriverCli` — the whole driver-bin
-flow; it self-launches this package's own `bin/tape6-server.js` for
-`--start-server`). Core tests the kit with a fake driver (`tests/cli/`); real
-browsers are exercised by the providers' own suites. Full design:
-`dev-docs/browser-driver-kit.md`.
+Everything the driver-backed browser providers (`tape-six-puppeteer`, `tape-six-playwright`) share
+lives in core; a provider keeps only a four-member driver adapter (`supportedBrowsers`,
+`launchBrowser`, `newContext`, `pageErrorEvent`) plus its bin identity. Three modules:
+`src/driver/bootstrap.js` (browser-safe in-page harness text: srcdoc / URL forms, the `__tape6_*`
+globals, the `tape6-terminate` message shape), `src/driver/TestWorker.js` (extends `EventServer`;
+the per-task BrowserContext + Page lifecycle driven by the page `close` event, iframe injection,
+cooperative drain + `graceTimeout` force-kill), and `src/driver/cli.js` (`runDriverCli` — the whole
+driver-bin flow; it self-launches this package's own `bin/tape6-server.js` for `--start-server`).
+Core tests the kit with a fake driver (`tests/cli/`); real browsers are exercised by the providers'
+own suites. Full design: `dev-docs/browser-driver-kit.md`.
 
 ### Worker control channel
 
-`EventServer` is the base of every runner's `TestWorker`. Beyond the data plane
-(worker → reporter events) it owns a one-command control plane (runner → worker
-`terminate`), exposed as `destroyTask(id, reason)` where `reason` is `done`
-(the task finished), `failOnce` (a worker hit failOnce / bail — stop the rest),
-or `timeout` (the optional per-worker deadline, env `TAPE6_WORKER_TIMEOUT`, ran
-out). The worker drains cooperatively — `Reporter.terminate()` arms `stopTest`
-and fires the abort signal so the running test unwinds and its cleanup hooks run
-— and is force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms.
-A killed worker sends nothing more, so the parent stands in for it: it calls
-`close(id)` itself (nothing else will, and an unclosed task means the run never
-completes), and reports a `terminated` event so `Reporter.onTerminated` unwinds
-the scopes the worker left open. A `timeout` is the file's own failure however
-its worker stops: `EventServer` reports `Terminated after <n>ms` once, before the
-event that closes the file, and clears the `stopTest` marks the terminate leaves
-on that worker's events, so a deadline stops the run only under failOnce; for a
-worker killed before it reported its file, the server opens the file's scope so the
-failure names the file. A closed task's late scope events (`test`, `end`,
-`terminated`) are dropped, since a killed worker can still deliver what it queued,
-while any other late event still counts. `close`
-is idempotent (`closedTasks`), and completion flushes any events still buffered
-in a retained lane rather than dropping them.
-On the hub side, `State.preprocess` stamps events `processed: true` on first
-touch; an aggregating reporter counts pre-stamped worker events by their own
-flags, so a terminated sibling's early-delivered `stopTest` cannot skip-poison
-the hub chain and mask a still-buffered failure as skipped.
-The in-tree proc runner (`src/runners/proc/`) implements it over the child's stdin, and each
-`tape-six-*` provider implements the same contract for its own transport.
-See `dev-docs/worker-control-channel.md`.
+`EventServer` is the base of every runner's `TestWorker`. Beyond the data plane (worker → reporter
+events) it owns a one-command control plane (runner → worker `terminate`), exposed as
+`destroyTask(id, reason)` where `reason` is `done` (the task finished), `failOnce` (a worker hit
+failOnce / bail — stop the rest), or `timeout` (the optional per-worker deadline, env
+`TAPE6_WORKER_TIMEOUT`, ran out). The worker drains cooperatively — `Reporter.terminate()` arms
+`stopTest` and fires the abort signal so the running test unwinds and its cleanup hooks run — and is
+force-killed where the transport allows after `TAPE6_GRACE_TIMEOUT` ms. A killed worker sends
+nothing more, so the parent stands in for it: it calls `close(id)` itself (nothing else will, and an
+unclosed task means the run never completes), and reports a `terminated` event so
+`Reporter.onTerminated` unwinds the scopes the worker left open. A `timeout` is the file's own
+failure however its worker stops: `EventServer` reports `Terminated after <n>ms` once, before the
+event that closes the file, and clears the `stopTest` marks the terminate leaves on that worker's
+events, so a deadline stops the run only under failOnce; for a worker killed before it reported its
+file, the server opens the file's scope so the failure names the file. A closed task's late scope
+events (`test`, `end`, `terminated`) are dropped, since a killed worker can still deliver what it
+queued, while any other late event still counts. `close` is idempotent (`closedTasks`), and
+completion flushes any events still buffered in a retained lane rather than dropping them. On the
+hub side, `State.preprocess` stamps events `processed: true` on first touch; an aggregating reporter
+counts pre-stamped worker events by their own flags, so a terminated sibling's early-delivered
+`stopTest` cannot skip-poison the hub chain and mask a still-buffered failure as skipped. The
+in-tree proc runner (`src/runners/proc/`) implements it over the child's stdin, and each
+`tape-six-*` provider implements the same contract for its own transport. See
+`dev-docs/worker-control-channel.md`.
 
 ### Deep equality
 

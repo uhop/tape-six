@@ -48,7 +48,6 @@ npx tape6 --flags FO
 
 ```js
 import test from 'tape-six';
-// or: import {test} from 'tape-six';
 // or: import {test, beforeAll, afterAll, beforeEach, afterEach} from 'tape-six';
 // or: import {describe, it} from 'tape-six';
 

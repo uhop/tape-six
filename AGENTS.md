@@ -1,9 +1,12 @@
 # AGENTS.md — tape-six
 
-> `tape-six` is a TAP-based unit testing library for modern JavaScript (ES6+). It works in Node, Deno, Bun, and browsers. It runs ES modules natively and supports TypeScript without transpilation.
+> `tape-six` is a TAP-based unit testing library for modern JavaScript (ES6+). It works in Node,
+> Deno, Bun, and browsers. It runs ES modules natively and supports TypeScript without
+> transpilation.
 
-For project structure, module dependencies, and the architecture overview see [ARCHITECTURE.md](./ARCHITECTURE.md).
-For detailed usage docs and API references see the [wiki](https://github.com/uhop/tape-six/wiki).
+For project structure, module dependencies, and the architecture overview see
+[ARCHITECTURE.md](./ARCHITECTURE.md). For detailed usage docs and API references see the
+[wiki](https://github.com/uhop/tape-six/wiki).
 
 ## Setup
 
@@ -16,7 +19,8 @@ npm install
 npm run build
 ```
 
-`npm run build` copies files from the `vendors/deep6` submodule into `src/deep6/` (which is gitignored).
+`npm run build` copies files from the `vendors/deep6` submodule into `src/deep6/` (which is
+gitignored).
 
 ## Commands
 
@@ -73,21 +77,53 @@ tape-six/
 - **Prettier** for formatting (see `.prettierrc`).
 - Semicolons are enforced by Prettier (default `semi: true`).
 - Imports at the top of files, using `import` syntax.
-- The package name is `tape-six` but internal names, environment variables, and public names use `tape6` (e.g., `TAPE6_FLAGS`, `tape6` CLI).
-- **No narrating comments** — comments are short _why_-markers only (a non-trivial decision/constraint, an algorithm reference, or required JSDoc), never a restatement of _what_ the code does.
+- The package name is `tape-six` but internal names, environment variables, and public names use
+  `tape6` (e.g., `TAPE6_FLAGS`, `tape6` CLI).
+- **No narrating comments** — comments are short _why_-markers only (a non-trivial
+  decision/constraint, an algorithm reference, or required JSDoc), never a restatement of _what_ the
+  code does.
 
 ## Architecture
 
-- `index.js` is the main entry point. It auto-detects the runtime (Node/Deno/Bun/browser), selects the appropriate reporter, and starts the test runner.
-- `test()` function registers test suites. It is also aliased as `suite()`, `describe()`, and `it()`.
+- `index.js` is the main entry point. It auto-detects the runtime (Node/Deno/Bun/browser), selects
+  the appropriate reporter, and starts the test runner.
+- `test()` function registers test suites. It is also aliased as `suite()`, `describe()`, and
+  `it()`.
 - The `Tester` object is passed to test functions and provides all assert methods.
-- `Tester` is extensible via `registerTesterMethod(name, fn)` (idempotent for same `fn`, throws on collision with a different `fn`). Plugins live in their own packages and are imported per test file. The built-in `t.OK()` evaluator (`src/OK.js`) is the in-tree worked example.
-- Ambient integrations resolve the current test with `getTester()` (innermost running `Tester`, or `null` outside a test) and report through `Tester.reportAssertion({ok, message?, marker?, operator?, expected?, actual?})` — a marker-preserving assertion primitive whose `marker` keeps the source location at the caller. `index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` for the planned zero-dep `tape-six-invariant` package; see `dev-docs/sister-assert-library.md`.
+- `Tester` is extensible via `registerTesterMethod(name, fn)` (idempotent for same `fn`, throws on
+  collision with a different `fn`). Plugins live in their own packages and are imported per test
+  file. The built-in `t.OK()` evaluator (`src/OK.js`) is the in-tree worked example.
+- Ambient integrations resolve the current test with `getTester()` (innermost running `Tester`, or
+  `null` outside a test) and report through
+  `Tester.reportAssertion({ok, message?, marker?, operator?, expected?, actual?})` — a
+  marker-preserving assertion primitive whose `marker` keeps the source location at the caller.
+  `index.js` installs an invariant host at `globalThis[Symbol.for('tape6.invariant.host.v1')]` for
+  the planned zero-dep `tape-six-invariant` package; see `dev-docs/sister-assert-library.md`.
 - Tests are TAP-compatible and can output TAP, TTY (colored), or JSONL formats.
-- `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially in-process. `tape6-proc` runs each file in its own subprocess (`node:child_process` on all three runtimes) and drives the child over a stdin control channel; it replaced the separate `tape-six-proc` package, whose 1.3.1 still imports `State.js`, `utils/EventServer.js`, `utils/makeDeferred.js`, `utils/config.js`, `utils/timer.js`, and `test.js` from this package, so keep those modules and the names it imports from them.
-- Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop in-flight workers (not just new scheduling), and an optional per-worker deadline (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). A force-kill must finalize the task on the parent side — `close(id)` and a `terminated` event to unwind the scopes the worker left open — or the run exits 0 with the failure still buffered. A deadline is its file's own failure: `EventServer` reports it once, however the worker stops, and it stops the run only under `failOnce`. See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and `dev-docs/worker-control-channel.md`.
-- Browser tests use `tape6-server` which serves files and a web UI. It is pluggable: fixture plugins mount under URL prefixes with a WHATWG `fetch(request) → Response | (async) iterable | undefined` contract (static config `tape6.server.plugins` / `--plugin`, or `PUT /--plugins` at runtime), and the core is embeddable via `createTestServer({port: 0})` from `src/test-server.js`; `--h2` serves HTTP/2 (Node-only). See `dev-docs/pluggable-test-server.md`. For automated browser testing see [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright).
-- The `deep6` dependency is vendored via git submodule and copied into the source tree at build time.
+- `tape6` CLI runs test files in parallel using worker threads. `tape6-seq` runs them sequentially
+  in-process. `tape6-proc` runs each file in its own subprocess (`node:child_process` on all three
+  runtimes) and drives the child over a stdin control channel; it replaced the separate
+  `tape-six-proc` package, whose 1.3.1 still imports `State.js`, `utils/EventServer.js`,
+  `utils/makeDeferred.js`, `utils/config.js`, `utils/timer.js`, and `test.js` from this package, so
+  keep those modules and the names it imports from them.
+- Runner ↔ worker **control channel** (`EventServer.destroyTask`): `failOnce`/bail-out stop
+  in-flight workers (not just new scheduling), and an optional per-worker deadline
+  (`TAPE6_WORKER_TIMEOUT`, default 0/off) stops a hung worker. Workers drain cooperatively before a
+  force-kill after `TAPE6_GRACE_TIMEOUT` ms (default 5000). A force-kill must finalize the task on
+  the parent side — `close(id)` and a `terminated` event to unwind the scopes the worker left open —
+  or the run exits 0 with the failure still buffered. A deadline is its file's own failure:
+  `EventServer` reports it once, however the worker stops, and it stops the run only under
+  `failOnce`. See [ARCHITECTURE.md](./ARCHITECTURE.md) § Worker control channel and
+  `dev-docs/worker-control-channel.md`.
+- Browser tests use `tape6-server` which serves files and a web UI. It is pluggable: fixture plugins
+  mount under URL prefixes with a WHATWG `fetch(request) → Response | (async) iterable | undefined`
+  contract (static config `tape6.server.plugins` / `--plugin`, or `PUT /--plugins` at runtime), and
+  the core is embeddable via `createTestServer({port: 0})` from `src/test-server.js`; `--h2` serves
+  HTTP/2 (Node-only). See `dev-docs/pluggable-test-server.md`. For automated browser testing see
+  [tape-six-puppeteer](https://www.npmjs.com/package/tape-six-puppeteer) and
+  [tape-six-playwright](https://www.npmjs.com/package/tape-six-playwright).
+- The `deep6` dependency is vendored via git submodule and copied into the source tree at build
+  time.
 
 ## Writing tests
 
@@ -102,17 +138,35 @@ test('example', t => {
 ```
 
 - Test files should be directly executable: `node tests/test-foo.js`
-- Test file naming convention: `test-*.js`, `test-*.mjs`, `test-*.cjs`, `test-*.ts`, `test-*.mts`, `test-*.cts`.
+- Test file naming convention: `test-*.js`, `test-*.mjs`, `test-*.cjs`, `test-*.ts`, `test-*.mts`,
+  `test-*.cts`.
 - Tests are configured in `package.json` under the `"tape6"` section.
-- **The runtime matrix is not an engine matrix.** `test` / `test:bun` / `test:deno` all produce V8-shaped `error.stack` (message line + `    at …`): Node and Deno are V8, and Bun runs JavaScriptCore but mimics V8's `Error.stack` — `Error.captureStackTrace` included — for Node compatibility. The other format, `name@url:line:col`, comes only from a browser host (Safari/Epiphany on the same JSC, Firefox on SpiderMonkey), and the browser suite is normally run on headless Chrome, which is V8 again. So **no CLI gate can catch stack-format bugs** — `getStackList` parsed only V8 frames until 2026-08-16, which silently stripped every failure's location, stack block and cause stack on Firefox and WebKit. Anything that parses `error.stack` needs fixtures: `tests/test-stack-parsing.js` carries real captures per host and is the only gate covering the non-V8 branch.
-- For step-by-step guidance see `skills/write-tests/` and `skills/run-tests/` (also mirrored under `.claude/skills/` and `.windsurf/skills/` for in-repo work).
+- **The runtime matrix is not an engine matrix.** `test` / `test:bun` / `test:deno` all produce
+  V8-shaped `error.stack` (message line + `    at …`): Node and Deno are V8, and Bun runs
+  JavaScriptCore but mimics V8's `Error.stack` — `Error.captureStackTrace` included — for Node
+  compatibility. The other format, `name@url:line:col`, comes only from a browser host
+  (Safari/Epiphany on the same JSC, Firefox on SpiderMonkey), and the browser suite is normally run
+  on headless Chrome, which is V8 again. So **no CLI gate can catch stack-format bugs** —
+  `getStackList` parsed only V8 frames until 2026-08-16, which silently stripped every failure's
+  location, stack block and cause stack on Firefox and WebKit. Anything that parses `error.stack`
+  needs fixtures: `tests/test-stack-parsing.js` carries real captures per host and is the only gate
+  covering the non-V8 branch.
+- For step-by-step guidance see `skills/write-tests/` and `skills/run-tests/` (also mirrored under
+  `.claude/skills/` for in-repo work).
 
 ## Key conventions
 
 - Do not add dependencies unless absolutely necessary — the library is intentionally minimal.
 - All public API is exported from `index.js` and typed in `index.d.ts`. Keep them in sync.
-- `index.js` is the only public API surface. Beyond it, the `./*` wildcard in `package.json#exports` exposes the rest of `src/` (imported with an explicit `.js` extension, e.g. `tape-six/server.js`). That surface exists for the sibling `tape-six-*` packages — there are no external consumers by design. TypeScript resolves each `.d.ts` sidecar by adjacency plus the `// @ts-self-types` directive at the top of every source file, so no per-entry `exports` condition is needed; a new internal module needs only a `src/<name>.js` + `src/<name>.d.ts` pair.
-- All Node built-in imports use the `node:` protocol prefix (`node:http`, `node:fs`, `node:events`). Required for forward compatibility with Bun, Deno, and future runtimes.
-- Wiki documentation lives in the `wiki/` submodule. Use the `document-wiki-page` skill for documentation generation guidelines.
+- `index.js` is the only public API surface. Beyond it, the `./*` wildcard in `package.json#exports`
+  exposes the rest of `src/` (imported with an explicit `.js` extension, e.g. `tape-six/server.js`).
+  That surface exists for the sibling `tape-six-*` packages — there are no external consumers by
+  design. TypeScript resolves each `.d.ts` sidecar by adjacency plus the `// @ts-self-types`
+  directive at the top of every source file, so no per-entry `exports` condition is needed; a new
+  internal module needs only a `src/<name>.js` + `src/<name>.d.ts` pair.
+- All Node built-in imports use the `node:` protocol prefix (`node:http`, `node:fs`, `node:events`).
+  Required for forward compatibility with Bun, Deno, and future runtimes.
+- Wiki documentation lives in the `wiki/` submodule. Use the `document-wiki-page` skill for
+  documentation generation guidelines.
 - Environment variables use the `TAPE6_` prefix.
 - Browser integration exposes `__tape6_reportResults` for automation tools.
